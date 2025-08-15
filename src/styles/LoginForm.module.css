@@ -1,0 +1,158 @@
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400..800&display=swap');
+
+.backgroundWrapper {
+  font-family: "Baloo 2", cursive;
+  background: url('/images/fondo_login.jpg') center/cover no-repeat;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+.container {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: auto;
+  min-height: 100vh;
+  padding: 2rem;
+  gap: 2rem;
+  box-sizing: border-box;
+}
+
+.letras {
+  color: rgb(195, 12, 12);
+  text-align: center;
+}
+
+.title {
+  margin-bottom: 0;
+  text-transform: uppercase;
+  line-height: 1.2;
+  font-size: 2.5rem;
+}
+
+.subtitle {
+  margin-top: 0.2rem;
+  text-transform: lowercase;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.leftPanel,
+.rightPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.rightPanel .logo img {
+  max-width: 350px;
+  height: auto;
+  display: block;
+}
+
+.loginBox {
+  color: black;
+  margin-top: 2rem;
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem 2rem 1rem 2rem;
+  background: white;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  border-radius: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.loginBox h2 {
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 2rem;
+}
+
+/* Nueva clase para inputs */
+.inputField {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+  background-color: #fff;
+  color: #000;
+  transition: all 0.3s ease;
+}
+
+.inputField:hover {
+  border: 1px solid #000000;
+  outline: none;
+}
+
+.btn {
+  width: auto;
+  padding: 0.75rem 2rem;
+  background-color: #181717;
+  color: white;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  display: block;
+  margin: 0 auto;
+  transition: all 0.3s ease;
+  font-weight: normal;
+  box-sizing: border-box;
+}
+
+.btn:hover {
+  background-color: transparent;
+  color: #181717;
+  border: 2px solid #000000;
+  font-weight: bold;
+}
+
+
+.forgotPassword {
+  display: block;
+  margin-top: 1rem;
+  color: black;
+  text-decoration: none;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.forgotPassword:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .backgroundWrapper {
+    overflow-y: auto;
+  }
+  .container {
+    flex-direction: column;
+    padding: 1rem;
+  }
+  .loginBox {
+    max-width: 90%;
+    min-height: 400px;
+  }
+  .letras {
+    text-align: left;
+    font-size: 0.8rem;
+  }
+  .rightPanel .logo img {
+    max-width: 250px;
+    height: auto;
+    display: block;
+  }
+  .title {
+    font-size: 2rem;
+  }
+}
