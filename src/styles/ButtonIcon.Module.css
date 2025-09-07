@@ -1,0 +1,44 @@
+.icon{
+    width: 80px;
+    height: 80px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    fill: #000000 !important;
+    color: #000000;
+    display: block;
+    flex-shrink: 0;
+
+}
+
+.cardButton{
+    background: url('/images/card_button.png') no-repeat;
+    background-size: 100% 100%;
+    background-position: center;
+    width: 220px;
+    height: 250px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    box-sizing: border-box;
+
+
+}
+
+
+
+.title{
+    display: block;
+    text-align: center;
+    font-size: 1.2rem;
+    color: #ffffff;
+    margin-top: 25px;
+    line-height: 1.1;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+
+}
