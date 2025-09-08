@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400..800&display=swap');
+
+.backgroundWrapper {
+  font-family: "Baloo 2", cursive;
+  background: url('/images/fondo_menu.jpg') center/cover no-repeat;
+  min-height: 100vh;
+  height: auto;
+  position: relative;
+  padding-bottom: 120px; /* Espacio para el botón de ayuda */
+}
+
+/* Estilos personalizados que complementan Bootstrap */
+.logo {
+  z-index: 10;
+}
+
+.logo img {
+  object-fit: contain;
+}
+
+.title {
+  font-family: "Baloo 2", cursive;
+  font-weight: 700;
+  color: #000000;
+  text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+/* Mantener algunos estilos originales que pueden ser útiles */
+.complemento {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+/* Estilos para iconos y texto de los botones */
+.buttonIcon {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+.buttonText {
+  font-size: 1.2rem;
+  font-weight: 700;
+  font-family: "Baloo 2", cursive;
+}
+
+/* Personalización adicional para botones Bootstrap */
+.btn-custom {
+  font-family: "Baloo 2", cursive;
+  font-weight: 600;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}

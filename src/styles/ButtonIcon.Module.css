@@ -1,0 +1,48 @@
+.icon {
+    fill: #000000 !important;
+    color: #000000;
+    display: block;
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+.cardButton {
+    background: url('/images/card_button.png') no-repeat;
+    background-size: 100% 100%;
+    background-position: center;
+    width: 370px;
+    height: 270px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.cardButton:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important;
+}
+
+.title {
+    color: #ffffff;
+    line-height: 1.2;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    font-weight: 600;
+}
+
+/* Responsivo para móviles */
+@media (max-width: 576px) {
+    .cardButton {
+        height: 280px;
+        max-width: 160px;
+    }
+    
+    .icon {
+        width: 50px !important;
+        height: 50px !important;
+    }
+    
+    .title {
+        font-size: 0.9rem !important;
+    }
+}
