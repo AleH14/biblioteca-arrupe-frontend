@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import styles from  '../../styles/MenuForm.module.css'; 
 import NoteIcon from '../svg/note.jsx';
@@ -8,7 +10,8 @@ import UserIcon from '../svg/User.jsx';
 import Ayuda from '../svg/Ayuda.jsx';
 import CerraSesion from '../svg/CerraSesion';
 
-export default function MenuForm(){
+export default function MenuForm({ irPrestamos }){
+
     return(
         <div className={styles.backgroundWrapper}>
             {/* Header con Bootstrap */}
@@ -48,7 +51,8 @@ export default function MenuForm(){
                 {/* Grid de botones con Bootstrap */}
                 <div className="container" style={{marginTop: '4rem', marginBottom: '6rem', paddingBottom: '2rem'}}>
                     <div className="row g-3 justify-content-center">
-                        <div className="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 d-flex justify-content-center">
+                        <div className="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 d-flex justify-content-center"
+                         onClick={irPrestamos}> 
                             <ButtonIcon titulo={<>Préstamos/<br/>Devolución</>} IconComponent={NoteIcon} />
                         </div>
                         <div className="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 d-flex justify-content-center">

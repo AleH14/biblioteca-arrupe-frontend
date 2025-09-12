@@ -1,0 +1,117 @@
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400..800&display=swap');
+
+.backgroundWrapper {
+  font-family: "Baloo 2", cursive;
+  background: url('/images/Fondo Portada Blanco.png') center/cover no-repeat;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  padding: 2rem;
+  padding-left: 4rem;
+  padding-right: 4rem;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+
+.complementoImg {
+  width: 40px;
+  height: 40px;
+  margin-right: 1rem;
+}
+
+.title {
+  font-weight: bold;
+  color: red;
+  flex-grow: 1;
+  text-transform: uppercase;
+  font-size: 3rem;
+}
+
+/* Botones globales */
+.btnPrimary {
+  display: flex;
+  align-items: center;
+  background: red;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  gap: 0.5rem;  
+}
+.btnPrimaryMas{
+  font-weight: bold;
+  line-height: 1; 
+  font-size: 2rem;
+}
+.btnPrimary:hover {
+  background: red;
+  box-shadow: 0 0 12px 2px rgba(255, 0, 0, 0.6);
+  transform: translateY(-2px); /* efecto “levitar” */
+}
+
+.btnSecondary {
+  background: black;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+   border: 2px solid black;  
+}
+
+.btnSecondary:hover {
+  background:transparent;
+  color:black;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  border: 2px solid black;  
+}
+
+/* Botón HOME */
+.homeBtn {
+  background: transparent;
+  border: none;
+  font-size: 2.5rem;
+  margin-right: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.homeIcon:hover {
+  transform: scale(1.1); 
+  color:black
+}
+
+.homeIcon {
+  color: #777; /* Ícono de la casa en negro */
+}
+
+/*Boton cerrar sesión*/
+.logoutBtn {
+  border: none;
+  background: transparent;
+  color: #777;
+  cursor: pointer;
+  font-size: 1.4rem;
+  display: inline-flex;   /* ícono y texto en la misma línea */
+  align-items: center;    /* centrados verticalmente */
+  gap: 0.4rem;            /* espacio entre ícono y texto */
+  white-space: nowrap;    /* evita salto de línea */
+}
+.logoutBtn:hover{
+  color:black;
+  transform: scale(1.1); 
+}
+
+.logoutIcon {
+  font-size: 1.5rem;    
+  vertical-align: middle;
+}
+
+
