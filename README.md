@@ -240,10 +240,6 @@ Si tu contribución afecta múltiples repositorios:
 2. Referencias cruzadas entre issues relacionados
 3. Coordina los PRs entre repositorios
 
-## 📞 Contacto
-
-**Desarrollador**: [@AleH14](https://github.com/AleH14)
-
 **Repositorios del Sistema**:
 - 🎨 [Frontend](https://github.com/AleH14/biblioteca-arrupe-frontend)
 - ⚙️ [Backend](https://github.com/AleH14/biblioteca-arrupe-backend)
