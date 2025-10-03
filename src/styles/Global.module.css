@@ -74,6 +74,21 @@
   border: 2px solid black;  
 }
 
+.btnWarning {
+  background: #ffc107; /* amarillo */
+  color: black;
+  padding: 0.5rem 1rem;
+  border-radius: 20px; /* igual que btnSecondary */
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.btnWarning:hover {
+  background: #e0a800;
+}
+
 /* Botón HOME */
 .homeBtn {
   background: transparent;

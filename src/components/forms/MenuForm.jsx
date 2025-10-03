@@ -10,7 +10,7 @@ import UserIcon from '../svg/User.jsx';
 import Ayuda from '../svg/Ayuda.jsx';
 import CerraSesion from '../svg/CerraSesion';
 
-export default function MenuForm({ irPrestamos }){
+export default function MenuForm({ irPrestamos, irCatalogo, irLogin }){
 
     return(
         <div className={styles.backgroundWrapper}>
@@ -55,7 +55,8 @@ export default function MenuForm({ irPrestamos }){
                          onClick={irPrestamos}> 
                             <ButtonIcon titulo={<>Préstamos/<br/>Devolución</>} IconComponent={NoteIcon} />
                         </div>
-                        <div className="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 d-flex justify-content-center">
+                        <div className="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 d-flex justify-content-center"
+                        onClick={irCatalogo}>
                             <ButtonIcon titulo="Catálogo" IconComponent={CatalogoIcon} />
                         </div>
                         <div className="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 d-flex justify-content-center">
