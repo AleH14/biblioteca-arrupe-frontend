@@ -4,6 +4,7 @@ import LoginForm from '../components/forms/LoginForm';
 import MenuForm from '@/components/forms/MenuForm';
 import PrestamoVista from '@/components/forms/PrestamoVista';
 import Catalogo from '@/components/forms/Catalogo';
+import EditarLibro from '@/components/forms/EditarLibro';
 
 export default function HomePage() {
    const [vista, setVista] = useState("menu");

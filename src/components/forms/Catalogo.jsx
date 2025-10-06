@@ -1,9 +1,11 @@
 "use client";
 import React, { useState } from "react";
-import styles from "../../styles/Catalogo.module.css";
+import styles from "../../styles/catalogo.module.css";
 import global from "../../styles/Global.module.css";
 import { FiHome } from "react-icons/fi";
 import { MdLogout } from "react-icons/md";
+import EditarLibro from "./EditarLibro";// Importar EditarLibro
+import AgregarLibro from "./AgregarLibro"; // Importar AgregarLibro
 
 export default function Catalogo({ volverMenu }) {
   const [libros, setLibros] = useState([
@@ -13,7 +15,7 @@ export default function Catalogo({ volverMenu }) {
       autor: "Gabriel García Márquez",
       editorial: "Sudamericana",
       ejemplares: 15,
-      portada: "/images/libros/100.jpg",
+      portada: "https://www.rae.es/sites/default/files/portada_cien_anos_de_soledad_0.jpg",
       isbn: "8423919005",
     },
     {
@@ -22,7 +24,7 @@ export default function Catalogo({ volverMenu }) {
       autor: "Manlio Argueta",
       editorial: "UCA",
       ejemplares: 10,
-      portada: "/images/libros/undiaenlavida.jpg",
+      portada: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJV5gM6MeqkdFEHyWYjfQBTOV0IGMydm9KwQ&s",
       isbn: "9789992302343",
     },
     {
@@ -31,48 +33,82 @@ export default function Catalogo({ volverMenu }) {
       autor: "Santiago Nogales",
       editorial: "Loqueleo Santillana",
       ejemplares: 7,
-      portada: "/images/libros/vecinas.jpg",
+      portada: "https://www.loqueleo.com/sv/uploads/2018/06/vecinas_1.jpg",
       isbn: "9788467591735",
+    },
+    {
+      id: 4,
+      titulo: "100 Años de Soledad",
+      autor: "Gabriel García Márquez",
+      editorial: "Sudamericana",
+      ejemplares: 15,
+      portada: "https://www.rae.es/sites/default/files/portada_cien_anos_de_soledad_0.jpg",
+      isbn: "8423919005",
+    },
+    {
+      id: 5,
+      titulo: "100 Años de Soledad",
+      autor: "Gabriel García Márquez",
+      editorial: "Sudamericana",
+      ejemplares: 15,
+      portada: "https://www.rae.es/sites/default/files/portada_cien_anos_de_soledad_0.jpg",
+      isbn: "8423919005",
+    },
+    {
+      id: 6,
+      titulo: "100 Años de Soledad",
+      autor: "Gabriel García Márquez",
+      editorial: "Sudamericana",
+      ejemplares: 15,
+      portada: "https://www.rae.es/sites/default/files/portada_cien_anos_de_soledad_0.jpg",
+      isbn: "8423919005",
+    },
+    {
+      id: 7,
+      titulo: "100 Años de Soledad",
+      autor: "Gabriel García Márquez",
+      editorial: "Sudamericana",
+      ejemplares: 15,
+      portada: "https://www.rae.es/sites/default/files/portada_cien_anos_de_soledad_0.jpg",
+      isbn: "8423919005",
     },
   ]);
 
-  const [showAddModal, setShowAddModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [libroAEliminar, setLibroAEliminar] = useState(null);
+  const [mostrarEditarLibro, setMostrarEditarLibro] = useState(false);
+  const [libroAEditar, setLibroAEditar] = useState(null);
+  const [mostrarAgregarLibro, setMostrarAgregarLibro] = useState(false); // 🔹 NUEVO estado
 
-  const [nuevoLibro, setNuevoLibro] = useState({
-    titulo: "",
-    autor: "",
-    editorial: "",
-    ejemplares: "",
-    portada: "",
-    isbn: "",
-  });
-
-  const handleChange = (e) => {
-    setNuevoLibro({ ...nuevoLibro, [e.target.name]: e.target.value });
+  const handleEditar = (libro) => {
+    setLibroAEditar(libro);
+    setMostrarEditarLibro(true);
   };
 
-  const handleAgregar = () => {
-    if (!nuevoLibro.titulo) return;
-    setLibros([
-      ...libros,
-      {
-        ...nuevoLibro,
-        id: libros.length + 1,
-        ejemplares: parseInt(nuevoLibro.ejemplares || 0),
-      },
-    ]);
-    setNuevoLibro({
-      titulo: "",
-      autor: "",
-      editorial: "",
-      ejemplares: "",
-      portada: "",
-      isbn: "",
-    });
-    setShowAddModal(false);
+  const handleVolverCatalogo = () => {
+    setMostrarEditarLibro(false);
+    setLibroAEditar(null);
+    setMostrarAgregarLibro(false); // 🔹 También cerrar AgregarLibro
   };
+
+  const handleAgregarLibro = () => {
+    setMostrarAgregarLibro(true); // 🔹 NUEVA función
+  };
+
+  // 🔹 REDIRECCIÓN A PANTALLA DE AGREGAR LIBRO
+  if (mostrarAgregarLibro) {
+    return <AgregarLibro volverCatalogo={handleVolverCatalogo} />;
+  }
+
+  // 🔹 REDIRECCIÓN A PANTALLA DE EDITAR LIBRO
+  if (mostrarEditarLibro && libroAEditar) {
+    return (
+      <EditarLibro 
+        volverCatalogo={handleVolverCatalogo} 
+        libro={libroAEditar} 
+      />
+    );
+  }
 
   return (
     <div className={global.backgroundWrapper}>
@@ -85,12 +121,12 @@ export default function Catalogo({ volverMenu }) {
         </button>
         <button className={global.logoutBtn}>
           <MdLogout className={global.logoutIcon} />
-          <span>Cerrar sesión</span>
+          <span className="d-none d-sm-inline">Cerrar sesión</span>
         </button>
       </header>
 
       {/* Título */}
-      <div className="container my-3">
+      <div className="container my-4">
         <div className="row justify-content-center">
           <div className="col-auto">
             <div className="d-flex align-items-center">
@@ -105,7 +141,7 @@ export default function Catalogo({ volverMenu }) {
         </div>
       </div>
 
-      {/* Buscador + botón agregar */}
+      {/* Buscador y botón Agregar Libro */}
       <div className={`${styles.containerLimit} my-4`}>
         <div className="d-flex justify-content-center">
           <input
@@ -113,26 +149,29 @@ export default function Catalogo({ volverMenu }) {
             placeholder="Buscar libro"
             className={styles.searchInput}
           />
-          <button
-            className={global.btnPrimary}
-            onClick={() => setShowAddModal(true)}
-          >
-            + Agregar Libro
+          {/* 🔹 CAMBIADO: onClick ahora usa handleAgregarLibro */}
+          <button className={global.btnPrimary} onClick={handleAgregarLibro}>
+            <span className={global.btnPrimaryMas}>+</span> Agregar Libro
           </button>
         </div>
       </div>
 
       {/* Tarjetas de libros */}
       <div className="container">
-        <div className="row justify-content-center g-4">
+        <div className="row justify-content-center g-2 g-lg-3">
           {libros.map((libro) => (
-            <div key={libro.id} className="col-12 col-sm-6 col-md-4 col-lg-3 d-flex">
+            <div
+              key={libro.id}
+              className="col-6 col-sm-6 col-md-4 col-lg-3 col-xl-2 d-flex justify-content-center mb-3"
+            >
               <div className={styles.card}>
-                <img
-                  src={libro.portada}
-                  alt={libro.titulo}
-                  className={styles.cover}
-                />
+                <div className={styles.coverWrapper}>
+                  <img
+                    src={libro.portada}
+                    alt={libro.titulo}
+                    className={styles.cover}
+                  />
+                </div>
                 <div className="p-2 text-center">
                   <h5>{libro.titulo}</h5>
                   <p>{libro.autor}</p>
@@ -141,7 +180,12 @@ export default function Catalogo({ volverMenu }) {
                     Ejemplares: {libro.ejemplares}
                   </p>
                   <div className="d-flex justify-content-center gap-2 mt-1">
-                    <button className={global.btnWarning}>Editar</button>
+                    <button
+                      className={global.btnWarning}
+                      onClick={() => handleEditar(libro)}
+                    >
+                      Editar
+                    </button>
                     <button
                       className={global.btnSecondary}
                       onClick={() => {
@@ -159,55 +203,54 @@ export default function Catalogo({ volverMenu }) {
         </div>
       </div>
 
+      {/* MODAL ELIMINAR */}
+      {showDeleteModal && libroAEliminar && (
+        <div className={styles.modalBackdrop}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalHeader}>
+              <h3 className={styles.deleteTitle}>ELIMINAR LIBRO</h3>
+              <button onClick={() => setShowDeleteModal(false)}>✖</button>
+            </div>
 
-       {/* MODAL ELIMINAR */}
-{showDeleteModal && libroAEliminar && (
-  <div className={styles.modalBackdrop}>
-    <div className={styles.modalContent}>
-      <div className={styles.modalHeader}>
-        <h3 className={styles.deleteTitle}>ELIMINAR LIBRO</h3>
-        <button onClick={() => setShowDeleteModal(false)}>✖</button>
-      </div>
+            <div className={styles.modalBody}>
+              <p>
+                ¿Seguro que deseas eliminar <b>{libroAEliminar.titulo}</b>?
+              </p>
 
-      <div className={styles.modalBody}>
-        <p>
-          ¿Seguro que deseas eliminar <b>{libroAEliminar.titulo}</b>?
-        </p>
+              <label className={styles.modalLabel}>Autor</label>
+              <input type="text" value={libroAEliminar.autor} readOnly />
 
-        <label className={styles.modalLabel}>Autor</label>
-        <input type="text" value={libroAEliminar.autor} readOnly />
+              <label>Editorial</label>
+              <input type="text" value={libroAEliminar.editorial} readOnly />
 
-        <label>Editorial</label>
-        <input type="text" value={libroAEliminar.editorial} readOnly />
+              <label>ISBN</label>
+              <input type="text" value={libroAEliminar.isbn} readOnly />
 
-        <label>ISBN</label>
-        <input type="text" value={libroAEliminar.isbn} readOnly />
+              <label>Ejemplares</label>
+              <input type="number" value={libroAEliminar.ejemplares} readOnly />
+            </div>
 
-        <label>Ejemplares</label>
-        <input type="number" value={libroAEliminar.ejemplares} readOnly />
-      </div>
+            <div className={styles.modalFooter}>
+              <p className={styles.deleteWarning}>
+                Se eliminarán todos los ejemplares de este libro.
+              </p>
 
-      <div className={styles.modalFooter}>
-      
-         <div className="d-flex justify-content-center gap-2 mt-1">
-                  
-                    <button
-                      className={global.btnSecondary}
-                      onClick={() => {
-                        setLibros(libros.filter((l) => l.id !== libroAEliminar.id));
-            setLibroAEliminar(null);
-            setShowDeleteModal(false);
-                      }}
-                    >
-                      Eliminar
-                    </button>
-                  </div>
-      </div>
-    </div>
-  </div>
-)}
-
-
+              <div className="d-flex justify-content-center gap-2 mt-1">
+                <button
+                  className={global.btnSecondary}
+                  onClick={() => {
+                    setLibros(libros.filter((l) => l.id !== libroAEliminar.id));
+                    setLibroAEliminar(null);
+                    setShowDeleteModal(false);
+                  }}
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

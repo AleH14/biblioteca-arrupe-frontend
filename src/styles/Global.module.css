@@ -76,17 +76,20 @@
 
 .btnWarning {
   background: #ffc107; /* amarillo */
-  color: black;
+  color: white;
   padding: 0.5rem 1rem;
   border-radius: 20px; /* igual que btnSecondary */
   border: none;
   cursor: pointer;
-  font-weight: 600;
+  border: 2px solid #ffc107; 
   transition: background 0.2s ease;
 }
 
 .btnWarning:hover {
-  background: #e0a800;
+  background:transparent;
+  color:rgb(223, 182, 18);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  border: 2px solid #ffc107;  
 }
 
 /* Botón HOME */

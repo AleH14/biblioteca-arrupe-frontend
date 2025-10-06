@@ -1,84 +1,74 @@
-/* Contenedor */
+/* === CONTENEDOR PRINCIPAL === */
 .containerLimit {
   max-width: 700px;
   margin: 0 auto;
 }
 
-/* Input búsqueda */
 .searchInput {
   flex: 1;
-  padding: 0.5rem 0.9rem;
-  background-color: #dadada;
+  padding: 0.5rem 1rem;
+  background-color: #DADADA;
   border-radius: 6px;
   margin-right: 0.5rem;
   color: black;
-  border: none;
+  border-style: none;
 }
 
-/* Card */
+/* === TARJETA DE LIBRO === */
 .card {
   background: #ffffff;
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: 420px;
-  width: 100%;
+  height: 400px;
+  width: 220px;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
-
 
 .card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
 }
 
-/* Imagen portada más baja */
-/* Catalogo.module.css */
+/* === PORTADA DEL LIBRO === */
+.coverWrapper {
+  width: 100%;
+  height: 230px;
+  background-color: #f8f8f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-bottom: 1px solid #eee;
+}
+
 .cover {
   width: 100%;
-  height: 420px;        /* mayor alto para ver más de la portada */
- /* muestra la imagen completa (sin recortar) */
- .card {
-  background: #ffffff;
-  border-radius: 12px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
   height: 100%;
-  min-height: 360px; 
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-.card {
-  background: #ffffff;
-  border-radius: 12px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 360px; 
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-    object-fit: contain; /* asegura que se vea la imagen completa */
-  background-color: #f5f5f5;
-  border-bottom: 1px solid #eee;
-  display: block;
- 
+  object-fit: contain;
+  transition: transform 0.3s ease;
 }
 
+.card:hover .cover {
+  transform: scale(1.03);
+}
 
-/* Texto dentro de la card */
+/* === TEXTO DENTRO DE LA CARD === */
 .card h5 {
   font-size: 1rem;
   font-weight: 700;
   color: #111;
-  margin-bottom: 0.25rem;
+  margin: 0.5rem 0 0.2rem;
+  text-align: center;
 }
 
 .card p {
   font-size: 0.85rem;
   color: #444;
-  margin-bottom: 0.25rem;
+  margin: 0 0 0.3rem;
+  text-align: center;
 }
 
 .card .ejemplares {
@@ -86,13 +76,16 @@
   color: #2a7a2a;
 }
 
-/* Botones dentro de card */
+/* === BOTONES DENTRO DE LA CARD === */
 .card button {
   font-size: 0.8rem;
   padding: 0.3rem 0.7rem;
+  align-self: center;
+  margin-top: auto;
+  margin-bottom: 0.6rem;
 }
 
-/* --- MODALES --- */
+/* === MODALES === */
 .modalBackdrop {
   position: fixed;
   inset: 0;
@@ -114,7 +107,7 @@
   position: relative;
 }
 
-/* Encabezado modal */
+/* === ENCABEZADO DEL MODAL === */
 .modalHeader {
   display: flex;
   justify-content: space-between;
@@ -137,7 +130,7 @@
   color: #000000;
 }
 
-/* Cuerpo modal */
+/* === CUERPO DEL MODAL === */
 .modalBody {
   display: flex;
   flex-direction: column;
@@ -164,7 +157,7 @@
   font-size: 0.9rem;
 }
 
-/* Inputs solo lectura */
+/* === INPUTS SOLO LECTURA === */
 .modalBody input[readonly] {
   background-color: #f8f9fa;
   color: #000000;
@@ -173,7 +166,7 @@
   border-radius: 6px;
 }
 
-/* Pie modal */
+/* === PIE DEL MODAL === */
 .modalFooter {
   display: flex;
   justify-content: flex-end;
@@ -181,14 +174,15 @@
   margin-top: 1.2rem;
 }
 
-/* --- ESTILO ESPECÍFICO MODAL ELIMINAR --- */
+/* === MODAL ELIMINAR === */
 .deleteTitle {
-  color: #d9534f; /* rojo alerta */
+  color: #D90012 !important; 
   font-weight: bold;
   font-size: 1.3rem;
   letter-spacing: 0.5px;
 }
 
+/* === ANIMACIÓN === */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -199,8 +193,17 @@
     transform: scale(1);
   }
 }
-/* Forzar que text-muted sea negro solo en el modal */
+
+/* === LABELS EN MODAL === */
 .modalLabel {
   color: #000 !important;
   font-weight: 600;
+}
+
+/* Nota de advertencia en modal eliminar */
+.deleteWarning {
+  color: #827b7b;      
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  text-align: center;
 }
