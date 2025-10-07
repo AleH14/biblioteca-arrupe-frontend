@@ -3,54 +3,116 @@
 .backgroundWrapper {
   font-family: "Baloo 2", cursive;
   background: url('/images/fondo_menu.jpg') center/cover no-repeat;
+  background-attachment: fixed;
   min-height: 100vh;
-  height: auto;
+  height: 100%;
   position: relative;
-  padding-bottom: 120px; /* Espacio para el botón de ayuda */
 }
 
-/* Estilos personalizados que complementan Bootstrap */
-.logo {
-  z-index: 10;
+/* Contenedor principal con bastante padding */
+.mainContainer {
+  min-height: 100vh;
+  padding: 2rem;
+  padding-right: 3.5rem;
+  padding-left: 3.5rem;
+  position: relative;
 }
 
-.logo img {
+/* Logo en el header cole*/
+.logoHeader {
+  height: 100px;
+  width: auto;
   object-fit: contain;
 }
 
-.title {
-  font-family: "Baloo 2", cursive;
-  font-weight: 700;
-  color: #000000;
+/* Título rojo responsive */
+.redTitle {
+  color: red!important;
   text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
-  text-transform: uppercase;
-  line-height: 1.2;
+  font-size: 2.5rem; 
 }
 
-/* Mantener algunos estilos originales que pueden ser útiles */
-.complemento {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
+/* Botón ayuda SIN BORDE, solo hover */
+.helpButton {
+  position: absolute;
+  right: 2rem;
+  bottom: 2rem;
+  z-index: 1050;
 }
 
-/* Estilos para iconos y texto de los botones */
-.buttonIcon {
-  width: 20px;
-  height: 20px;
-  fill: currentColor;
-  flex-shrink: 0;
+.helpBtn {
+  background: transparent !important;
+  border: none !important;
+  width: 80px;
+  height: 80px;
+  color: #000000;
+  transition: all 0.3s ease;
 }
 
-.buttonText {
-  font-size: 1.2rem;
-  font-weight: 700;
-  font-family: "Baloo 2", cursive;
+.helpBtn:hover {
+  background: rgba(255, 193, 7, 0.2) !important;
+  border: 2px solid #ffc107 !important;
+  transform: scale(1.05);
 }
 
-/* Personalización adicional para botones Bootstrap */
-.btn-custom {
-  font-family: "Baloo 2", cursive;
+.helpIcon {
+  width: 35px;
+  height: 35px;
+}
+
+.helpText {
+  font-size: 0.7rem;
+  line-height: 1;
+  margin-top: 2px;
   font-weight: 600;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .redTitle {
+    font-size: 2rem; 
+    text-align: center;
+  }
+
+  .mainContainer {
+    padding: 1.5rem 0.5rem 5rem 0.5rem;
+  }
+  
+  .logoHeader {
+    height: 60px;
+  }
+  
+  .helpButton {
+    right: 1rem;
+    bottom: 1rem;
+  }
+  
+  .helpBtn {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .helpIcon {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+@media (max-width: 576px) {
+  .redTitle {
+    font-size: 0.2rem; 
+  }
+
+  .mainContainer {
+    padding: 1.5rem;
+  }
+  
+  .logoHeader {
+    height: 50px;
+  }
+  
+  .helpButton {
+    right: 0.5rem;
+    bottom: 0.5rem;
+  }
 }

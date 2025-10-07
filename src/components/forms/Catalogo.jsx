@@ -78,7 +78,7 @@ export default function Catalogo({ volverMenu }) {
   const [libroAEliminar, setLibroAEliminar] = useState(null);
   const [mostrarEditarLibro, setMostrarEditarLibro] = useState(false);
   const [libroAEditar, setLibroAEditar] = useState(null);
-  const [mostrarAgregarLibro, setMostrarAgregarLibro] = useState(false); // 🔹 NUEVO estado
+  const [mostrarAgregarLibro, setMostrarAgregarLibro] = useState(false); 
 
   const handleEditar = (libro) => {
     setLibroAEditar(libro);
@@ -88,19 +88,19 @@ export default function Catalogo({ volverMenu }) {
   const handleVolverCatalogo = () => {
     setMostrarEditarLibro(false);
     setLibroAEditar(null);
-    setMostrarAgregarLibro(false); // 🔹 También cerrar AgregarLibro
+    setMostrarAgregarLibro(false); 
   };
 
   const handleAgregarLibro = () => {
-    setMostrarAgregarLibro(true); // 🔹 NUEVA función
+    setMostrarAgregarLibro(true); 
   };
 
-  // 🔹 REDIRECCIÓN A PANTALLA DE AGREGAR LIBRO
+  //REDIRECCIÓN A PANTALLA DE AGREGAR LIBRO
   if (mostrarAgregarLibro) {
     return <AgregarLibro volverCatalogo={handleVolverCatalogo} />;
   }
 
-  // 🔹 REDIRECCIÓN A PANTALLA DE EDITAR LIBRO
+  //REDIRECCIÓN A PANTALLA DE EDITAR LIBRO
   if (mostrarEditarLibro && libroAEditar) {
     return (
       <EditarLibro 
@@ -149,7 +149,6 @@ export default function Catalogo({ volverMenu }) {
             placeholder="Buscar libro"
             className={styles.searchInput}
           />
-          {/* 🔹 CAMBIADO: onClick ahora usa handleAgregarLibro */}
           <button className={global.btnPrimary} onClick={handleAgregarLibro}>
             <span className={global.btnPrimaryMas}>+</span> Agregar Libro
           </button>
