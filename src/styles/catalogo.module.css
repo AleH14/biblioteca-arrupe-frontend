@@ -1,0 +1,209 @@
+/* === CONTENEDOR PRINCIPAL === */
+.containerLimit {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  background-color: #DADADA;
+  border-radius: 6px;
+  margin-right: 0.5rem;
+  color: black;
+  border-style: none;
+}
+
+/* === TARJETA DE LIBRO === */
+.card {
+  background: #ffffff;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 400px;
+  width: 220px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+}
+
+/* === PORTADA DEL LIBRO === */
+.coverWrapper {
+  width: 100%;
+  height: 230px;
+  background-color: #f8f8f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-bottom: 1px solid #eee;
+}
+
+.cover {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.card:hover .cover {
+  transform: scale(1.03);
+}
+
+/* === TEXTO DENTRO DE LA CARD === */
+.card h5 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111;
+  margin: 0.5rem 0 0.2rem;
+  text-align: center;
+}
+
+.card p {
+  font-size: 0.85rem;
+  color: #444;
+  margin: 0 0 0.3rem;
+  text-align: center;
+}
+
+.card .ejemplares {
+  font-weight: 600;
+  color: #2a7a2a;
+}
+
+/* === BOTONES DENTRO DE LA CARD === */
+.card button {
+  font-size: 0.8rem;
+  padding: 0.3rem 0.7rem;
+  align-self: center;
+  margin-top: auto;
+  margin-bottom: 0.6rem;
+}
+
+/* === MODALES === */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+}
+
+.modalContent {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  max-width: 450px;
+  width: 90%;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease;
+  position: relative;
+}
+
+/* === ENCABEZADO DEL MODAL === */
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #000000;
+}
+
+.modalHeader button {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #000000;
+}
+
+/* === CUERPO DEL MODAL === */
+.modalBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.modalBody p {
+  font-size: 0.95rem;
+  color: #000000 !important;
+  margin-bottom: 0.5rem;
+}
+
+.modalBody label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #000000 !important;
+  margin-top: 0.5rem;
+}
+
+.modalBody input {
+  padding: 0.5rem;
+  border: 1px solid #000000;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+/* === INPUTS SOLO LECTURA === */
+.modalBody input[readonly] {
+  background-color: #f8f9fa;
+  color: #000000;
+  border: 1px solid #ddd;
+  padding: 0.4rem;
+  border-radius: 6px;
+}
+
+/* === PIE DEL MODAL === */
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.7rem;
+  margin-top: 1.2rem;
+}
+
+/* === MODAL ELIMINAR === */
+.deleteTitle {
+  color: #D90012 !important; 
+  font-weight: bold;
+  font-size: 1.3rem;
+  letter-spacing: 0.5px;
+}
+
+/* === ANIMACIÓN === */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* === LABELS EN MODAL === */
+.modalLabel {
+  color: #000 !important;
+  font-weight: 600;
+}
+
+/* Nota de advertencia en modal eliminar */
+.deleteWarning {
+  color: #827b7b;      
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
