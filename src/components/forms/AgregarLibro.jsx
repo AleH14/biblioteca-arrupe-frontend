@@ -243,16 +243,23 @@ export default function AgregarLibro({ volverCatalogo }) {
                     {/* ISBN */}
                     <div className="col-12 col-md-6 mb-3">
                       <label className={styles.formLabel}>ISBN *</label>
-                      <input
-                        type="text"
-                        name="isbn"
-                        value={nuevoLibro.isbn}
-                        onChange={handleChange}
-                        onBlur={handleISBNBlur} // <-- esto hace la consulta automática
-                        className={styles.formInput}
-                        placeholder="Ingrese el ISBN"
-                        required
-                      />
+                      <div className={styles.inputWithIcon}>
+                        <input
+                          type="text"
+                          name="isbn"
+                          value={nuevoLibro.isbn}
+                          onChange={handleChange}
+                          onBlur={handleISBNBlur} // <-- esto hace la consulta automática
+                          className={`${styles.formInput} ${styles.inputWithGoogleIcon}`}
+                          placeholder="Ingrese el ISBN"
+                          required
+                        />
+                        <img
+                          src="https://developers.google.com/books/images/google_watermark.gif"
+                          alt="Google Books"
+                          className={styles.googleBooksIcon}
+                        />
+                      </div>
                     </div>
 
                     {/* Título */}

@@ -250,15 +250,22 @@ export default function EditarLibro({ volverCatalogo, libro }) {
                     {/* ISBN */}
                     <div className="col-12 col-md-6 mb-3">
                       <label className={styles.formLabel}>ISBN *</label>
-                      <input
-                        type="text"
-                        name="isbn"
-                        value={libroEditado.isbn}
-                        onChange={handleChange}
-                        className={styles.formInput}
-                        placeholder="Ingrese el ISBN"
-                        required
-                      />
+                      <div className={styles.inputWithIcon}>
+                        <input
+                          type="text"
+                          name="isbn"
+                          value={libroEditado.isbn}
+                          onChange={handleChange}
+                          className={`${styles.formInput} ${styles.inputWithGoogleIcon}`}
+                          placeholder="Ingrese el ISBN"
+                          required
+                        />
+                        <img
+                          src="https://developers.google.com/books/images/google_watermark.gif"
+                          alt="Google Books"
+                          className={styles.googleBooksIcon}
+                        />
+                      </div>
                     </div>
 
                     {/* Precio Estimado */}

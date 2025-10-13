@@ -102,6 +102,28 @@
   background-color: #fffae6 !important;
 }
 
+/* Input con icono de Google Books */
+.inputWithIcon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputWithGoogleIcon {
+  padding-right: 45px !important;
+}
+
+.googleBooksIcon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 16px;
+  pointer-events: none;
+  z-index: 2;
+}
+
 /* Helper text para inputs */
 .helperText {
   color: #6c757d;
