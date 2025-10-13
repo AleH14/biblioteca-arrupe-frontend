@@ -4,6 +4,7 @@ import styles from "../../styles/librosForm.module.css";
 import global from "../../styles/Global.module.css";
 import { FiArrowLeft, FiLink } from "react-icons/fi";
 import { MdLogout } from "react-icons/md";
+import { buscarLibroPorISBN } from "../../services/googleBooks"; //API de Google Books
 
 export default function AgregarLibro({ volverCatalogo }) {
   const [nuevoLibro, setNuevoLibro] = useState({
@@ -33,9 +34,9 @@ export default function AgregarLibro({ volverCatalogo }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNuevoLibro(prev => ({
+    setNuevoLibro((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -49,8 +50,26 @@ export default function AgregarLibro({ volverCatalogo }) {
     setEjemplares(nuevosEjemplares);
   };
 
+  // Función para buscar libro por ISBM
+  const handleISBNBlur = async () => {
+    if (!nuevoLibro.isbn.trim()) return;
+
+    const datosLibro = await buscarLibroPorISBN(nuevoLibro.isbn.trim());
+    if (datosLibro) {
+      setNuevoLibro((prev) => ({
+        ...prev,
+        titulo: datosLibro.titulo,
+        autor: datosLibro.autor,
+        editorial: datosLibro.editorial,
+        portada: datosLibro.portada,
+      }));
+    }
+  };
+
+  //----------------------------------------------
   const agregarEjemplar = () => {
-    const nuevoId = ejemplares.length > 0 ? Math.max(...ejemplares.map(e => e.id)) + 1 : 1;
+    const nuevoId =
+      ejemplares.length > 0 ? Math.max(...ejemplares.map((e) => e.id)) + 1 : 1;
     setEjemplares([
       ...ejemplares,
       {
@@ -78,21 +97,27 @@ export default function AgregarLibro({ volverCatalogo }) {
   // FUNCIÓN DE VALIDACIÓN SIMPLIFICADA
   const validarFormulario = () => {
     // Validar campos básicos del libro
-    if (!nuevoLibro.titulo.trim() || 
-        !nuevoLibro.autor.trim() || 
-        !nuevoLibro.editorial.trim() || 
-        !nuevoLibro.isbn.trim()) {
-      setValidationMessage("Por favor, complete todos los campos obligatorios del libro (Título, Autor, Editorial, ISBN)");
+    if (
+      !nuevoLibro.titulo.trim() ||
+      !nuevoLibro.autor.trim() ||
+      !nuevoLibro.editorial.trim() ||
+      !nuevoLibro.isbn.trim()
+    ) {
+      setValidationMessage(
+        "Por favor, complete todos los campos obligatorios del libro (Título, Autor, Editorial, ISBN)"
+      );
       return false;
     }
 
     // Validar que haya al menos un ejemplar con código y ubicación
-    const ejemplaresValidos = ejemplares.filter(ejemplar => 
-      ejemplar.codigo.trim() && ejemplar.ubicacion.trim()
+    const ejemplaresValidos = ejemplares.filter(
+      (ejemplar) => ejemplar.codigo.trim() && ejemplar.ubicacion.trim()
     );
 
     if (ejemplaresValidos.length === 0) {
-      setValidationMessage("Debe agregar al menos un ejemplar con código y ubicación completos");
+      setValidationMessage(
+        "Debe agregar al menos un ejemplar con código y ubicación completos"
+      );
       return false;
     }
 
@@ -109,7 +134,7 @@ export default function AgregarLibro({ volverCatalogo }) {
       }, 5000);
       return;
     }
-    
+
     // Si la validación es exitosa, mostrar el modal de confirmación
     setShowConfirmModal(true);
     setShowValidationError(false);
@@ -119,13 +144,13 @@ export default function AgregarLibro({ volverCatalogo }) {
     // Aquí iría la lógica para agregar el libro a la base de datos
     console.log("Nuevo libro:", nuevoLibro);
     console.log("Ejemplares:", ejemplares);
-    
+
     // Mostrar notificación y volver al catálogo
     setShowConfirmModal(false);
-    
+
     // Mostrar toast de éxito
     setShowSuccessToast(true);
-    
+
     // Después de 3 segundos, redirigir al catálogo
     setTimeout(() => {
       setShowSuccessToast(false);
@@ -172,7 +197,7 @@ export default function AgregarLibro({ volverCatalogo }) {
         <div className={styles.notificacionError}>
           <div className={styles.errorIcon}>⚠</div>
           <span>{validationMessage}</span>
-          <button 
+          <button
             className={styles.errorCloseBtn}
             onClick={() => setShowValidationError(false)}
           >
@@ -194,7 +219,6 @@ export default function AgregarLibro({ volverCatalogo }) {
         <div className="row justify-content-center">
           <div className="col-12 col-lg-11">
             <div className={styles.formContainer}>
-              
               {/* Sección Superior: Imagen y Formulario */}
               <div className="row mb-4">
                 {/* Imagen del Libro - Lado Izquierdo */}
@@ -216,6 +240,21 @@ export default function AgregarLibro({ volverCatalogo }) {
                 {/* Formulario - Lado Derecho */}
                 <div className="col-12 col-md-8">
                   <div className="row">
+                    {/* ISBN */}
+                    <div className="col-12 col-md-6 mb-3">
+                      <label className={styles.formLabel}>ISBN *</label>
+                      <input
+                        type="text"
+                        name="isbn"
+                        value={nuevoLibro.isbn}
+                        onChange={handleChange}
+                        onBlur={handleISBNBlur} // <-- esto hace la consulta automática
+                        className={styles.formInput}
+                        placeholder="Ingrese el ISBN"
+                        required
+                      />
+                    </div>
+
                     {/* Título */}
                     <div className="col-12 mb-3">
                       <label className={styles.formLabel}>Título *</label>
@@ -258,23 +297,11 @@ export default function AgregarLibro({ volverCatalogo }) {
                       />
                     </div>
 
-                    {/* ISBN */}
-                    <div className="col-12 col-md-6 mb-3">
-                      <label className={styles.formLabel}>ISBN *</label>
-                      <input
-                        type="text"
-                        name="isbn"
-                        value={nuevoLibro.isbn}
-                        onChange={handleChange}
-                        className={styles.formInput}
-                        placeholder="Ingrese el ISBN"
-                        required
-                      />
-                    </div>
-
                     {/* Precio Estimado */}
                     <div className="col-12 col-md-6 mb-3">
-                      <label className={styles.formLabel}>Precio estimado</label>
+                      <label className={styles.formLabel}>
+                        Precio estimado
+                      </label>
                       <div className={styles.precioInputGroup}>
                         <span className={styles.precioPrefix}>$</span>
                         <input
@@ -292,7 +319,9 @@ export default function AgregarLibro({ volverCatalogo }) {
 
                     {/* URL de la imagen */}
                     <div className="col-12 mb-3">
-                      <label className={styles.formLabel}>URL de la imagen del libro</label>
+                      <label className={styles.formLabel}>
+                        URL de la imagen del libro
+                      </label>
                       <div className={styles.urlInputGroup}>
                         <span className={styles.urlIcon}>
                           <FiLink />
@@ -327,7 +356,8 @@ export default function AgregarLibro({ volverCatalogo }) {
                     className={global.btnPrimary}
                     onClick={agregarEjemplar}
                   >
-                    <span className={global.btnPrimaryMas}>+</span> Agregar Ejemplar
+                    <span className={global.btnPrimaryMas}>+</span> Agregar
+                    Ejemplar
                   </button>
                 </div>
 
@@ -352,7 +382,11 @@ export default function AgregarLibro({ volverCatalogo }) {
                               type="text"
                               value={ejemplar.codigo}
                               onChange={(e) =>
-                                handleEjemplarChange(index, "codigo", e.target.value)
+                                handleEjemplarChange(
+                                  index,
+                                  "codigo",
+                                  e.target.value
+                                )
                               }
                               className={styles.tablaInput}
                               placeholder="Código del ejemplar"
@@ -363,7 +397,11 @@ export default function AgregarLibro({ volverCatalogo }) {
                               type="text"
                               value={ejemplar.ubicacion}
                               onChange={(e) =>
-                                handleEjemplarChange(index, "ubicacion", e.target.value)
+                                handleEjemplarChange(
+                                  index,
+                                  "ubicacion",
+                                  e.target.value
+                                )
                               }
                               className={styles.tablaInput}
                               placeholder="Ubicación del ejemplar"
@@ -373,7 +411,11 @@ export default function AgregarLibro({ volverCatalogo }) {
                             <select
                               value={ejemplar.estado}
                               onChange={(e) =>
-                                handleEjemplarChange(index, "estado", e.target.value)
+                                handleEjemplarChange(
+                                  index,
+                                  "estado",
+                                  e.target.value
+                                )
                               }
                               className={styles.tablaSelect}
                             >
@@ -388,7 +430,9 @@ export default function AgregarLibro({ volverCatalogo }) {
                               <button
                                 type="button"
                                 className={`${global.btnSecondary} ${styles.eliminarBtn}`}
-                                onClick={() => confirmarEliminarEjemplar(ejemplar)}
+                                onClick={() =>
+                                  confirmarEliminarEjemplar(ejemplar)
+                                }
                               >
                                 Eliminar Ejemplar
                               </button>
@@ -425,7 +469,7 @@ export default function AgregarLibro({ volverCatalogo }) {
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
               <h3 className={styles.modalTitle}>Confirmar Agregado</h3>
-              <button 
+              <button
                 className={styles.modalCloseBtn}
                 onClick={() => setShowConfirmModal(false)}
               >
@@ -433,19 +477,34 @@ export default function AgregarLibro({ volverCatalogo }) {
               </button>
             </div>
             <div className={styles.modalBody}>
-              <p className={styles.modalText}>¿Estás seguro de que deseas agregar este nuevo libro al catálogo?</p>
+              <p className={styles.modalText}>
+                ¿Estás seguro de que deseas agregar este nuevo libro al
+                catálogo?
+              </p>
               <div className={styles.libroInfo}>
-                <strong className={styles.libroTitulo}>{nuevoLibro.titulo}</strong>
+                <strong className={styles.libroTitulo}>
+                  {nuevoLibro.titulo}
+                </strong>
                 <br />
-                <small className={styles.libroDetalle}>por {nuevoLibro.autor}</small>
+                <small className={styles.libroDetalle}>
+                  por {nuevoLibro.autor}
+                </small>
                 <br />
-                <small className={styles.libroDetalle}>Editorial: {nuevoLibro.editorial}</small>
+                <small className={styles.libroDetalle}>
+                  Editorial: {nuevoLibro.editorial}
+                </small>
                 <br />
-                <small className={styles.libroDetalle}>ISBN: {nuevoLibro.isbn}</small>
+                <small className={styles.libroDetalle}>
+                  ISBN: {nuevoLibro.isbn}
+                </small>
                 <br />
-                <small className={styles.libroDetalle}>Precio: ${nuevoLibro.precio}</small>
+                <small className={styles.libroDetalle}>
+                  Precio: ${nuevoLibro.precio}
+                </small>
                 <br />
-                <small className={styles.libroDetalle}>Ejemplares: {ejemplares.length}</small>
+                <small className={styles.libroDetalle}>
+                  Ejemplares: {ejemplares.length}
+                </small>
               </div>
             </div>
             <div className={styles.modalFooter}>
@@ -472,7 +531,7 @@ export default function AgregarLibro({ volverCatalogo }) {
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
               <h3 className={styles.modalTitle}>Eliminar Ejemplar</h3>
-              <button 
+              <button
                 className={styles.modalCloseBtn}
                 onClick={() => setShowDeleteEjemplarModal(false)}
               >
@@ -480,13 +539,21 @@ export default function AgregarLibro({ volverCatalogo }) {
               </button>
             </div>
             <div className={styles.modalBody}>
-              <p className={styles.modalText}>¿Estás seguro de que deseas eliminar este ejemplar?</p>
+              <p className={styles.modalText}>
+                ¿Estás seguro de que deseas eliminar este ejemplar?
+              </p>
               <div className={styles.ejemplarInfo}>
-                <strong className={styles.ejemplarCodigo}>{ejemplarAEliminar.codigo || "Ejemplar sin código"}</strong>
+                <strong className={styles.ejemplarCodigo}>
+                  {ejemplarAEliminar.codigo || "Ejemplar sin código"}
+                </strong>
                 <br />
-                <small className={styles.ejemplarDetalle}>Ubicación: {ejemplarAEliminar.ubicacion || "Sin ubicación"}</small>
+                <small className={styles.ejemplarDetalle}>
+                  Ubicación: {ejemplarAEliminar.ubicacion || "Sin ubicación"}
+                </small>
                 <br />
-                <small className={styles.ejemplarDetalle}>Estado: {ejemplarAEliminar.estado}</small>
+                <small className={styles.ejemplarDetalle}>
+                  Estado: {ejemplarAEliminar.estado}
+                </small>
               </div>
               <p className={styles.modalWarning}>
                 Esta acción no se puede deshacer.
