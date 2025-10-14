@@ -1,10 +1,10 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "../../styles/librosForm.module.css";
 import global from "../../styles/Global.module.css";
-import { FiArrowLeft, FiLink } from "react-icons/fi";
+import { FiArrowLeft, FiLink, FiPlus, FiX, FiEdit2, FiTrash2 } from "react-icons/fi";
 import { MdLogout } from "react-icons/md";
-import { buscarLibroPorISBN } from "../../services/googleBooks"; //API de Google Books
+import { buscarLibroPorISBN } from "../../services/googleBooks";
 
 export default function AgregarLibro({ volverCatalogo }) {
   const [nuevoLibro, setNuevoLibro] = useState({
@@ -14,6 +14,7 @@ export default function AgregarLibro({ volverCatalogo }) {
     isbn: "",
     precio: "0.00",
     portada: "/images/libro-placeholder.jpg",
+    categoriaId: ""
   });
 
   const [ejemplares, setEjemplares] = useState([
@@ -25,12 +26,39 @@ export default function AgregarLibro({ volverCatalogo }) {
     },
   ]);
 
+  // Estados para categorías
+  const [categorias, setCategorias] = useState([]);
+  const [showGestionCategorias, setShowGestionCategorias] = useState(false);
+  const [nuevaCategoria, setNuevaCategoria] = useState("");
+  const [categoriaEditando, setCategoriaEditando] = useState(null);
+  const [modoEdicion, setModoEdicion] = useState(false);
+
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showDeleteEjemplarModal, setShowDeleteEjemplarModal] = useState(false);
   const [ejemplarAEliminar, setEjemplarAEliminar] = useState(null);
   const [showValidationError, setShowValidationError] = useState(false);
   const [validationMessage, setValidationMessage] = useState("");
-  const [showSuccessToast, setShowSuccessToast] = useState(false); // Nuevo estado para toast de éxito
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+
+  // Simular carga de categorías desde API
+  useEffect(() => {
+    const cargarCategorias = async () => {
+      try {
+        const categoriasDesdeAPI = [
+          { _id: "1", descripcion: "Literatura" },
+          { _id: "2", descripcion: "Ciencia" },
+          { _id: "3", descripcion: "Tecnología" },
+          { _id: "4", descripcion: "Historia" },
+          { _id: "5", descripcion: "Filosofía" }
+        ];
+        setCategorias(categoriasDesdeAPI);
+      } catch (error) {
+        console.error("Error cargando categorías:", error);
+      }
+    };
+    
+    cargarCategorias();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,6 +66,101 @@ export default function AgregarLibro({ volverCatalogo }) {
       ...prev,
       [name]: value,
     }));
+  };
+
+  // Manejar cambio de categoría
+  const handleCategoriaChange = (e) => {
+    const categoriaId = e.target.value;
+    setNuevoLibro((prev) => ({
+      ...prev,
+      categoriaId
+    }));
+  };
+
+  // Obtener la categoría seleccionada
+  const getCategoriaSeleccionada = () => {
+    return categorias.find(cat => cat._id === nuevoLibro.categoriaId);
+  };
+
+  // Agregar nueva categoría
+  const handleAgregarCategoria = async () => {
+    if (nuevaCategoria.trim()) {
+      try {
+        const nuevaCat = {
+          _id: Date.now().toString(),
+          descripcion: nuevaCategoria.trim()
+        };
+        
+        setCategorias(prev => [...prev, nuevaCat]);
+        setNuevaCategoria("");
+        
+        // Seleccionar automáticamente la nueva categoría
+        setNuevoLibro(prev => ({
+          ...prev,
+          categoriaId: nuevaCat._id
+        }));
+
+        // Si estamos en modo edición, salir del modo edición
+        if (modoEdicion) {
+          setModoEdicion(false);
+          setCategoriaEditando(null);
+        }
+      } catch (error) {
+        console.error("Error agregando categoría:", error);
+      }
+    }
+  };
+
+  // Editar categoría
+  const handleEditarCategoria = async () => {
+    if (nuevaCategoria.trim() && categoriaEditando) {
+      try {
+        const categoriasActualizadas = categorias.map(cat =>
+          cat._id === categoriaEditando._id 
+            ? { ...cat, descripcion: nuevaCategoria.trim() }
+            : cat
+        );
+        
+        setCategorias(categoriasActualizadas);
+        setNuevaCategoria("");
+        setModoEdicion(false);
+        setCategoriaEditando(null);
+      } catch (error) {
+        console.error("Error editando categoría:", error);
+      }
+    }
+  };
+
+  // Eliminar categoría
+  const handleEliminarCategoria = async (categoria) => {
+    try {
+      const categoriasActualizadas = categorias.filter(cat => cat._id !== categoria._id);
+      setCategorias(categoriasActualizadas);
+      
+      // Si la categoría eliminada era la seleccionada, limpiar selección
+      if (nuevoLibro.categoriaId === categoria._id) {
+        setNuevoLibro(prev => ({
+          ...prev,
+          categoriaId: ""
+        }));
+      }
+    } catch (error) {
+      console.error("Error eliminando categoría:", error);
+    }
+  };
+
+  // Iniciar edición de categoría
+  const iniciarEdicionCategoria = (categoria) => {
+    setCategoriaEditando(categoria);
+    setNuevaCategoria(categoria.descripcion);
+    setModoEdicion(true);
+  };
+
+  // Cancelar edición
+  const cancelarEdicion = () => {
+    setModoEdicion(false);
+    setCategoriaEditando(null);
+    setNuevaCategoria("");
   };
 
   const handleUrlFocus = (e) => {
@@ -50,7 +173,7 @@ export default function AgregarLibro({ volverCatalogo }) {
     setEjemplares(nuevosEjemplares);
   };
 
-  // Función para buscar libro por ISBM
+  // Función para buscar libro por ISBN
   const handleISBNBlur = async () => {
     if (!nuevoLibro.isbn.trim()) return;
 
@@ -66,7 +189,6 @@ export default function AgregarLibro({ volverCatalogo }) {
     }
   };
 
-  //----------------------------------------------
   const agregarEjemplar = () => {
     const nuevoId =
       ejemplares.length > 0 ? Math.max(...ejemplares.map((e) => e.id)) + 1 : 1;
@@ -94,22 +216,21 @@ export default function AgregarLibro({ volverCatalogo }) {
     }
   };
 
-  // FUNCIÓN DE VALIDACIÓN SIMPLIFICADA
+  // FUNCIÓN DE VALIDACIÓN
   const validarFormulario = () => {
-    // Validar campos básicos del libro
     if (
       !nuevoLibro.titulo.trim() ||
       !nuevoLibro.autor.trim() ||
       !nuevoLibro.editorial.trim() ||
-      !nuevoLibro.isbn.trim()
+      !nuevoLibro.isbn.trim() ||
+      !nuevoLibro.categoriaId.trim()
     ) {
       setValidationMessage(
-        "Por favor, complete todos los campos obligatorios del libro (Título, Autor, Editorial, ISBN)"
+        "Por favor, complete todos los campos obligatorios del libro (Título, Autor, Editorial, ISBN, Categoría)"
       );
       return false;
     }
 
-    // Validar que haya al menos un ejemplar con código y ubicación
     const ejemplaresValidos = ejemplares.filter(
       (ejemplar) => ejemplar.codigo.trim() && ejemplar.ubicacion.trim()
     );
@@ -125,33 +246,35 @@ export default function AgregarLibro({ volverCatalogo }) {
   };
 
   const handleConfirmarAgregado = () => {
-    // Validar el formulario antes de mostrar el modal
     if (!validarFormulario()) {
       setShowValidationError(true);
-      // Ocultar el mensaje después de 5 segundos
       setTimeout(() => {
         setShowValidationError(false);
       }, 5000);
       return;
     }
 
-    // Si la validación es exitosa, mostrar el modal de confirmación
     setShowConfirmModal(true);
     setShowValidationError(false);
   };
 
   const handleAgregarConfirmado = () => {
-    // Aquí iría la lógica para agregar el libro a la base de datos
-    console.log("Nuevo libro:", nuevoLibro);
-    console.log("Ejemplares:", ejemplares);
+    // Preparar datos para enviar a la API
+    const libroParaEnviar = {
+      ...nuevoLibro,
+      categoriaId: nuevoLibro.categoriaId,
+      ejemplares: ejemplares.map(ej => ({
+        cdu: ej.codigo,
+        ubicacionFisica: ej.ubicacion,
+        estado: ej.estado.toLowerCase()
+      }))
+    };
 
-    // Mostrar notificación y volver al catálogo
+    console.log("Nuevo libro para enviar:", libroParaEnviar);
+
     setShowConfirmModal(false);
-
-    // Mostrar toast de éxito
     setShowSuccessToast(true);
 
-    // Después de 3 segundos, redirigir al catálogo
     setTimeout(() => {
       setShowSuccessToast(false);
       volverCatalogo();
@@ -248,11 +371,41 @@ export default function AgregarLibro({ volverCatalogo }) {
                         name="isbn"
                         value={nuevoLibro.isbn}
                         onChange={handleChange}
-                        onBlur={handleISBNBlur} // <-- esto hace la consulta automática
+                        onBlur={handleISBNBlur}
                         className={styles.formInput}
                         placeholder="Ingrese el ISBN"
                         required
                       />
+                    </div>
+
+                    {/* Categoría */}
+                    <div className="col-12 col-md-6 mb-3">
+                      <label className={styles.formLabel}>Categoría *</label>
+                      <div className={styles.categoriaWrapper}>
+                        <div className={styles.categoriaContainer}>
+                          <select
+                            value={nuevoLibro.categoriaId}
+                            onChange={handleCategoriaChange}
+                            className={styles.formInput}
+                            required
+                          >
+                            <option value="">Seleccione una categoría</option>
+                            {categorias.map((cat) => (
+                              <option key={cat._id} value={cat._id}>
+                                {cat.descripcion}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <button
+                          type="button"
+                          className={styles.gestionarCategoriasBtn}
+                          onClick={() => setShowGestionCategorias(true)}
+                          title="Gestionar categorías"
+                        >
+                          <FiPlus className={styles.gestionarCategoriasIcon} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Título */}
@@ -343,6 +496,111 @@ export default function AgregarLibro({ volverCatalogo }) {
                   </div>
                 </div>
               </div>
+
+              {/* Modal de Gestión de Categorías */}
+              {showGestionCategorias && (
+                <div className={styles.modalBackdrop}>
+                  <div className={styles.modalContent}>
+                    <div className={styles.modalHeader}>
+                      <h3 className={styles.modalTitle}>
+                        {modoEdicion ? 'Editar Categoría' : 'Gestionar Categorías'}
+                      </h3>
+                      <button
+                        className={styles.modalCloseBtn}
+                        onClick={() => {
+                          setShowGestionCategorias(false);
+                          cancelarEdicion();
+                        }}
+                      >
+                        <FiX />
+                      </button>
+                    </div>
+                    <div className={styles.modalBody}>
+                      {/* Formulario para agregar/editar categoría */}
+                      <div className={styles.categoriaForm}>
+                        <label className={styles.formLabel}>
+                          {modoEdicion ? 'Editar categoría' : 'Nueva categoría'}
+                        </label>
+                        <div className={styles.categoriaInputGroup}>
+                          <input
+                            type="text"
+                            value={nuevaCategoria}
+                            onChange={(e) => setNuevaCategoria(e.target.value)}
+                            className={styles.formInput}
+                            placeholder="Ingrese el nombre de la categoría"
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                modoEdicion ? handleEditarCategoria() : handleAgregarCategoria();
+                              }
+                            }}
+                          />
+                          <button
+                            className={modoEdicion ? global.btnWarning : global.btnPrimary}
+                            onClick={modoEdicion ? handleEditarCategoria : handleAgregarCategoria}
+                            disabled={!nuevaCategoria.trim()}
+                          >
+                            {modoEdicion ? 'Actualizar' : 'Agregar'}
+                          </button>
+                          {modoEdicion && (
+                            <button
+                              className={global.btnSecondary}
+                              onClick={cancelarEdicion}
+                            >
+                              Cancelar
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Lista de categorías existentes */}
+                      <div className={styles.listaCategorias}>
+                        <h5 className={styles.tituloSeccion}>Categorías Existentes</h5>
+                        {categorias.length === 0 ? (
+                          <p className={styles.sinCategorias}>No hay categorías registradas</p>
+                        ) : (
+                          <div className={styles.categoriasGrid}>
+                            {categorias.map((categoria) => (
+                              <div key={categoria._id} className={styles.categoriaItem}>
+                                <span className={styles.categoriaNombre}>
+                                  {categoria.descripcion}
+                                </span>
+                                <div className={styles.categoriaAcciones}>
+                                  <button
+                                    className={styles.btnEditar}
+                                    onClick={() => iniciarEdicionCategoria(categoria)}
+                                    title="Editar categoría"
+                                  >
+                                    <FiEdit2 />
+                                  </button>
+                                  <button
+                                    className={styles.btnEliminar}
+                                    onClick={() => handleEliminarCategoria(categoria)}
+                                    title="Eliminar categoría"
+                                    disabled={categorias.length <= 1}
+                                  >
+                                    <FiTrash2 />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className={styles.modalFooter}>
+                      <button
+                        className={global.btnSecondary}
+                        onClick={() => {
+                          setShowGestionCategorias(false);
+                          cancelarEdicion();
+                        }}
+                      >
+                        Cerrar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Línea separadora */}
               <hr className={styles.separador} />
@@ -492,6 +750,10 @@ export default function AgregarLibro({ volverCatalogo }) {
                 <br />
                 <small className={styles.libroDetalle}>
                   Editorial: {nuevoLibro.editorial}
+                </small>
+                <br />
+                <small className={styles.libroDetalle}>
+                  Categoría: {getCategoriaSeleccionada()?.descripcion || "No seleccionada"}
                 </small>
                 <br />
                 <small className={styles.libroDetalle}>
