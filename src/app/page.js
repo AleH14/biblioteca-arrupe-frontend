@@ -5,6 +5,7 @@ import MenuForm from '@/components/forms/MenuForm';
 import PrestamoVista from '@/components/forms/PrestamoVista';
 import Catalogo from '@/components/forms/Catalogo';
 import EditarLibro from '@/components/forms/EditarLibro';
+import Estadisticas from '@/components/forms/Estadisticas';
 import Usuarios from '@/components/forms/Usuarios';
 
 export default function HomePage() {
@@ -16,6 +17,7 @@ export default function HomePage() {
         <MenuForm 
           irPrestamos={() => setVista("prestamos")} 
           irCatalogo={() => setVista("catalogo")}
+          irEstadisticas={() => setVista("estadisticas")} 
           irLogin={() => setVista("login")}
           irUsuarios={() => setVista("usuarios")} // Nueva vista de Usuarios
         />
@@ -28,6 +30,9 @@ export default function HomePage() {
       )}
       {vista === "catalogo" && (
         <Catalogo volverMenu={() => setVista("menu")} />
+      )}
+       {vista === "estadisticas" && ( // Nueva vista
+        <Estadisticas volverMenu={() => setVista("menu")} />
       )}
       {vista === "usuarios" && (
         <Usuarios volverMenu={() => setVista("menu")} /> // Vista de Usuarios
