@@ -55,7 +55,7 @@
 
 .formInput {
   padding: 0.75rem 1rem;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   border: 1px solid #ddd;
   border-radius: 6px;
   color: #000;
@@ -74,7 +74,7 @@
 .urlInputGroup {
   display: flex;
   align-items: center;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   border: 1px solid #ddd;
   border-radius: 6px;
   overflow: hidden;
@@ -90,7 +90,7 @@
 .urlInput {
   flex: 1;
   padding: 0.75rem 1rem;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   border: none;
   color: #000;
   font-size: 1rem;
@@ -102,28 +102,6 @@
   background-color: #fffae6 !important;
 }
 
-/* Input con icono de Google Books */
-.inputWithIcon {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.inputWithGoogleIcon {
-  padding-right: 45px !important;
-}
-
-.googleBooksIcon {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 50px;
-  height: 16px;
-  pointer-events: none;
-  z-index: 2;
-}
-
 /* Helper text para inputs */
 .helperText {
   color: #6c757d;
@@ -132,16 +110,16 @@
   display: block;
 }
 
-/* Autofill para inputs del formulario */
+/* Autofill */
 .formInput:-webkit-autofill,
 .formInput:-webkit-autofill:focus,
 .formInput:-webkit-autofill:hover {
-  -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset !important;
-  box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
   -webkit-text-fill-color: #000 !important;
 }
 
-/* IMAGEN DEL LIBRO  */
+/* IMAGEN DEL LIBRO */
 .imagenContainer {
   display: flex;
   flex-direction: column;
@@ -169,14 +147,14 @@
   object-fit: contain;
 }
 
-/* INPUT DE PRECIO  */
+/* INPUT DE PRECIO */
 .precioInputGroup {
   display: flex;
   align-items: center;
 }
 
 .precioPrefix {
-  background: #FFFFFF;
+  background: #ffffff;
   border: 1px solid #ddd;
   border-right: none;
   border-radius: 6px 0 0 6px;
@@ -189,7 +167,201 @@
   border-radius: 0 6px 6px 0 !important;
 }
 
-/* TABLA DE EJEMPLARES RESPONSIVA */
+/* === CATEGORÍAS MEJORADO === */
+
+.categoriaWrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.categoriaContainer {
+  flex: 1;
+  position: relative;
+}
+
+.categoriaContainer select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #fff;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  color: #000;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.categoriaContainer select:focus {
+  outline: none;
+}
+
+.categoriaContainer::after {
+  content: "▼";
+  font-size: 0.8rem;
+  color: #6c757d;
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  transition: transform 0.3s ease;
+}
+
+.categoriaContainer:focus-within::after {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+/* BOTÓN GESTIONAR CATEGORÍAS */
+.gestionarCategoriasBtn {
+  background: transparent;
+  border: 1px solid #000000;
+  color: #000000;
+  cursor: pointer;
+  padding: 0.75rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+}
+
+.gestionarCategoriasBtn:hover {
+  transform: translateY(-2px) scale(1.05);
+  background: #dbdcd5;
+}
+
+.gestionarCategoriasBtn:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.gestionarCategoriasIcon {
+  font-size: 1.2rem;
+  stroke-width: 2.5px;
+}
+
+/* MODAL DE CATEGORÍAS MEJORADO */
+.categoriaForm {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.categoriaInputGroup {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.categoriaInputGroup .formInput {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* LISTA DE CATEGORÍAS */
+.listaCategorias {
+  margin-top: 1.5rem;
+}
+
+.sinCategorias {
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px dashed #dee2e6;
+}
+
+.categoriasGrid {
+  display: grid;
+  gap: 0.75rem;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.categoriaItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.categoriaItem:hover {
+  border-color: #ffda7c;
+  box-shadow: 0 2px 8px rgba(255, 217, 119, 0.2);
+  transform: translateY(-1px);
+}
+
+.categoriaNombre {
+  font-weight: 500;
+  color: #000;
+  font-size: 1rem;
+}
+
+.categoriaAcciones {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btnEditar,
+.btnEliminar {
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btnEditar {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.btnEditar:hover {
+  background: #bbdefb;
+  transform: scale(1.1);
+}
+
+.btnEliminar {
+  background: #ffebee;
+  color: #d32f2f;
+}
+
+.btnEliminar:hover:not(:disabled) {
+  background: #ffcdd2;
+  transform: scale(1.1);
+}
+
+.btnEliminar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* TABLA DE EJEMPLARES */
 .tablaResponsive {
   width: 100%;
   overflow-x: auto;
@@ -226,41 +398,23 @@
   border-bottom: none;
 }
 
-/* Inputs dentro de la tabla */
-.tablaInput {
-  border: 1px solid #ddd !important;
-  background: #FFFFFF !important;
-  padding: 0.5rem;
-  width: 100%;
-  font-size: 0.9rem;
-  color: #000 !important;
-  min-width: 120px;
-  border-radius: 4px;
-}
-
-.tablaInput:focus {
-  outline: none;
-  box-shadow: 0 0 0 0.25rem rgba(255, 217, 119, 0.4) !important;
-}
-
+.tablaInput,
 .tablaSelect {
   border: 1px solid #ddd !important;
-  background: #FFFFFF !important;
+  background: #ffffff !important;
   padding: 0.5rem;
   width: 100%;
   font-size: 0.9rem;
-  cursor: pointer;
   color: #000 !important;
-  min-width: 140px;
   border-radius: 4px;
 }
 
+.tablaInput:focus,
 .tablaSelect:focus {
   outline: none;
   box-shadow: 0 0 0 0.25rem rgba(255, 217, 119, 0.4) !important;
 }
 
-/* Botón eliminar en tabla */
 .eliminarBtn {
   font-size: 0.875rem;
   padding: 0.4rem 0.8rem !important;
@@ -275,14 +429,14 @@
   margin: 2rem 0;
 }
 
-/* BOTONES DE ACCIÓN de tabla */
+/* BOTONES DE ACCIÓN */
 .botonesContainer {
   display: flex;
   justify-content: center;
   margin-top: 2rem;
 }
 
-/* ENCABEZADO SECCIÓN de tabla */
+/* ENCABEZADO SECCIÓN */
 .encabezadoSeccion {
   display: flex;
   justify-content: space-between;
@@ -318,7 +472,7 @@
   background: #fff;
   padding: 1.5rem;
   border-radius: 12px;
-  max-width: 450px;
+  max-width: 600px;
   width: 100%;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   animation: fadeIn 0.3s ease;
@@ -344,6 +498,17 @@
   font-size: 1.2rem;
   cursor: pointer;
   color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.modalCloseBtn:hover {
+  background-color: #f8f9fa;
 }
 
 .modalBody {
@@ -362,24 +527,8 @@
   margin-bottom: 0;
 }
 
-/* Información del libro en modal */
-.libroInfo {
-  background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 6px;
-  text-align: left;
-}
-
-.libroTitulo {
-  color: #000 !important;
-  font-size: 1.1rem;
-}
-
-.libroDetalle {
-  color: #000 !important;
-}
-
-/* Información del ejemplar en modal */
+/* Información del libro y ejemplar */
+.libroInfo,
 .ejemplarInfo {
   background: #f8f9fa;
   padding: 1rem;
@@ -387,11 +536,13 @@
   text-align: left;
 }
 
+.libroTitulo,
 .ejemplarCodigo {
   color: #000 !important;
   font-size: 1.1rem;
 }
 
+.libroDetalle,
 .ejemplarDetalle {
   color: #000 !important;
 }
@@ -413,12 +564,12 @@
   }
 }
 
-/* NOTIFICACIÓN DE ERROR */
-.notificacionError {
+/* NOTIFICACIONES */
+.notificacionError,
+.notificacionExito {
   position: fixed;
   top: 20px;
   right: 20px;
-  background: #dc3545;
   color: white;
   padding: 1rem 1.5rem;
   border-radius: 8px;
@@ -431,7 +582,15 @@
   max-width: 400px;
 }
 
-.errorIcon {
+.notificacionError {
+  background: #dc3545;
+}
+.notificacionExito {
+  background: #28a745;
+}
+
+.errorIcon,
+.successIcon {
   font-size: 1.2rem;
   flex-shrink: 0;
 }
@@ -462,49 +621,74 @@
   }
 }
 
-/* RESPONSIVIDAD COMPARTIDA  */
+/* RESPONSIVIDAD */
 @media (max-width: 768px) {
   .tituloPagina {
     font-size: 1.8rem;
     text-align: center;
   }
-  
   .portadaWrapper {
     width: 180px;
     height: 280px;
   }
-  
   .tabla th,
   .tabla td {
     padding: 0.5rem;
   }
-  
   .encabezadoSeccion {
     flex-direction: column;
     align-items: flex-start;
   }
-  
   .botonesContainer {
     justify-content: stretch;
   }
-  
   .botonesContainer button {
     width: 100%;
   }
-  
   .modalFooter {
     flex-direction: column;
   }
-  
   .volverTexto {
     font-size: 1.2rem;
   }
-  
-  .notificacionError {
+  .notificacionError,
+  .notificacionExito {
     top: 10px;
     right: 10px;
     left: 10px;
     max-width: none;
+  }
+  .categoriaWrapper {
+    gap: 0.5rem;
+  }
+  .gestionarCategoriasBtn {
+    width: 44px;
+    height: 44px;
+  }
+  .gestionarCategoriasIcon {
+    font-size: 1.3rem;
+  }
+  .categoriaInputGroup {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .categoriaInputGroup .formInput {
+    min-width: auto;
+  }
+  
+  .categoriaInputGroup button {
+    width: 100%;
+  }
+  
+  .categoriaItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .categoriaAcciones {
+    align-self: flex-end;
   }
 }
 
@@ -512,30 +696,35 @@
   .tituloPagina {
     font-size: 1.6rem;
   }
-  
   .portadaWrapper {
     width: 150px;
     height: 230px;
   }
-  
   .tabla {
     min-width: 500px;
   }
-  
   .tablaInput,
   .tablaSelect {
     min-width: 100px;
     font-size: 0.8rem;
   }
-  
   .eliminarBtn {
     min-width: 100px;
     font-size: 0.8rem;
     padding: 0.3rem 0.6rem !important;
   }
-  
   .volverTexto {
     font-size: 1rem;
+  }
+  .gestionarCategoriasBtn {
+    width: 42px;
+    height: 42px;
+  }
+  .gestionarCategoriasIcon {
+    font-size: 1.2rem;
+  }
+  .categoriasGrid {
+    max-height: 250px;
   }
 }
 
@@ -543,59 +732,10 @@
   .tituloPagina {
     font-size: 1.4rem;
   }
-  
   .tabla {
     min-width: 450px;
   }
-  
   .volverTexto {
     display: none;
-  }
-}
-
-
-/* ---- NOTIFICACIÓN DE ÉXITO ---- */
-.notificacionExito {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: #28a745;
-  color: white;
-  padding: 1rem 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1060;
-  animation: slideInRight 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  max-width: 400px;
-}
-
-.successIcon {
-  font-size: 1.2rem;
-  flex-shrink: 0;
-  font-weight: bold;
-}
-
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* Responsividad para notificación de éxito */
-@media (max-width: 768px) {
-  .notificacionExito {
-    top: 10px;
-    right: 10px;
-    left: 10px;
-    max-width: none;
-    text-align: center;
   }
 }
