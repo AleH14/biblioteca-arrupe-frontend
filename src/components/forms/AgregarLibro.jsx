@@ -132,7 +132,7 @@ export default function AgregarLibro({ volverCatalogo }) {
   };
 
   // Eliminar categoría
-  const handleEliminarCategoria = async (categoria) => {
+  const handleEliminarCategoria = (categoria) => {
     try {
       const categoriasActualizadas = categorias.filter(cat => cat._id !== categoria._id);
       setCategorias(categoriasActualizadas);
