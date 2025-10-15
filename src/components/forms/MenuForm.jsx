@@ -10,7 +10,7 @@ import ChartIcon from "../svg/Chart.jsx";
 import UserIcon from "../svg/User.jsx";
 import Ayuda from "../svg/Ayuda.jsx";
 
-export default function MenuForm({ irPrestamos, irCatalogo, irLogin, irEstadisticas }) {
+export default function MenuForm({ irPrestamos, irCatalogo, irLogin, irEstadisticas,irUsuarios }) {
   return (
     <div className={styles.backgroundWrapper}>
       {/* Contenedor principal con padding */}
@@ -80,9 +80,15 @@ export default function MenuForm({ irPrestamos, irCatalogo, irLogin, irEstadisti
              onClick={irEstadisticas}>
               <ButtonIcon titulo="Estadísticas" IconComponent={ChartIcon} />
             </div>
-            <div className="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 d-flex justify-content-center">
-              <ButtonIcon titulo="Usuarios" IconComponent={UserIcon} />
-            </div>
+            
+          {/* Botón Usuarios */}
+        <div
+          className="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 d-flex justify-content-center"
+          onClick={irUsuarios} 
+        >
+          <ButtonIcon titulo="Usuarios" IconComponent={UserIcon} />
+        </div>
+          
           </div>
         </div>
 
