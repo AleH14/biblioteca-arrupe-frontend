@@ -83,7 +83,7 @@ export default function AgregarLibro({ volverCatalogo }) {
   };
 
   // Agregar nueva categoría
-  const handleAgregarCategoria = async () => {
+  const handleAgregarCategoria = () => {
     if (nuevaCategoria.trim()) {
       try {
         const nuevaCat = {
