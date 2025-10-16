@@ -28,7 +28,7 @@ export default function MenuForm({ irPrestamos, irCatalogo, irLogin, irEstadisti
             />
           </button>
           {/* Cerrar sesión responsivo - solo ícono en móvil */}
-          <button className={global.logoutBtn}>
+          <button className={global.logoutBtn} onClick={irLogin}>
             <MdLogout className={global.logoutIcon} />
             <span className="d-none d-sm-inline">Cerrar sesión</span>
           </button>
