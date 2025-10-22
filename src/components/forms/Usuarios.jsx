@@ -337,34 +337,36 @@ const ModalConfirmarEliminar = ({ isOpen, onClose, onConfirm, usuario }) => {
 };
 
 // Componente Tarjeta de Usuario
+
 const TarjetaUsuario = ({ usuario, onEditar, onEliminar }) => {
-  const color = rolColor[usuario.rol];
-  
+  const color = rolColor[usuario?.rol] || { border: "#ccc" };
+
   return (
-    <div className={styles.card} style={{ borderTop: `5px solid ${color.border}` }}>
+    <div className={styles.card} style={{ borderTop: `5px solid ${color.border}`, position: 'relative' }}>
+      
       <div className={styles.rolBadge} style={{ backgroundColor: color.border }}>
-        {usuario.rol}
+        {usuario?.rol}
       </div>
- 
+
       <div className={styles.loanInfo}>
-        <strong>{usuario.nombre}</strong>
+        <strong>{usuario?.nombre}</strong>
         <br />
-        <small>{usuario.email}</small>
+        <small>{usuario?.email}</small>
         <br />
-        <small>{usuario.telefono}</small>
+        <small>{usuario?.telefono}</small>
         <br />
-        <small className={styles.fecha}>Registrado: {usuario.fecha}</small>
+        <small className={styles.fecha}>Registrado: {usuario?.fecha}</small>
       </div>
 
       <div className="d-flex gap-3 mt-3 justify-content-end">
-        <FiEdit 
-          className={styles.iconAction} 
-          title="Editar usuario" 
+        <FiEdit
+          className={styles.iconAction}
+          title="Editar usuario"
           onClick={() => onEditar(usuario)}
         />
-        <FiTrash2 
-          className={styles.iconAction} 
-          title="Eliminar usuario" 
+        <FiTrash2
+          className={styles.iconAction}
+          title="Eliminar usuario"
           onClick={() => onEliminar(usuario)}
         />
       </div>
@@ -473,15 +475,27 @@ export default function Usuarios({ volverMenu }) {
               <div className={styles.filterSection}>
                 <label className={styles.filterLabel}>Categorías</label>
                 <div className={styles.filterButtons}>
-                  {roles.map(rol => (
-                    <button 
-                      key={rol}
-                      className={`${styles.filterBtn} ${filtroActivo === rol ? styles.filterBtnActive : ""}`}
-                      onClick={() => setFiltroActivo(rol)}
-                    >
-                      {rol === "Todos" ? "Todos" : rol + "s"}
-                    </button>
-                  ))}
+                  {roles.map((rol) => {
+                    // Definimos el texto a mostrar
+                    const nombreMostrar =
+                      rol === "Todos"
+                        ? "Todos"
+                        : rol === "Colaborador"
+                        ? "Colaboradores"
+                        : rol + "s";
+
+                    return (
+                      <button
+                        key={rol}
+                        className={`${styles.filterBtn} ${
+                          filtroActivo === rol ? styles.filterBtnActive : ""
+                        }`}
+                        onClick={() => setFiltroActivo(rol)}
+                      >
+                        {nombreMostrar}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>

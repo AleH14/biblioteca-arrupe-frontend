@@ -85,27 +85,51 @@ export default function EditarLibro({ volverCatalogo, libro }) {
 
   // FUNCIÓN DE VALIDACIÓN
   const validarFormulario = () => {
-    // Validar campos básicos del libro
-    if (!libroEditado.titulo.trim() || 
-        !libroEditado.autor.trim() || 
-        !libroEditado.editorial.trim() || 
-        !libroEditado.isbn.trim()) {
-      setValidationMessage("Por favor, complete todos los campos obligatorios del libro (Título, Autor, Editorial, ISBN)");
-      return false;
-    }
+  let mensajeLibro = "";
 
-    // Validar que haya al menos un ejemplar con código y ubicación
-    const ejemplaresValidos = ejemplares.filter(ejemplar => 
-      ejemplar.codigo.trim() && ejemplar.ubicacion.trim()
-    );
+  // Validar campos obligatorios del libro
+  if (
+    !libroEditado.titulo.trim() ||
+    !libroEditado.autor.trim() ||
+    !libroEditado.editorial.trim() ||
+    !libroEditado.isbn.trim()
+  ) {
+    mensajeLibro += "Por favor, complete todos los campos obligatorios del libro (Título, Autor, Editorial, ISBN).";
+  }
 
-    if (ejemplaresValidos.length === 0) {
-      setValidationMessage("Debe tener al menos un ejemplar con código y ubicación completos");
-      return false;
-    }
+  // Validar selección de Donado o Comprado
+  if (libroEditado.donado === null || libroEditado.donado === undefined) {
+    if (mensajeLibro) mensajeLibro += " ";
+    mensajeLibro += "Seleccione si el libro es Donado o Comprado.";
+  }
 
-    return true;
-  };
+  // Validar precio solo si es Comprado
+  if (libroEditado.donado === false && (!libroEditado.precio || libroEditado.precio <= 0)) {
+    if (mensajeLibro) mensajeLibro += " ";
+    mensajeLibro += "Debe ingresar un precio estimado para los libros comprados.";
+  }
+
+  // Mostrar mensaje si hay errores del libro
+  if (mensajeLibro) {
+    setValidationMessage(mensajeLibro);
+    return false;
+  }
+
+  // Validar ejemplares (que haya al menos uno con código y ubicación)
+  const ejemplaresValidos = ejemplares.filter(
+    (ejemplar) => ejemplar.codigo.trim() && ejemplar.ubicacion.trim()
+  );
+
+  if (ejemplaresValidos.length === 0) {
+    setValidationMessage("Debe tener al menos un ejemplar con código y ubicación completos.");
+    return false;
+  }
+
+  // Si todo está correcto
+  setValidationMessage("");
+  return true;
+};
+
 
   const handleConfirmarEdicion = () => {
     // Validar el formulario antes de mostrar el modal
@@ -268,9 +292,15 @@ export default function EditarLibro({ volverCatalogo, libro }) {
                       </div>
                     </div>
 
-                    {/* Precio Estimado */}
+                   {/* Precio Estimado */}
+
                     <div className="col-12 col-md-6 mb-3">
-                      <label className={styles.formLabel}>Precio estimado</label>
+                      <label className={styles.formLabel}>
+                        Precio estimado{" "}
+                        {libroEditado.donado === false && (
+                          <span>*</span>
+                        )}
+                      </label>
                       <div className={styles.precioInputGroup}>
                         <span className={styles.precioPrefix}>$</span>
                         <input
@@ -282,7 +312,31 @@ export default function EditarLibro({ volverCatalogo, libro }) {
                           placeholder="0.00"
                           step="0.01"
                           min="0"
+                          required={libroEditado.donado === false} // obligatorio solo si es comprado
                         />
+                      </div>
+
+                      {/* Donado o Comprado */}
+                      <div className={global.selectorDonacionContainer}>
+                        <button
+                          type="button"
+                          onClick={() => setLibroEditado({ ...libroEditado, donado: true })}
+                          className={`${global.selectorBtn} ${
+                            libroEditado.donado ? global.selectorBtnDonadoActivo : ""
+                          }`}
+                        >
+                          📘 Donado
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setLibroEditado({ ...libroEditado, donado: false })}
+                          className={`${global.selectorBtn} ${
+                            libroEditado.donado === false ? global.selectorBtnCompradoActivo : ""
+                          }`}
+                        >
+                          💰 Comprado
+                        </button>
                       </div>
                     </div>
 
@@ -335,6 +389,7 @@ export default function EditarLibro({ volverCatalogo, libro }) {
                         <th>#</th>
                         <th>Código</th>
                         <th>Ubicación</th>
+                        <th>Edificio</th>
                         <th>Estado</th>
                         <th>Acción</th>
                       </tr>
@@ -344,6 +399,9 @@ export default function EditarLibro({ volverCatalogo, libro }) {
                       {Array.isArray(ejemplares) && ejemplares.map((ejemplar, index) => (
                         <tr key={ejemplar.id || index}>
                           <td className="fw-bold">{index + 1}</td>
+
+                          {/* Código */}
+
                           <td>
                             <input
                               type="text"
@@ -355,6 +413,9 @@ export default function EditarLibro({ volverCatalogo, libro }) {
                               placeholder="Código del ejemplar"
                             />
                           </td>
+
+                          {/* Ubicación */}
+
                           <td>
                             <input
                               type="text"
@@ -366,6 +427,25 @@ export default function EditarLibro({ volverCatalogo, libro }) {
                               placeholder="Ubicación del ejemplar"
                             />
                           </td>
+
+                           {/* Edificio */}
+                           
+                          <td>
+                            <select
+                              value={ejemplar.edificio || ""}
+                              onChange={(e) =>
+                                handleEjemplarChange(index, "edificio", e.target.value)
+                              }
+                              className={styles.tablaSelect}
+                            >
+                              <option value="">Seleccione</option>
+                              <option value="1">1</option>
+                              <option value="2">2</option>
+                              <option value="3">3</option>
+                            </select>
+                          </td>
+
+                           {/* Estado */}
                           <td>
                             <select
                               value={ejemplar.estado || "Disponible"}
@@ -380,6 +460,9 @@ export default function EditarLibro({ volverCatalogo, libro }) {
                               <option value="Perdido">Perdido</option>
                             </select>
                           </td>
+
+                          {/* Acción */}
+
                           <td>
                             {/* Solo mostrar botón eliminar si hay más de un ejemplar */}
                             {ejemplares.length > 1 && (

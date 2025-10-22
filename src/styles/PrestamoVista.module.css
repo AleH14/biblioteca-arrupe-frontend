@@ -23,20 +23,23 @@
 
 .filterButtons {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-wrap: wrap; 
+  gap: 6px;
 }
 
 /* Botones de filtro */
 .filterBtn {
-  padding: 10px 16px;
-  border: 2px solid #ffc107;
-  border-radius: 6px;
-  background: white;
-  color: #ffc107;
-  font-weight: 500;
-  transition: all 0.3s ease;
+  flex: 1 1 auto; 
+  min-width: 80px; 
+  padding: 6px 12px;
+  font-size: 0.85rem;
   text-align: center;
+  border: 2px solid #ffc107; 
+  border-radius: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; 
+  cursor: pointer;
 }
 
 .filterBtn:hover {
@@ -48,11 +51,13 @@
   background: #ffc107 !important;
   color: white !important;
   border-color: #ffc107 !important;
+  background-color: #fff;
 }
 
 .filterBtnInactive {
   background: white;
   color: #ffc107;
+  background-color: #f8f9fa;
 }
 
 /* Contenido principal */

@@ -13,6 +13,7 @@ export default function AgregarLibro({ volverCatalogo }) {
     editorial: "",
     isbn: "",
     precio: "0.00",
+    donado: null,
     portada: "/images/libro-placeholder.jpg",
     categoriaId: ""
   });
@@ -218,32 +219,50 @@ export default function AgregarLibro({ volverCatalogo }) {
 
   // FUNCIÓN DE VALIDACIÓN
   const validarFormulario = () => {
-    if (
-      !nuevoLibro.titulo.trim() ||
-      !nuevoLibro.autor.trim() ||
-      !nuevoLibro.editorial.trim() ||
-      !nuevoLibro.isbn.trim() ||
-      !nuevoLibro.categoriaId.trim()
-    ) {
-      setValidationMessage(
-        "Por favor, complete todos los campos obligatorios del libro (Título, Autor, Editorial, ISBN, Categoría)"
-      );
-      return false;
-    }
+  let mensajeLibro = "";
 
-    const ejemplaresValidos = ejemplares.filter(
-      (ejemplar) => ejemplar.codigo.trim() && ejemplar.ubicacion.trim()
-    );
+  // Validar campos obligatorios del libro
+  if (
+    !nuevoLibro.titulo.trim() ||
+    !nuevoLibro.autor.trim() ||
+    !nuevoLibro.editorial.trim() ||
+    !nuevoLibro.isbn.trim() ||
+    !nuevoLibro.categoriaId.trim()
+  ) {
+    mensajeLibro += "Complete todos los campos obligatorios del libro (Título, Autor, Editorial, ISBN, Categoría).";
+  }
 
-    if (ejemplaresValidos.length === 0) {
-      setValidationMessage(
-        "Debe agregar al menos un ejemplar con código y ubicación completos"
-      );
-      return false;
-    }
+  // Validar selección de donado/comprado
+  if (nuevoLibro.donado === null || nuevoLibro.donado === undefined) {
+    if (mensajeLibro) mensajeLibro += " ";
+    mensajeLibro += "Seleccione si el libro es Donado o Comprado.";
+  }
 
-    return true;
-  };
+  // Validar precio si es comprado
+  if (nuevoLibro.donado === false && (!nuevoLibro.precio || nuevoLibro.precio <= 0)) {
+    if (mensajeLibro) mensajeLibro += " ";
+    mensajeLibro += "Debe ingresar un precio estimado para los libros comprados.";
+  }
+
+  // Mostrar mensaje de libro si hay errores
+  if (mensajeLibro) {
+    setValidationMessage(mensajeLibro);
+    return false;
+  }
+
+  // Validar ejemplares
+  const ejemplaresValidos = ejemplares.filter(
+    (ejemplar) => ejemplar.codigo.trim() && ejemplar.ubicacion.trim()
+  );
+  if (ejemplaresValidos.length === 0) {
+    setValidationMessage("Agregue al menos un ejemplar con código y ubicación completos.");
+    return false;
+  }
+
+  // Si todo está bien
+  setValidationMessage("");
+  return true;
+};
 
   const handleConfirmarAgregado = () => {
     if (!validarFormulario()) {
@@ -451,24 +470,47 @@ export default function AgregarLibro({ volverCatalogo }) {
                     </div>
 
                     {/* Precio Estimado */}
-                    <div className="col-12 col-md-6 mb-3">
-                      <label className={styles.formLabel}>
-                        Precio estimado
-                      </label>
-                      <div className={styles.precioInputGroup}>
-                        <span className={styles.precioPrefix}>$</span>
-                        <input
-                          type="number"
-                          name="precio"
-                          value={nuevoLibro.precio}
-                          onChange={handleChange}
-                          className={`${styles.formInput} ${styles.precioInput}`}
-                          placeholder="0.00"
-                          step="0.01"
-                          min="0"
-                        />
+                      <div className="col-12 col-md-6 mb-3">
+                        <label className={styles.formLabel}>
+                          Precio estimado {nuevoLibro.donado === false && "*"}
+                        </label>
+                        <div className="d-flex align-items-center gap-2">
+                          {/* Input de Precio */}
+                          <div className={styles.precioInputGroup} style={{ flex: 1 }}>
+                            <span className={styles.precioPrefix}>$</span>
+                            <input
+                              type="number"
+                              name="precio"
+                              value={nuevoLibro.precio}
+                              onChange={handleChange}
+                              className={`${styles.formInput} ${styles.precioInput}`}
+                              placeholder="0.00"
+                              step="0.01"
+                              min="0"
+                              required={nuevoLibro.donado === false} // obligatorio solo si es comprado
+                            />
+                          </div>
+
+                          {/* Selector Donado / Comprado */}
+                          <div className={global.selectorDonacionContainer}>
+                            <button
+                              type="button"
+                              onClick={() => setNuevoLibro({ ...nuevoLibro, donado: true })}
+                              className={`${global.selectorBtn} ${nuevoLibro.donado === true ? global.selectorBtnDonadoActivo : ""}`}
+                            >
+                              📘 Donado
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setNuevoLibro({ ...nuevoLibro, donado: false })}
+                              className={`${global.selectorBtn} ${nuevoLibro.donado === false ? global.selectorBtnCompradoActivo : ""}`}
+                            >
+                              💰 Comprado
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                    </div>
 
                     {/* URL de la imagen */}
                     <div className="col-12 mb-3">
@@ -627,6 +669,7 @@ export default function AgregarLibro({ volverCatalogo }) {
                         <th>#</th>
                         <th>Código</th>
                         <th>Ubicación</th>
+                        <th>Edificio</th>
                         <th>Estado</th>
                         <th>Acción</th>
                       </tr>
@@ -635,6 +678,9 @@ export default function AgregarLibro({ volverCatalogo }) {
                       {ejemplares.map((ejemplar, index) => (
                         <tr key={ejemplar.id}>
                           <td className="fw-bold">{index + 1}</td>
+
+                           {/* Código */}
+
                           <td>
                             <input
                               type="text"
@@ -650,6 +696,9 @@ export default function AgregarLibro({ volverCatalogo }) {
                               placeholder="Código del ejemplar"
                             />
                           </td>
+
+                          {/* Ubicación */}
+
                           <td>
                             <input
                               type="text"
@@ -665,6 +714,26 @@ export default function AgregarLibro({ volverCatalogo }) {
                               placeholder="Ubicación del ejemplar"
                             />
                           </td>
+
+                          {/* Edificio */}
+
+                          <td>
+                            <select
+                              value={ejemplar.edificio || ""}
+                              onChange={(e) =>
+                                handleEjemplarChange(index, "edificio", e.target.value)
+                              }
+                              className={styles.tablaSelect}
+                            >
+                              <option value="">Seleccione</option>
+                              <option value="1">1</option>
+                              <option value="2">2</option>
+                              <option value="3">3</option>
+                            </select>
+                          </td>
+
+                          {/* Estado */}
+
                           <td>
                             <select
                               value={ejemplar.estado}
@@ -683,6 +752,9 @@ export default function AgregarLibro({ volverCatalogo }) {
                               <option value="Perdido">Perdido</option>
                             </select>
                           </td>
+
+                          {/* Acción */}
+
                           <td>
                             {ejemplares.length > 1 && (
                               <button

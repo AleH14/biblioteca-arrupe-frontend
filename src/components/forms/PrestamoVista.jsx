@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import styles from "../../styles/PrestamoVista.module.css";
 import global from "../../styles/Global.module.css";
-import { FiHome, FiBell, FiCalendar, FiUser, FiBook } from "react-icons/fi";
+import { FiHome, FiBell, FiCalendar, FiUser, FiBook, FiMapPin } from "react-icons/fi";
 import { MdLogout } from "react-icons/md";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -265,7 +265,7 @@ export default function PrestamoVista({ volverMenu }) {
       case "retrasado":
         return "Entrega Retrasada";
       case "cerrado":
-        return "Cerrado";
+        return "Devuelto";
       default:
         return prestamo.estado;
     }
@@ -291,7 +291,7 @@ export default function PrestamoVista({ volverMenu }) {
       filtro === "Todos" ||
       (filtro === "Activos" && p.estado === "activo") ||
       (filtro === "Atrasados" && p.estado === "retrasado") ||
-      (filtro === "Cerrados" && p.estado === "cerrado")
+      (filtro === "Devueltos" && p.estado === "cerrado")
   );
 
   //-----------------INICIO DE RETURN-----------------
@@ -349,7 +349,7 @@ export default function PrestamoVista({ volverMenu }) {
               <div className={styles.filterSection}>
                 <small className={styles.filterLabel}>Clasificación</small>
                 <div className={styles.filterButtons}>
-                  {["Todos", "Activos", "Atrasados", "Cerrados"].map((tipo) => (
+                  {["Todos", "Activos", "Atrasados", "Devueltos"].map((tipo) => (
                     <button
                       key={tipo}
                       className={`${styles.filterBtn} ${
@@ -384,8 +384,8 @@ export default function PrestamoVista({ volverMenu }) {
                   </button>
                 </div>
               </div>
-
-              {/* Listado de préstamos CON SCROLL */}
+        
+             {/* Listado de préstamos CON SCROLL */}
               <div className={styles.loansListContainer}>
                 <div className={styles.loansList}>
                   {prestamosFiltrados.map((p) => (
@@ -607,6 +607,9 @@ export default function PrestamoVista({ volverMenu }) {
                       <strong>Libro:</strong> {prestamoSeleccionado.libro}
                     </p>
                     <p>
+                      <strong>Ubicación:</strong> Edificio X
+                    </p>
+                    <p>
                       <strong>Usuario:</strong> {prestamoSeleccionado.usuario}
                     </p>
                     <p>
@@ -623,19 +626,15 @@ export default function PrestamoVista({ volverMenu }) {
                 </div>
               </div>
               <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleClose}
-                >
-                  Cancelar
-                </button>
+                <button type="button" className="btn btn-primary">
+            Renovar
+          </button>
                 <button
                   type="button"
                   className="btn btn-success"
                   onClick={confirmarDevolucion}
                 >
-                  Confirmar Devolución
+                  Confirmar
                 </button>
               </div>
             </div>
@@ -672,6 +671,15 @@ export default function PrestamoVista({ volverMenu }) {
                       <span>{prestamoSeleccionado.libro}</span>
                     </div>
                   </div>
+
+                  <div className={styles.detalleItem}>
+                    <FiMapPin className={styles.detalleIcon} />
+                    <div>
+                      <strong>Ubicación:</strong>
+                      <span>Edificio X</span>
+                    </div>
+                  </div>
+
                   <div className={styles.detalleItem}>
                     <FiCalendar className={styles.detalleIcon} />
                     <div>
