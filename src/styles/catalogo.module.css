@@ -1,17 +1,26 @@
 /* === CONTENEDOR PRINCIPAL === */
 .containerLimit {
-  max-width: 700px;
+  max-width: 1200px;
   margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.searchInput {
+  flex: 1 1 250px;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background-color: #fff;
+  color: #000;
+  
 }
 
-.searchInput {
-  flex: 1;
-  padding: 0.5rem 1rem;
-  background-color: #DADADA;
-  border-radius: 6px;
-  margin-right: 0.5rem;
-  color: black;
-  border-style: none;
+/* Botón Agregar Libro en la barra */
+.ms-auto {
+  margin-left: auto;
 }
 
 /* === TARJETA DE LIBRO === */
@@ -30,6 +39,9 @@
 .card:hover {
   transform: translateY(-4px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+}
+.btnUniforme {
+  width: 100px; 
 }
 
 /* === PORTADA DEL LIBRO === */
@@ -206,4 +218,43 @@
   font-weight: 600;
   margin-bottom: 0.5rem;
   text-align: center;
+}
+
+/* === BUSCADOR Y FILTROS === */
+.searchFilterContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+
+.filtersRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.selectFilter {
+  flex: 1 1 180px;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background-color: #fff;
+  cursor: pointer;
+  color: #000;
+}
+.selectFilter:focus {
+  outline: none;
+  border-color: #111;
+  box-shadow: 0 0 3px rgba(255, 127, 80, 0.5);
+}
+
+@media (max-width: 768px) {
+  .selectFilter {
+    width: 100%; 
+    margin-bottom: 8px;
+  }
 }

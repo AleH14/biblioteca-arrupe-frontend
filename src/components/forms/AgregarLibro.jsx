@@ -244,6 +244,12 @@ export default function AgregarLibro({ volverCatalogo }) {
     mensajeLibro += "Debe ingresar un precio estimado para los libros comprados.";
   }
 
+  // Validar origen si es donado
+  if (nuevoLibro.donado === true && (!nuevoLibro.origen || !nuevoLibro.origen.trim())) {
+    if (mensajeLibro) mensajeLibro += " ";
+    mensajeLibro += "Debe ingresar el origen del libro donado.";
+  }
+
   // Mostrar mensaje de libro si hay errores
   if (mensajeLibro) {
     setValidationMessage(mensajeLibro);
@@ -490,8 +496,27 @@ export default function AgregarLibro({ volverCatalogo }) {
                               required={nuevoLibro.donado === false} // obligatorio solo si es comprado
                             />
                           </div>
+                          
+                        </div>
+                      </div>
 
-                          {/* Selector Donado / Comprado */}
+                       {/* Origen (solo si es Donado) */}
+                  {nuevoLibro.donado === true && (
+                    <div className={styles.origenInputGroup} style={{ flex: 1 }}>
+                      <label className={styles.formLabel}>Origen del libro *</label>
+                      <input
+                        type="text"
+                        name="origen"
+                        value={nuevoLibro.origen || ""}
+                        onChange={handleChange}
+                        className={styles.formInput}
+                        placeholder="Ingrese el origen"
+                        required
+                      />
+                    </div>
+                  )}
+
+                    {/* Selector Donado / Comprado */}
                           <div className={global.selectorDonacionContainer}>
                             <button
                               type="button"
@@ -509,8 +534,7 @@ export default function AgregarLibro({ volverCatalogo }) {
                               💰 Comprado
                             </button>
                           </div>
-                        </div>
-                      </div>
+                
 
                     {/* URL de la imagen */}
                     <div className="col-12 mb-3">

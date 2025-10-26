@@ -8,6 +8,14 @@ import EditarLibro from "./EditarLibro";// Importar EditarLibro
 import AgregarLibro from "./AgregarLibro"; // Importar AgregarLibro
 
 export default function Catalogo({ volverMenu }) {
+  const categorias = [
+    { _id: "1", descripcion: "Literatura" },
+    { _id: "2", descripcion: "Ciencia" },
+    { _id: "3", descripcion: "Tecnología" },
+    { _id: "4", descripcion: "Historia" },
+    { _id: "5", descripcion: "Filosofía" }
+  ];
+
   const [libros, setLibros] = useState([
     {
       id: 1,
@@ -17,6 +25,8 @@ export default function Catalogo({ volverMenu }) {
       ejemplares: 15,
       portada: "http://books.google.com/books/content?id=aHM5PwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
       isbn: "9780451525079",
+      categoriaId: "1",
+      donado: false
     },
     {
       id: 2,
@@ -26,6 +36,8 @@ export default function Catalogo({ volverMenu }) {
       ejemplares: 10,
       portada: "http://books.google.com/books/content?id=qg9fAAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
       isbn: "9780394722160",
+      categoriaId: "2",
+      donado: true
     },
     {
       id: 3,
@@ -35,6 +47,8 @@ export default function Catalogo({ volverMenu }) {
       ejemplares: 7,
       portada: "http://books.google.com/books/content?id=Rtk8PgAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
       isbn: "9788467591735",
+      categoriaId: "3",
+      donado: false
     },
     {
       id: 4,
@@ -44,6 +58,8 @@ export default function Catalogo({ volverMenu }) {
       ejemplares: 15,
       portada: "http://books.google.com/books/content?id=WV_pAAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
       isbn: "9780380015030",
+      categoriaId: "4",
+      donado: true
     },
     {
       id: 5,
@@ -53,6 +69,8 @@ export default function Catalogo({ volverMenu }) {
       ejemplares: 15,
       portada: "http://books.google.com/books/content?id=MURfAAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
       isbn: "8423919005",
+      categoriaId: "5",
+      donado: false
     },
     {
       id: 6,
@@ -62,6 +80,8 @@ export default function Catalogo({ volverMenu }) {
       ejemplares: 15,
       portada: "http://books.google.com/books/content?id=PuleAAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
       isbn: "9780374521998",
+      categoriaId: "1",
+      donado: true
     },
     {
       id: 7,
@@ -71,6 +91,8 @@ export default function Catalogo({ volverMenu }) {
       ejemplares: 15,
       portada: "http://books.google.com/books/content?id=Zf2APwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
       isbn: "8423919005",
+      categoriaId: "3",
+      donado: false
     },
   ]);
 
@@ -79,6 +101,10 @@ export default function Catalogo({ volverMenu }) {
   const [mostrarEditarLibro, setMostrarEditarLibro] = useState(false);
   const [libroAEditar, setLibroAEditar] = useState(null);
   const [mostrarAgregarLibro, setMostrarAgregarLibro] = useState(false); 
+
+  const [busquedaTitulo, setBusquedaTitulo] = useState("");
+  const [campoFiltro, setCampoFiltro] = useState("");
+  const [valorFiltro, setValorFiltro] = useState("");
 
   const handleEditar = (libro) => {
     setLibroAEditar(libro);
@@ -110,12 +136,50 @@ export default function Catalogo({ volverMenu }) {
     );
   }
 
+  // Generar opciones dinámicas para segundo select
+  const opcionesDinamicas = () => {
+    switch (campoFiltro) {
+      case "autor":
+        return [...new Set(libros.map((l) => l.autor))];
+      case "editorial":
+        return [...new Set(libros.map((l) => l.editorial))];
+      case "categoria":
+        return categorias.map((c) => ({ _id: c._id, descripcion: c.descripcion }));
+      case "tipo":
+        return ["Donado", "Comprado"];
+      default:
+        return [];
+    }
+  };
+
+  // Filtrado final
+  const librosFiltrados = libros.filter((libro) => {
+    const tituloOk = libro.titulo.toLowerCase().includes(busquedaTitulo.toLowerCase());
+    let filtroOk = true;
+
+    if (campoFiltro && valorFiltro) {
+      switch (campoFiltro) {
+        case "autor":
+          filtroOk = libro.autor === valorFiltro;
+          break;
+        case "editorial":
+          filtroOk = libro.editorial === valorFiltro;
+          break;
+        case "categoria":
+          filtroOk = libro.categoriaId === valorFiltro;
+          break;
+        case "tipo":
+          filtroOk = valorFiltro === "Donado" ? libro.donado === true : libro.donado === false;
+          break;
+      }
+    }
+    return tituloOk && filtroOk;
+  });
+
   return (
     <div className={global.backgroundWrapper}>
       {/* Header */}
-      <header
-        className={`${global.header} d-flex justify-content-between align-items-center`}
-      >
+      <header className={`${global.header} d-flex justify-content-between align-items-center`}>
         <button className={global.homeBtn} onClick={volverMenu}>
           <FiHome className={global.homeIcon} />
         </button>
@@ -130,25 +194,60 @@ export default function Catalogo({ volverMenu }) {
         <div className="row justify-content-center">
           <div className="col-auto">
             <div className="d-flex align-items-center">
-              <img
-                src="/images/complemento-1.png"
-                alt="Complemento"
-                className={global.complementoImg + " me-2"}
-              />
+              <img src="/images/complemento-1.png" alt="Complemento" className={global.complementoImg + " me-2"} />
               <h1 className={`${global.title} mb-0`}>Catálogo</h1>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Buscador y botón Agregar Libro */}
-      <div className={`${styles.containerLimit} my-4`}>
-        <div className="d-flex justify-content-center">
-          <input
-            type="text"
-            placeholder="Buscar libro"
-            className={styles.searchInput}
-          />
+      {/* Buscador y filtros */}
+      <div className={`${styles.containerLimit} my-4 d-flex align-items-center`}>
+        {/* Input búsqueda por título */}
+        <input
+          type="text"
+          placeholder="Buscar por título"
+          className={styles.searchInput}
+          value={busquedaTitulo}
+          onChange={(e) => setBusquedaTitulo(e.target.value)}
+        />
+
+        {/* Primer select: elegir campo */}
+        <select
+          value={campoFiltro}
+          onChange={(e) => {
+            setCampoFiltro(e.target.value);
+            setValorFiltro("");
+          }}
+          className={styles.selectFilter}
+        >
+          <option value="">Filtrar por...</option>
+          <option value="autor">Autor</option>
+          <option value="editorial">Editorial</option>
+          <option value="categoria">Categoría</option>
+          <option value="tipo">Tipo</option>
+        </select>
+
+        {/* Segundo select: dinámico */}
+        {campoFiltro && (
+          <select
+            value={valorFiltro}
+            onChange={(e) => setValorFiltro(e.target.value)}
+            className={styles.selectFilter}
+          >
+            <option value="">Seleccione...</option>
+            {opcionesDinamicas().map((opcion, idx) =>
+              typeof opcion === "string" ? (
+                <option key={idx} value={opcion}>{opcion}</option>
+              ) : (
+                <option key={opcion._id} value={opcion._id}>{opcion.descripcion}</option>
+              )
+            )}
+          </select>
+        )}
+
+        {/* Botón agregar */}
+        <div className="ms-auto">
           <button className={global.btnPrimary} onClick={handleAgregarLibro}>
             <span className={global.btnPrimaryMas}>+</span> Agregar Libro
           </button>
@@ -158,42 +257,20 @@ export default function Catalogo({ volverMenu }) {
       {/* Tarjetas de libros */}
       <div className="container">
         <div className="row justify-content-center g-2 g-lg-3">
-          {libros.map((libro) => (
-            <div
-              key={libro.id}
-              className="col-6 col-sm-6 col-md-4 col-lg-3 col-xl-2 d-flex justify-content-center mb-3"
-            >
+          {librosFiltrados.map((libro) => (
+            <div key={libro.id} className="col-6 col-sm-6 col-md-4 col-lg-3 col-xl-2 d-flex justify-content-center mb-3">
               <div className={styles.card}>
                 <div className={styles.coverWrapper}>
-                  <img
-                    src={libro.portada}
-                    alt={libro.titulo}
-                    className={styles.cover}
-                  />
+                  <img src={libro.portada} alt={libro.titulo} className={styles.cover} />
                 </div>
                 <div className="p-2 text-center">
                   <h5>{libro.titulo}</h5>
                   <p>{libro.autor}</p>
                   <p className="text-muted">{libro.editorial}</p>
-                  <p className={styles.ejemplares}>
-                    Ejemplares: {libro.ejemplares}
-                  </p>
+                  <p className={styles.ejemplares}>Ejemplares: {libro.ejemplares}</p>
                   <div className="d-flex justify-content-center gap-2 mt-1">
-                    <button
-                      className={global.btnWarning}
-                      onClick={() => handleEditar(libro)}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      className={global.btnSecondary}
-                      onClick={() => {
-                        setLibroAEliminar(libro);
-                        setShowDeleteModal(true);
-                      }}
-                    >
-                      Eliminar
-                    </button>
+                    <button className={`${global.btnWarning} ${styles.btnUniforme}`} onClick={() => handleEditar(libro)}>Editar</button>
+                    <button className={`${global.btnSecondary} ${styles.btnUniforme}`} onClick={() => { setLibroAEliminar(libro); setShowDeleteModal(true); }}>Eliminar</button>
                   </div>
                 </div>
               </div>
@@ -210,41 +287,25 @@ export default function Catalogo({ volverMenu }) {
               <h3 className={styles.deleteTitle}>ELIMINAR LIBRO</h3>
               <button onClick={() => setShowDeleteModal(false)}>✖</button>
             </div>
-
             <div className={styles.modalBody}>
-              <p>
-                ¿Seguro que deseas eliminar <b>{libroAEliminar.titulo}</b>?
-              </p>
-
+              <p>¿Seguro que deseas eliminar <b>{libroAEliminar.titulo}</b>?</p>
               <label className={styles.modalLabel}>Autor</label>
               <input type="text" value={libroAEliminar.autor} readOnly />
-
               <label>Editorial</label>
               <input type="text" value={libroAEliminar.editorial} readOnly />
-
               <label>ISBN</label>
               <input type="text" value={libroAEliminar.isbn} readOnly />
-
               <label>Ejemplares</label>
               <input type="number" value={libroAEliminar.ejemplares} readOnly />
             </div>
-
             <div className={styles.modalFooter}>
-              <p className={styles.deleteWarning}>
-                Se eliminarán todos los ejemplares de este libro.
-              </p>
-
+              <p className={styles.deleteWarning}>Se eliminarán todos los ejemplares de este libro.</p>
               <div className="d-flex justify-content-center gap-2 mt-1">
-                <button
-                  className={global.btnSecondary}
-                  onClick={() => {
-                    setLibros(libros.filter((l) => l.id !== libroAEliminar.id));
-                    setLibroAEliminar(null);
-                    setShowDeleteModal(false);
-                  }}
-                >
-                  Eliminar
-                </button>
+                <button className={global.btnSecondary} onClick={() => {
+                  setLibros(libros.filter((l) => l.id !== libroAEliminar.id));
+                  setLibroAEliminar(null);
+                  setShowDeleteModal(false);
+                }}>Eliminar</button>
               </div>
             </div>
           </div>
