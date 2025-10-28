@@ -27,8 +27,8 @@ export default function PrestamoVista({ volverMenu }) {
         },
       ],
       usuarioId: "64fae76d2f8f5c3a3c1b0001",
-      usuario: "Maria Gonzalez", //se mandan a traer de coleccion usuarios
-      libro: "Cien Años de Soledad", //tambien acá
+      usuario: "Maria Elizabeth Gonzalez Hernández", 
+      libro: "Cien Años de Soledad", 
     },
     {
       _id: "5a934e000102030405000001",
@@ -71,6 +71,7 @@ export default function PrestamoVista({ volverMenu }) {
   const [showModal, setShowModal] = useState(false);
   const [showModalDevolver, setShowModalDevolver] = useState(false);
   const [showModalDetalles, setShowModalDetalles] = useState(false);
+  const [showModalRenovar, setShowModalRenovar] = useState(false);
   const [ejemplaresSeleccionados, setEjemplaresSeleccionados] = useState([""]);
   const [filtro, setFiltro] = useState("Todos");
   const [fechaPrestamo, setFechaPrestamo] = useState(new Date());
@@ -94,6 +95,7 @@ export default function PrestamoVista({ volverMenu }) {
     setShowModal(false);
     setShowModalDevolver(false);
     setShowModalDetalles(false);
+    setShowModalRenovar(false);
     setErrores({});
     setFormData({ usuarioId: "", correo: "" });
     setEjemplaresSeleccionados([""]);
@@ -233,23 +235,32 @@ export default function PrestamoVista({ volverMenu }) {
     }, 500);
   };
 
+  // Función para renovar préstamo desde la lista
+  const handleRenovarPrestamoLista = (prestamo) => {
+    setPrestamoSeleccionado(prestamo);
+    setNuevaFechaDevolucion(null);
+    setErrorRenovacion("");
+    setShowModalRenovar(true);
+  };
+
   //Renovar Prestamo
   const handleRenovarPrestamo = () => {
-  if (!nuevaFechaDevolucion) {
-    setErrorRenovacion("Debe seleccionar una nueva fecha de devolución");
-    return;
-  }
-  setErrorRenovacion("");
+    if (!nuevaFechaDevolucion) {
+      setErrorRenovacion("Debe seleccionar una nueva fecha de devolución");
+      return;
+    }
+    setErrorRenovacion("");
 
-  setTimeout(() => {
-    handleClose();
-    setToastMessage(
-      `Préstamo de "${prestamoSeleccionado.libro}" renovado hasta ${nuevaFechaDevolucion.toISOString().split("T")[0]}`
-    );
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
-  }, 500);
-};
+    setTimeout(() => {
+      handleClose();
+      setToastMessage(
+        `Préstamo de "${prestamoSeleccionado.libro}" renovado hasta ${nuevaFechaDevolucion.toISOString().split("T")[0]}`
+      );
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    }, 500);
+  };
+
   const verDetalles = (prestamo) => {
     setPrestamoSeleccionado(prestamo);
     setShowModalDetalles(true);
@@ -443,6 +454,15 @@ export default function PrestamoVista({ volverMenu }) {
                           </small>
                         </div>
                         <div className="d-flex gap-2">
+                          {/* BOTÓN RENOVAR - NUEVO */}
+                          {p.estado !== "cerrado" && (
+                            <button
+                              className={global.btnWarning}
+                              onClick={() => handleRenovarPrestamoLista(p)}
+                            >
+                              Renovar
+                            </button>
+                          )}
                           <button
                             className={global.btnSecondary}
                             onClick={() =>
@@ -613,6 +633,76 @@ export default function PrestamoVista({ volverMenu }) {
         </div>
       )}
 
+      {/* Modal RENOVAR PRÉSTAMO */}
+      {showModalRenovar && prestamoSeleccionado && (
+        <div className="modal d-block" tabIndex="-1">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Renovar Préstamo</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={handleClose}
+                ></button>
+              </div>
+
+              <div className="modal-body">
+                <div className={styles.confirmacionContent}>
+                  {/* Información del préstamo */}
+                  <div className={styles.confirmacionInfo}>
+                    <p><strong>Usuario:</strong> {prestamoSeleccionado.usuario}</p>
+                    <p><strong>Libro:</strong> {prestamoSeleccionado.libro}</p>
+                    <p><strong>Fecha préstamo:</strong> {formatearFecha(prestamoSeleccionado.fechaPrestamo)}</p>
+                    <p><strong>Fecha devolución actual:</strong> {formatearFecha(prestamoSeleccionado.fechaDevolucionEstimada)}</p>
+                  </div>
+
+                  {/* Nueva fecha de renovación */}
+                  <div className={styles.datepickerContainer}>
+                    <label className="form-label"><strong>Nueva fecha de devolución:</strong></label>
+                    <div className={styles.datepickerWrapper}>
+                      <DatePicker
+                        selected={nuevaFechaDevolucion}
+                        onChange={(date) => {
+                          setNuevaFechaDevolucion(date);
+                          if (errorRenovacion) setErrorRenovacion("");
+                        }}
+                        minDate={new Date()}
+                        className={`${styles.datePickerInput} form-control`}
+                        placeholderText="Selecciona nueva fecha"
+                        dateFormat="yyyy-MM-dd"
+                      />
+                      
+                      <div className={styles.datepickerError}>
+                        {errorRenovacion || ""}
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleClose}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleRenovarPrestamo}
+                >
+                  Renovar Préstamo
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal CONFIRMAR DEVOLUCIÓN */}
         {showModalDevolver && prestamoSeleccionado && (
           <div className="modal d-block" tabIndex="-1">
@@ -639,54 +729,10 @@ export default function PrestamoVista({ volverMenu }) {
                       <p><strong>Vencía:</strong> {formatearFecha(prestamoSeleccionado.fechaDevolucionEstimada)}</p>
                     </div>
 
-                    {/* SECCIÓN DE RENOVACIÓN */}
-                    <hr className={styles.separador}/>
-                    <h6>Renovar préstamo</h6>
-                    <div className={styles.datepickerContainer}>
-                      <div className={styles.datepickerWrapper}>
-                        <DatePicker
-                          selected={nuevaFechaDevolucion}
-                          onChange={(date) => {
-                            setNuevaFechaDevolucion(date);
-                            if (errorRenovacion) setErrorRenovacion("");
-                          }}
-                          minDate={new Date()}
-                          className={`${styles.datePickerInput} form-control`}
-                          placeholderText="Selecciona nueva fecha"
-                          dateFormat="yyyy-MM-dd"
-                        />
-                        
-                        <div className={styles.datepickerError}>
-                          {errorRenovacion || ""}
-                        </div>
-                      </div>
-                    </div>
-
                   </div>
                 </div>
 
                 <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={() => {
-                      if (!nuevaFechaDevolucion) {
-                        setErrorRenovacion("Debe seleccionar una nueva fecha de devolución");
-                        return;
-                      }
-                      // Renovación simulada
-                      setTimeout(() => {
-                        handleClose();
-                        setToastMessage(
-                          `Préstamo de "${prestamoSeleccionado.libro}" renovado hasta ${nuevaFechaDevolucion.toISOString().split("T")[0]}`
-                        );
-                        setShowToast(true);
-                        setTimeout(() => setShowToast(false), 3000);
-                      }, 500);
-                    }}
-                  >
-                    Renovar
-                  </button>
                   <button
                     type="button"
                     className="btn btn-success"
