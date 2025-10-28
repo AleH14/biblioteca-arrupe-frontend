@@ -22,19 +22,24 @@
 
 .filterButtons {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap; 
   gap: 8px;
 }
 
 .filterBtn {
-  padding: 10px 16px;
-  border: 2px solid #ffc107;
+  flex: 1 1 auto; 
+  min-width: 60px; 
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; 
+  border: 2px solid #ffc107; 
   border-radius: 6px;
-  background: white;
+  cursor: pointer;
+  background: #fff; 
   color: #ffc107;
-  font-weight: 500;
   transition: all 0.3s ease;
-  text-align: center;
 }
 
 .filterBtn:hover {
@@ -43,9 +48,9 @@
 }
 
 .filterBtnActive {
-  background: #ffc107;
-  color: white;
-  border-color: #ffc107;
+  background: #ffc107 !important;
+  color: white !important;
+  border-color: #ffc107 !important;
 }
 
 /* ===== CONTENIDO PRINCIPAL ===== */
@@ -71,12 +76,6 @@
   border: none;
   font-size: 1rem;
 }
-
-.searchInput:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.2);
-}
-
 /* ===== LISTA DE USUARIOS ===== */
 .loansListContainer {
   flex: 1;
@@ -112,32 +111,43 @@
 
 /* ===== TARJETAS DE USUARIO ===== */
 .card {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  border: 1px solid #e0e0e0;
   display: flex;
   flex-direction: column;
-  position: relative;
+  padding: 16px;
+  border-radius: 8px;
+  background: #fff;
+  color: black; 
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  border-top: 5px solid;
+  min-width: 250px;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap; 
+  margin-bottom: 8px;
 }
 
 .loanInfo {
-  text-align: center;
-  margin-bottom: 10px;
-  color: black;
+   margin-right: 10px;
 }
 
 .rolBadge {
-  position: absolute;
+   position: absolute;
   top: 10px;
   right: 10px;
-  padding: 4px 10px;
-  border-radius: 12px;
-  color: white;
+  padding: 2px 8px;
+  border-radius: 6px;
   font-size: 0.8rem;
-  font-weight: bold;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap; 
+  max-width: 45%; 
   text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .iconAction {
@@ -152,8 +162,9 @@
 }
 
 .fecha {
+  font-size: 0.75rem;
   color: #666;
-  font-size: 0.8rem;
+  margin-top: 2px;
 }
 
 /* ===== MODALES ===== */
@@ -259,6 +270,7 @@
   margin-top: 4px;
 }
 
+/* ===== BOTONES DE MODAL CORREGIDOS ===== */
 .modalActions {
   display: flex;
   gap: 12px;
@@ -266,6 +278,14 @@
   margin-top: 20px;
   padding-top: 20px;
   border-top: 1px solid #e0e0e0;
+}
+
+.modalActions button {
+  padding: 8px 16px !important;
+  font-size: 14px !important;
+  min-width: 120px;
+  width: auto;
+  flex: none;
 }
 
 /* ===== MODAL ELIMINAR ===== */
@@ -296,7 +316,13 @@
 .modalFooter {
   border-top: 1px solid #e0e0e0;
   padding-top: 20px;
-  text-align: center;
+}
+
+.modalFooter .modalActions {
+  justify-content: center;
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
 }
 
 /* ===== TOAST NOTIFICATIONS ===== */
@@ -376,12 +402,25 @@
 }
 
 @media (max-width: 480px) {
+  .rolBadge {
+    font-size: 0.7rem;
+    top: 5px;
+    right: 5px;
+    max-width: 50%;
+  }
+  
   .modalActions {
     flex-direction: column;
+    align-items: flex-start;
   }
   
   .modalActions button {
-    width: 100%;
+    width: auto;
+    min-width: 120px;
+  }
+  
+  .modalFooter .modalActions {
+    align-items: center;
   }
 }
 
