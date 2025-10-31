@@ -165,7 +165,7 @@ export default function LoginForm({ loginExitoso }) {
         </div>
         <div className={styles.rightPanel}>
           <div className={styles.logo}>
-            <img src="/images/logo_1000px.png" alt="Logo Colegio" />
+            <img src="/images/logo_1000px.png" loading="lazy" alt="Logo Colegio" />
           </div>
         </div>
       </div>

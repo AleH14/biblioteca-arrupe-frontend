@@ -2,7 +2,7 @@
 
 .backgroundWrapper {
   font-family: "Baloo 2", cursive;
-  background: url('/images/fondo_menu.jpg') center/cover no-repeat;
+  background: url('/images/fondo_menu.png') center/cover no-repeat;
   background-attachment: fixed;
   min-height: 100vh;
   height: 100%;
