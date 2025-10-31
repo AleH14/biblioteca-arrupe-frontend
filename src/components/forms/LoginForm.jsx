@@ -1,10 +1,101 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLoginForm } from '@/hooks/useAuth';
 import styles from '../../styles/LoginForm.module.css';
+
+// Componente memoizado para el spinner de carga
+const LoadingSpinner = React.memo(() => (
+  <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+    <div className="text-center">
+      <div className="spinner-border text-primary mb-3" role="status">
+        <span className="visually-hidden">Redirigiendo...</span>
+      </div>
+      <h5 className="text-muted">Redirigiendo...</h5>
+    </div>
+  </div>
+));
+
+LoadingSpinner.displayName = 'LoadingSpinner';
+
+// Componente memoizado para las alertas
+const AlertMessage = React.memo(({ show, message, type, onClose }) => {
+  if (!show) return null;
+  
+  return (
+    <div 
+      className={`alert ${type === 'success' ? 'alert-success' : 'alert-danger'} alert-dismissible fade show`} 
+      role="alert"
+    >
+      {message}
+      <button 
+        type="button" 
+        className="btn-close" 
+        onClick={onClose}
+        aria-label="Cerrar alerta"
+      />
+    </div>
+  );
+});
+
+AlertMessage.displayName = 'AlertMessage';
+
+// Componente memoizado para input de email
+const EmailInput = React.memo(({ value, onChange, error, disabled, styles }) => (
+  <>
+    <label htmlFor="email">Email</label>
+    <input 
+      id="email"
+      type="email" 
+      name="email"
+      value={value}
+      onChange={onChange}
+      placeholder="Ingresa tu correo" 
+      className={`${styles.inputField} ${error ? 'is-invalid' : ''}`}
+      disabled={disabled}
+      autoComplete="email"
+      aria-describedby={error ? 'email-error' : undefined}
+      required
+    />
+    {error && (
+      <div id="email-error" className="invalid-feedback" role="alert">
+        {error}
+      </div>
+    )}
+  </>
+));
+
+EmailInput.displayName = 'EmailInput';
+
+// Componente memoizado para input de contraseña
+const PasswordInput = React.memo(({ value, onChange, error, disabled, styles }) => (
+  <>
+    <label htmlFor="password">Contraseña</label>
+    <input 
+      id="password"
+      type="password" 
+      name="password"
+      value={value}
+      onChange={onChange}
+      placeholder="Ingresa tu contraseña" 
+      className={`${styles.inputField} ${error ? 'is-invalid' : ''}`}
+      disabled={disabled}
+      autoComplete="current-password"
+      aria-describedby={error ? 'password-error' : undefined}
+      required
+    />
+    {error && (
+      <div id="password-error" className="invalid-feedback" role="alert">
+        {error}
+      </div>
+    )}
+  </>
+));
+
+PasswordInput.displayName = 'PasswordInput';
 
 export default function LoginForm({ loginExitoso }) {
   const router = useRouter();
@@ -12,10 +103,10 @@ export default function LoginForm({ loginExitoso }) {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('error'); // 'error' | 'success'
-  const [redirecting, setRedirecting] = useState(false);
   
   // Usar ref para mantener referencia estable a loginExitoso
   const loginExitosoRef = useRef(loginExitoso);
+  const alertTimeoutRef = useRef(null);
   
   // Actualizar ref cuando cambie la prop
   useEffect(() => {
@@ -27,36 +118,52 @@ export default function LoginForm({ loginExitoso }) {
     errors,
     isSubmitting,
     handleChange,
-    handleSubmit,
-    clearForm
+    handleSubmit
   } = useLoginForm();
 
-  const showMessage = (message, type = 'error') => {
+  // Función memoizada para mostrar mensajes con cleanup automático
+  const showMessage = useCallback((message, type = 'error') => {
+    // Limpiar timeout previo si existe
+    if (alertTimeoutRef.current) {
+      clearTimeout(alertTimeoutRef.current);
+    }
+    
     setAlertMessage(message);
     setAlertType(type);
     setShowAlert(true);
     
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
+    // Auto-hide después de 5 segundos con cleanup
+    alertTimeoutRef.current = setTimeout(() => {
       setShowAlert(false);
     }, 5000);
-  };
+  }, []);
 
-  const onSubmit = async (e) => {
+  // Función memoizada para cerrar alertas manualmente
+  const closeAlert = useCallback(() => {
+    if (alertTimeoutRef.current) {
+      clearTimeout(alertTimeoutRef.current);
+    }
+    setShowAlert(false);
+  }, []);
+
+  // Función memoizada para manejar el submit
+  const onSubmit = useCallback(async (e) => {
     const result = await handleSubmit(e);
     
-    console.log('LoginForm onSubmit result:', result);
+    // Eliminar console.log en producción
+    if (process.env.NODE_ENV === 'development') {
+      console.log('LoginForm result:', result);
+    }
     
     if (result.success) {
       showMessage('¡Bienvenido! Redirigiendo...', 'success');
       // La redirección se maneja automáticamente en useEffect cuando status cambie a 'authenticated'
     } else {
-      console.log('LoginForm showing error:', result.error);
       showMessage(result.error || 'Error al iniciar sesión');
     }
-  };
+  }, [handleSubmit, showMessage]);
 
-  // Estabilizar la función de redirección
+  // Función estabilizada de redirección
   const handleRedirect = useCallback(() => {
     if (loginExitosoRef.current) {
       loginExitosoRef.current();
@@ -65,32 +172,31 @@ export default function LoginForm({ loginExitoso }) {
     }
   }, [router]);
 
+  // Estado derivado: si debe mostrar loading
+  const shouldShowLoading = useMemo(() => 
+    status === 'authenticated', [status]
+  );
+
   // Manejar redirección cuando el usuario está autenticado
   useEffect(() => {
-    if (status === 'authenticated' && !redirecting) {
-      setRedirecting(true);
-      
-      // Pequeño delay para evitar conflictos de estado
-      const timer = setTimeout(() => {
-        handleRedirect();
-      }, 100);
-
-      return () => clearTimeout(timer);
+    if (status === 'authenticated') {
+      // Redirección inmediata sin delay artificial para mejor UX
+      handleRedirect();
     }
-  }, [status, redirecting, handleRedirect]);
+  }, [status, handleRedirect]);
 
-  // Si ya está autenticado o redirigiendo, mostrar mensaje de carga
-  if (status === 'authenticated' || redirecting) {
-    return (
-      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-        <div className="text-center">
-          <div className="spinner-border text-primary mb-3" role="status">
-            <span className="visually-hidden">Redirigiendo...</span>
-          </div>
-          <h5 className="text-muted">Redirigiendo...</h5>
-        </div>
-      </div>
-    );
+  // Cleanup de timeouts al desmontar
+  useEffect(() => {
+    return () => {
+      if (alertTimeoutRef.current) {
+        clearTimeout(alertTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Si ya está autenticado, mostrar mensaje de carga
+  if (shouldShowLoading) {
+    return <LoadingSpinner />;
   }
 
   return (
@@ -104,68 +210,69 @@ export default function LoginForm({ loginExitoso }) {
           <div className={styles.loginBox}>
             <h2>LOGIN</h2>
             
-            {/* Alert Messages */}
-            {showAlert && (
-              <div className={`alert ${alertType === 'success' ? 'alert-success' : 'alert-danger'} alert-dismissible fade show`} role="alert">
-                {alertMessage}
-                <button 
-                  type="button" 
-                  className="btn-close" 
-                  onClick={() => setShowAlert(false)}
-                  aria-label="Close"
-                ></button>
-              </div>
-            )}
+            {/* Alert Messages - Componente memoizado */}
+            <AlertMessage 
+              show={showAlert}
+              message={alertMessage}
+              type={alertType}
+              onClose={closeAlert}
+            />
 
             <form onSubmit={onSubmit}>
-              <label>Email</label>
-              <input 
-                type="email" 
-                name="email"
+              <EmailInput 
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="Ingresa tu correo" 
-                className={`${styles.inputField} ${errors.email ? 'is-invalid' : ''}`}
+                error={errors.email}
                 disabled={isSubmitting}
-                required
+                styles={styles}
               />
-              {errors.email && <div className="invalid-feedback">{errors.email}</div>}
 
-              <label>Contraseña</label>
-              <input 
-                type="password" 
-                name="password"
+              <PasswordInput 
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Ingresa tu contraseña" 
-                className={`${styles.inputField} ${errors.password ? 'is-invalid' : ''}`}
+                error={errors.password}
                 disabled={isSubmitting}
-                required
+                styles={styles}
               />
-              {errors.password && <div className="invalid-feedback">{errors.password}</div>}
 
               <button 
                 type="submit" 
                 className={styles.btn}
                 disabled={isSubmitting}
+                aria-describedby="submit-status"
               >
                 {isSubmitting ? (
                   <>
-                    <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                    Iniciando sesión...
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    <span id="submit-status">Iniciando sesión...</span>
                   </>
                 ) : (
                   'Entrar'
                 )}
               </button>
               
-              <a href="#" className={styles.forgotPassword}>¿Olvidaste tu contraseña?</a>
+              <a href="#" className={styles.forgotPassword} tabIndex={isSubmitting ? -1 : 0}>
+                ¿Olvidaste tu contraseña?
+              </a>
             </form>
           </div>
         </div>
         <div className={styles.rightPanel}>
           <div className={styles.logo}>
-            <img src="/images/logo_1000px.png" loading="lazy" alt="Logo Colegio" />
+            {/* Optimización con Next.js Image para mejor rendimiento */}
+            <Image 
+              src="/images/logo_1000px.png" 
+              alt="Logo Colegio Arrupe"
+              width={400}
+              height={400}
+              priority={true} // Crítico para LCP - carga con prioridad alta
+              sizes="(max-width: 768px) 200px, 400px"
+              style={{
+                width: 'auto',
+                height: 'auto',
+                maxWidth: '100%'
+              }}
+            />
           </div>
         </div>
       </div>
