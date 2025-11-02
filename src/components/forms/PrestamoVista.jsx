@@ -1,14 +1,25 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef, useCallback, useMemo } from "react";
 import styles from "../../styles/PrestamoVista.module.css";
 import global from "../../styles/Global.module.css";
-import { FiHome, FiBell, FiCalendar, FiUser, FiBook, FiMapPin } from "react-icons/fi";
-import { MdLogout } from "react-icons/md";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import NotificacionesCorreo from "./NotificacionesCorreo";
 
+// Importar componentes UI
+import Toast from "../ui/Toast";
+import AppHeader from "../ui/AppHeader";
+import PageTitle from "../ui/PageTitle";
+import FilterPanel from "../ui/FilterPanel";
+import SearchSection from "../ui/SearchSection";
+import PrestamoCard from "../ui/PrestamoCard";
+import NuevoPrestamoModal from "../ui/NuevoPrestamoModal";
+import RenovarPrestamoModal from "../ui/RenovarPrestamoModal";
+import ConfirmarDevolucionModal from "../ui/ConfirmarDevolucionModal";
+import DetallesPrestamoModal from "../ui/DetallesPrestamoModal";
+
 export default function PrestamoVista({ volverMenu }) {
+  console.count('🎯 PrestamoVista render'); // Para verificar renders del componente principal
   // Datos de ejemplo basados en la estructura del JSON
   const prestamos = [
     {
@@ -81,6 +92,9 @@ export default function PrestamoVista({ volverMenu }) {
   const [nuevaFechaDevolucion, setNuevaFechaDevolucion] = useState(null);
   const [fechaRenovada, setFechaRenovada] = useState(false);
   const [errorRenovacion, setErrorRenovacion] = useState("");
+  
+  // 🎯 Usar useRef para el valor de búsqueda - no causa re-renders
+  const searchRef = useRef("");
 
   const [formData, setFormData] = useState({
     usuarioId: "",
@@ -91,7 +105,12 @@ export default function PrestamoVista({ volverMenu }) {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
-  const handleClose = () => {
+  // 🎯 Función memoizada para generar informe
+  const handleGenerateReport = useCallback(() => {
+    console.log("Generando informe...");
+  }, []);
+
+  const handleClose = useCallback(() => {
     setShowModal(false);
     setShowModalDevolver(false);
     setShowModalDetalles(false);
@@ -105,11 +124,16 @@ export default function PrestamoVista({ volverMenu }) {
     setNuevaFechaDevolucion(null);
     setFechaRenovada(false);
     setErrorRenovacion(null);
-  };
+  }, []);
 
-  const handleShow = () => setShowModal(true);
+  // Memoizar funciones para evitar recreaciones innecesarias
+  const handleBusqueda = useCallback((value) => {
+    searchRef.current = value;
+  }, []);
 
-  const handleInputChange = (e) => {
+  const handleShow = useCallback(() => setShowModal(true), []);
+
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -122,9 +146,9 @@ export default function PrestamoVista({ volverMenu }) {
         [name]: "",
       }));
     }
-  };
+  }, [errores]);
 
-  const handleEjemplarChange = (index, value) => {
+  const handleEjemplarChange = useCallback((index, value) => {
     const newEjemplares = [...ejemplaresSeleccionados];
     newEjemplares[index] = value;
     setEjemplaresSeleccionados(newEjemplares);
@@ -136,17 +160,17 @@ export default function PrestamoVista({ volverMenu }) {
         ejemplares: "",
       }));
     }
-  };
+  }, [ejemplaresSeleccionados, errores.ejemplares]);
 
-  const addEjemplar = () =>
-    setEjemplaresSeleccionados([...ejemplaresSeleccionados, ""]);
+  const addEjemplar = useCallback(() =>
+    setEjemplaresSeleccionados(prev => [...prev, ""]), []);
 
-  const removeEjemplar = (index) =>
-    setEjemplaresSeleccionados(
-      ejemplaresSeleccionados.filter((_, i) => i !== index)
-    );
+  const removeEjemplar = useCallback((index) =>
+    setEjemplaresSeleccionados(prev =>
+      prev.filter((_, i) => i !== index)
+    ), []);
 
-  const validarFormulario = () => {
+  const validarFormulario = useCallback(() => {
     const nuevosErrores = {};
 
     // Validar nombre del usuario
@@ -182,9 +206,9 @@ export default function PrestamoVista({ volverMenu }) {
 
     setErrores(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;
-  };
+  }, [formData.usuarioId, ejemplaresSeleccionados, fechaPrestamo, fechaDevolucion]);
 
-  const handleGuardarPrestamo = () => {
+  const handleGuardarPrestamo = useCallback(() => {
     if (!validarFormulario()) {
       return;
     }
@@ -212,16 +236,16 @@ export default function PrestamoVista({ volverMenu }) {
         setShowToast(false);
       }, 3000);
     }, 1000);
-  };
+  }, [validarFormulario, formData.usuarioId, ejemplaresSeleccionados, fechaPrestamo, fechaDevolucion]);
 
-  const handleDevolverPrestamo = (prestamo) => {
+  const handleDevolverPrestamo = useCallback((prestamo) => {
     setPrestamoSeleccionado(prestamo);
     setNuevaFechaDevolucion(null);
     setFechaRenovada(false);
     setShowModalDevolver(true);
-  };
+  }, []);
 
-  const confirmarDevolucion = () => {
+  const confirmarDevolucion = useCallback(() => {
     // Simular devolución
     setTimeout(() => {
       handleClose();
@@ -233,18 +257,24 @@ export default function PrestamoVista({ volverMenu }) {
         setShowToast(false);
       }, 3000);
     }, 500);
-  };
+  }, [prestamoSeleccionado]);
 
   // Función para renovar préstamo desde la lista
-  const handleRenovarPrestamoLista = (prestamo) => {
+  const handleRenovarPrestamoLista = useCallback((prestamo) => {
     setPrestamoSeleccionado(prestamo);
     setNuevaFechaDevolucion(null);
     setErrorRenovacion("");
     setShowModalRenovar(true);
-  };
+  }, []);
+
+  // Manejar cambio de fecha en renovación
+  const handleFechaRenovacionChange = useCallback((date) => {
+    setNuevaFechaDevolucion(date);
+    if (errorRenovacion) setErrorRenovacion("");
+  }, [errorRenovacion]);
 
   //Renovar Prestamo
-  const handleRenovarPrestamo = () => {
+  const handleRenovarPrestamo = useCallback(() => {
     if (!nuevaFechaDevolucion) {
       setErrorRenovacion("Debe seleccionar una nueva fecha de devolución");
       return;
@@ -259,24 +289,24 @@ export default function PrestamoVista({ volverMenu }) {
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     }, 500);
-  };
+  }, [nuevaFechaDevolucion, prestamoSeleccionado]);
 
-  const verDetalles = (prestamo) => {
+  const verDetalles = useCallback((prestamo) => {
     setPrestamoSeleccionado(prestamo);
     setShowModalDetalles(true);
-  };
+  }, []);
 
   // Función para abrir notificaciones de correo electrónico
-  const abrirNotificaciones = (prestamo) => {
+  const abrirNotificaciones = useCallback((prestamo) => {
     setPrestamoSeleccionado(prestamo);
     setMostrarNotificaciones(true);
-  };
+  }, []);
 
   // Función para volver a préstamos
-  const volverPrestamos = () => {
+  const volverPrestamos = useCallback(() => {
     setMostrarNotificaciones(false);
     setPrestamoSeleccionado(null);
-  };
+  }, []);
 
   // REDIRECCIÓN A PANTALLA DE NOTIFICACIONES
   if (mostrarNotificaciones) {
@@ -323,175 +353,77 @@ export default function PrestamoVista({ volverMenu }) {
     }
   };
 
-  //FILTRADO
-  const prestamosFiltrados = prestamos.filter(
-    (p) =>
-      filtro === "Todos" ||
-      (filtro === "Activos" && p.estado === "activo") ||
-      (filtro === "Atrasados" && p.estado === "retrasado") ||
-      (filtro === "Devueltos" && p.estado === "cerrado")
-  );
+  //FILTRADO CON BÚSQUEDA Y ESTADO
+  const prestamosFiltrados = useMemo(() => {
+    return prestamos.filter((p) => {
+      // Filtro por texto de búsqueda
+      const searchValue = searchRef.current?.toLowerCase() || '';
+      const cumpleFiltroTexto = !searchValue || 
+        p.usuario.toLowerCase().includes(searchValue) ||
+        p.libro.toLowerCase().includes(searchValue) ||
+        p.codigo.toLowerCase().includes(searchValue);
+
+      // Filtro por estado
+      const cumpleFiltroEstado = 
+        filtro === "Todos" ||
+        (filtro === "Activos" && p.estado === "activo") ||
+        (filtro === "Atrasados" && p.estado === "retrasado") ||
+        (filtro === "Devueltos" && p.estado === "cerrado");
+
+      return cumpleFiltroTexto && cumpleFiltroEstado;
+    });
+  }, [prestamos, filtro]); // No incluir searchRef.current en dependencies
+
+  console.count('PrestamoVista render');
 
   //-----------------INICIO DE RETURN-----------------
   return (
     <div className={global.backgroundWrapper}>
       {/* Toast de éxito */}
-      {showToast && (
-        <div className={styles.toastSuccess}>
-          <div className={styles.toastContent}>
-            <span className={styles.toastIcon}>✓</span>
-            <span>{toastMessage}</span>
-          </div>
-        </div>
-      )}
+      <Toast show={showToast} message={toastMessage} />
 
       {/* Header */}
-      <header
-        className={`${global.header} d-flex justify-content-between align-items-center`}
-      >
-        <button className={global.homeBtn} onClick={volverMenu}>
-          <FiHome className={global.homeIcon} />
-        </button>
-        <button className={global.logoutBtn}>
-          <MdLogout className={global.logoutIcon} />
-          <span>Cerrar sesión</span>
-        </button>
-      </header>
+      <AppHeader onHomeClick={volverMenu} />
 
       {/* Título */}
-      <div className="container">
-        <div className="row justify-content-center">
-          <div className="col-auto">
-            <div className="d-flex align-items-center">
-              <img
-                src="/images/complemento-1.png"
-                alt="Complemento"
-                className={global.complementoImg + " me-2"}
-              />
-              <h1 className={`${global.title} mb-0`}>Préstamos</h1>
-            </div>
-          </div>
-        </div>
-      </div>
+      <PageTitle title="Préstamos" />
 
       {/* CONTENEDOR PRINCIPAL: BOTONES LATERAL + PANEL DE PRÉSTAMOS */}
       <div className="container-fluid">
         <div className="row justify-content-center">
           {/* ------------------ PANEL DE BOTONES LATERAL ------------------ */}
           <div className="col-md-3 col-lg-2 mb-4">
-            <div className={styles.sidebarPanel}>
-              <button className={`${global.btnSecondary} w-100 mb-3`}>
-                Generar Informe
-              </button>
-
-              <div className={styles.filterSection}>
-                <small className={styles.filterLabel}>Clasificación</small>
-                <div className={styles.filterButtons}>
-                  {["Todos", "Activos", "Atrasados", "Devueltos"].map((tipo) => (
-                    <button
-                      key={tipo}
-                      className={`${styles.filterBtn} ${
-                        filtro === tipo
-                          ? styles.filterBtnActive
-                          : styles.filterBtnInactive
-                      }`}
-                      onClick={() => setFiltro(tipo)}
-                    >
-                      {tipo}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <FilterPanel 
+              filtro={filtro}
+              onFiltroChange={setFiltro}
+              onGenerateReport={handleGenerateReport}
+            />
           </div>
 
           {/* ------------------ PANEL DE PRÉSTAMOS ------------------ */}
           <div className="col-md-9 col-lg-8">
             <div className={styles.mainContent}>
               {/* Buscador y botón nuevo préstamo */}
-              <div className={styles.searchSection}>
-                <div className="d-flex gap-2 flex-column flex-md-row">
-                  <input
-                    type="text"
-                    placeholder="Buscar préstamo"
-                    className={`${styles.searchInput} flex-grow-1`}
-                  />
-                  <button className={global.btnPrimary} onClick={handleShow}>
-                    <span className={global.btnPrimaryMas}>+</span> Nuevo
-                    Préstamo
-                  </button>
-                </div>
-              </div>
+              <SearchSection 
+                onSearchChange={handleBusqueda}
+                onNewItem={handleShow}
+              />
         
              {/* Listado de préstamos CON SCROLL */}
               <div className={styles.loansListContainer}>
                 <div className={styles.loansList}>
                   {prestamosFiltrados.map((p) => (
-                    <div key={p._id} className={styles.card}>
-                      <div className="d-flex flex-column flex-md-row justify-content-between align-items-center w-100">
-                        <div className={styles.loanInfo}>
-                          <strong>{p.usuario}</strong>
-                          <br />
-                          <small>{p.libro}</small>
-                          <br />
-                          <small className={styles.fecha}>
-                            Préstamo: {formatearFecha(p.fechaPrestamo)}
-                          </small>
-                        </div>
-                        <div className={styles.loanStatus}>
-                          <span className={obtenerClaseEstado(p)}>
-                            {obtenerEstadoVisual(p)}
-                          </span>
-                          <br />
-                          <small className={styles.fecha}>
-                            {p.fechaDevolucionReal
-                              ? `Devuelto: ${formatearFecha(
-                                  p.fechaDevolucionReal
-                                )}`
-                              : `Vence: ${formatearFecha(
-                                  p.fechaDevolucionEstimada
-                                )}`}
-                          </small>
-                        </div>
-                        <div className="d-flex gap-2">
-                          {/* BOTÓN RENOVAR - NUEVO */}
-                          {p.estado !== "cerrado" && (
-                            <button
-                              className={global.btnWarning}
-                              onClick={() => handleRenovarPrestamoLista(p)}
-                            >
-                              Renovar
-                            </button>
-                          )}
-                          <button
-                            className={global.btnSecondary}
-                            onClick={() =>
-                              p.estado === "cerrado"
-                                ? verDetalles(p)
-                                : handleDevolverPrestamo(p)
-                            }
-                          >
-                            {p.estado === "cerrado"
-                              ? "Ver Detalles"
-                              : "Devolver"}
-                          </button>
-                          {/* Botón de Notificaciones en cada card */}
-                          <button
-                            className={styles.notificationBtn}
-                            onClick={() => abrirNotificaciones(p)}
-                            title="Enviar notificación"
-                          >
-                            <FiBell className={styles.notificationIcon} />
-                            {p.notificaciones &&
-                              p.notificaciones.length > 0 && (
-                                <span className={styles.notificationNumber}>
-                                  {p.notificaciones.length}
-                                </span>
-                              )}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+                    <PrestamoCard
+                      key={p._id}
+                      prestamo={p}
+                      onRenovar={handleRenovarPrestamoLista}
+                      onDevolver={handleDevolverPrestamo}
+                      onVerDetalles={verDetalles}
+                      onNotificaciones={abrirNotificaciones}
+                      formatearFecha={formatearFecha}
+                      obtenerEstadoVisual={obtenerEstadoVisual}
+                      obtenerClaseEstado={obtenerClaseEstado}
+                    />
                   ))}
                 </div>
               </div>
@@ -500,373 +432,52 @@ export default function PrestamoVista({ volverMenu }) {
         </div>
       </div>
 
-      {/* Modal NUEVO PRÉSTAMO */}
-      {showModal && (
-        <div className="modal d-block" tabIndex="-1">
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Nuevo Préstamo</h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={handleClose}
-                ></button>
-              </div>
-              <div className="modal-body">
-                <form>
-                  <div className="mb-3">
-                    <label className="form-label">Nombre</label>
-                    <input
-                      type="text"
-                      name="usuarioId"
-                      value={formData.usuarioId}
-                      onChange={handleInputChange}
-                      className={`${styles.inputForm} form-control ${
-                        errores.usuarioId ? styles.inputError : ""
-                      }`}
-                      placeholder="Ingrese el nombre del usuario"
-                      required
-                    />
-                    {errores.usuarioId && (
-                      <div className={styles.errorMessage}>
-                        {errores.usuarioId}
-                      </div>
-                    )}
-                  </div>
+      {/* Modales */}
+      <NuevoPrestamoModal
+        show={showModal}
+        onClose={handleClose}
+        formData={formData}
+        onInputChange={handleInputChange}
+        errores={errores}
+        ejemplaresSeleccionados={ejemplaresSeleccionados}
+        onEjemplarChange={handleEjemplarChange}
+        onAddEjemplar={addEjemplar}
+        onRemoveEjemplar={removeEjemplar}
+        fechaPrestamo={fechaPrestamo}
+        onFechaPrestamoChange={setFechaPrestamo}
+        fechaDevolucion={fechaDevolucion}
+        onFechaDevolucionChange={setFechaDevolucion}
+        onGuardar={handleGuardarPrestamo}
+        guardando={guardando}
+      />
 
-                  <label className="form-label">Ejemplar</label>
-                  {errores.ejemplares && (
-                    <div className={styles.errorMessage}>
-                      {errores.ejemplares}
-                    </div>
-                  )}
-                  <br />
-                  {ejemplaresSeleccionados.map((ej, index) => (
-                    <div className="mb-3 d-flex" key={index}>
-                      <input
-                        type="text"
-                        value={ej}
-                        onChange={(e) =>
-                          handleEjemplarChange(index, e.target.value)
-                        }
-                        className={`${styles.inputForm} form-control me-2 ${
-                          errores.ejemplares ? styles.inputError : ""
-                        }`}
-                        placeholder="Ingrese el ejemplar"
-                        required
-                      />
-                      {ejemplaresSeleccionados.length > 1 && (
-                        <button
-                          type="button"
-                          className="btn btn-secondary"
-                          onClick={() => removeEjemplar(index)}
-                        >
-                          &times;
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    className="btn btn-secondary mb-3"
-                    onClick={addEjemplar}
-                  >
-                    + Añadir otro Ejemplar
-                  </button>
+      <RenovarPrestamoModal
+        show={showModalRenovar}
+        onClose={handleClose}
+        prestamo={prestamoSeleccionado}
+        nuevaFechaDevolucion={nuevaFechaDevolucion}
+        onFechaChange={handleFechaRenovacionChange}
+        errorRenovacion={errorRenovacion}
+        onRenovar={handleRenovarPrestamo}
+        formatearFecha={formatearFecha}
+      />
 
-                  <div className="mb-3">
-                    <label className="form-label">Fecha de Préstamo</label>
-                    <DatePicker
-                      selected={fechaPrestamo}
-                      onChange={setFechaPrestamo}
-                      className={`${styles.datePickerInput} form-control ${
-                        errores.fechaPrestamo ? styles.inputError : ""
-                      }`}
-                      placeholderText="Selecciona fecha"
-                      dateFormat="yyyy-MM-dd"
-                      required
-                    />
-                    {errores.fechaPrestamo && (
-                      <div className={styles.errorMessage}>
-                        {errores.fechaPrestamo}
-                      </div>
-                    )}
-                  </div>
+      <ConfirmarDevolucionModal
+        show={showModalDevolver}
+        onClose={handleClose}
+        prestamo={prestamoSeleccionado}
+        onConfirmar={confirmarDevolucion}
+        formatearFecha={formatearFecha}
+      />
 
-                  <div className="mb-3">
-                    <label className="form-label">
-                      Fecha de Devolución Estimada
-                    </label>
-                    <DatePicker
-                      selected={fechaDevolucion}
-                      onChange={setFechaDevolucion}
-                      minDate={fechaPrestamo}
-                      className={`${styles.datePickerInput} form-control ${
-                        errores.fechaDevolucion ? styles.inputError : ""
-                      }`}
-                      placeholderText="Selecciona fecha"
-                      dateFormat="yyyy-MM-dd"
-                      required
-                    />
-                    {errores.fechaDevolucion && (
-                      <div className={styles.errorMessage}>
-                        {errores.fechaDevolucion}
-                      </div>
-                    )}
-                  </div>
-
-                  <button
-                    type="button"
-                    className={`${global.btnPrimary} ${
-                      guardando ? styles.loading : ""
-                    }`}
-                    onClick={handleGuardarPrestamo}
-                    disabled={guardando}
-                  >
-                    {guardando ? "Guardando..." : "Guardar Préstamo"}
-                  </button>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal RENOVAR PRÉSTAMO */}
-      {showModalRenovar && prestamoSeleccionado && (
-        <div className="modal d-block" tabIndex="-1">
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Renovar Préstamo</h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={handleClose}
-                ></button>
-              </div>
-
-              <div className="modal-body">
-                <div className={styles.confirmacionContent}>
-                  {/* Información del préstamo */}
-                  <div className={styles.confirmacionInfo}>
-                    <p><strong>Usuario:</strong> {prestamoSeleccionado.usuario}</p>
-                    <p><strong>Libro:</strong> {prestamoSeleccionado.libro}</p>
-                    <p><strong>Fecha préstamo:</strong> {formatearFecha(prestamoSeleccionado.fechaPrestamo)}</p>
-                    <p><strong>Fecha devolución actual:</strong> {formatearFecha(prestamoSeleccionado.fechaDevolucionEstimada)}</p>
-                  </div>
-
-                  {/* Nueva fecha de renovación */}
-                  <div className={styles.datepickerContainer}>
-                    <label className="form-label"><strong>Nueva fecha de devolución:</strong></label>
-                    <div className={styles.datepickerWrapper}>
-                      <DatePicker
-                        selected={nuevaFechaDevolucion}
-                        onChange={(date) => {
-                          setNuevaFechaDevolucion(date);
-                          if (errorRenovacion) setErrorRenovacion("");
-                        }}
-                        minDate={new Date()}
-                        className={`${styles.datePickerInput} form-control`}
-                        placeholderText="Selecciona nueva fecha"
-                        dateFormat="yyyy-MM-dd"
-                      />
-                      
-                      <div className={styles.datepickerError}>
-                        {errorRenovacion || ""}
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleClose}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={handleRenovarPrestamo}
-                >
-                  Renovar Préstamo
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal CONFIRMAR DEVOLUCIÓN */}
-        {showModalDevolver && prestamoSeleccionado && (
-          <div className="modal d-block" tabIndex="-1">
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Confirmar Devolución</h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    onClick={handleClose}
-                  ></button>
-                </div>
-
-                <div className="modal-body">
-                  <div className={styles.confirmacionContent}>
-                    {/* Información del préstamo */}
-                    <h6>¿Está seguro que desea registrar la devolución?</h6>
-                    <div className={styles.confirmacionInfo}>
-                      <p><strong>Libro:</strong> {prestamoSeleccionado.libro}</p>
-                      <p><strong>Usuario:</strong> {prestamoSeleccionado.usuario}</p>
-                      <p><strong>Ubicación:</strong> Edificio X</p>
-                      <p><strong>Fecha préstamo:</strong> {formatearFecha(prestamoSeleccionado.fechaPrestamo)}</p>
-                      <p><strong>Vencía:</strong> {formatearFecha(prestamoSeleccionado.fechaDevolucionEstimada)}</p>
-                    </div>
-
-                  </div>
-                </div>
-
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-success"
-                    onClick={confirmarDevolucion}
-                  >
-                    Confirmar Devolución
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-      {/* Modal VER DETALLES */}
-      {showModalDetalles && prestamoSeleccionado && (
-        <div className="modal d-block" tabIndex="-1">
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Detalles del Préstamo</h5>
-                <button
-                  type="button"
-                  className="btn-close"
-                  onClick={handleClose}
-                ></button>
-              </div>
-              <div className="modal-body">
-                <div className={styles.detallesContent}>
-                  <div className={styles.detalleItem}>
-                    <FiUser className={styles.detalleIcon} />
-                    <div>
-                      <strong>Usuario:</strong>
-                      <span>{prestamoSeleccionado.usuario}</span>
-                    </div>
-                  </div>
-                  <div className={styles.detalleItem}>
-                    <FiBook className={styles.detalleIcon} />
-                    <div>
-                      <strong>Libro:</strong>
-                      <span>{prestamoSeleccionado.libro}</span>
-                    </div>
-                  </div>
-
-                  <div className={styles.detalleItem}>
-                    <FiMapPin className={styles.detalleIcon} />
-                    <div>
-                      <strong>Ubicación:</strong>
-                      <span>Edificio X</span>
-                    </div>
-                  </div>
-
-                  <div className={styles.detalleItem}>
-                    <FiCalendar className={styles.detalleIcon} />
-                    <div>
-                      <strong>Fecha de Préstamo:</strong>
-                      <span>
-                        {formatearFecha(prestamoSeleccionado.fechaPrestamo)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className={styles.detalleItem}>
-                    <FiCalendar className={styles.detalleIcon} />
-                    <div>
-                      <strong>Fecha Devolución Estimada:</strong>
-                      <span>
-                        {formatearFecha(
-                          prestamoSeleccionado.fechaDevolucionEstimada
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                  <div className={styles.detalleItem}>
-                    <FiCalendar className={styles.detalleIcon} />
-                    <div>
-                      <strong>Fecha Devolución Real:</strong>
-                      <span
-                        className={
-                          prestamoSeleccionado.fechaDevolucionReal
-                            ? styles.fechaReal
-                            : styles.fechaPendiente
-                        }
-                      >
-                        {prestamoSeleccionado.fechaDevolucionReal
-                          ? formatearFecha(
-                              prestamoSeleccionado.fechaDevolucionReal
-                            )
-                          : "Pendiente"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className={styles.detalleItem}>
-                    <div className={styles.estadoContainer}>
-                      <strong>Estado:</strong>
-                      <span
-                        className={obtenerClaseEstado(prestamoSeleccionado)}
-                      >
-                        {obtenerEstadoVisual(prestamoSeleccionado)}
-                      </span>
-                    </div>
-                  </div>
-                  {prestamoSeleccionado.notificaciones &&
-                    prestamoSeleccionado.notificaciones.length > 0 && (
-                      <div className={styles.notificacionesSection}>
-                        <h6>Notificaciones Enviadas</h6>
-                        {prestamoSeleccionado.notificaciones.map(
-                          (notif, index) => (
-                            <div
-                              key={index}
-                              className={styles.notificacionItem}
-                            >
-                              <small>
-                                <strong>{notif.asunto}</strong> -{" "}
-                                {formatearFecha(notif.fechaEnvio)}
-                              </small>
-                            </div>
-                          )
-                        )}
-                      </div>
-                    )}
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={handleClose}
-                >
-                  Cerrar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <DetallesPrestamoModal
+        show={showModalDetalles}
+        onClose={handleClose}
+        prestamo={prestamoSeleccionado}
+        formatearFecha={formatearFecha}
+        obtenerEstadoVisual={obtenerEstadoVisual}
+        obtenerClaseEstado={obtenerClaseEstado}
+      />
     </div>
   );
 }
