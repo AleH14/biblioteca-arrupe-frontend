@@ -4,7 +4,6 @@ import { MdLogout } from 'react-icons/md';
 import global from '../../styles/Global.module.css';
 
 const AppHeader = React.memo(({ onHomeClick, onLogoutClick, showLogout = true }) => {
-  console.count('🏠 AppHeader render'); // Para verificar renders
   return (
     <header className={`${global.header} d-flex justify-content-between align-items-center`}>
       <button className={global.homeBtn} onClick={onHomeClick}>

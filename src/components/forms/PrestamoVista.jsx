@@ -1,9 +1,10 @@
 "use client";
-import React, { useState, useRef, useCallback, useMemo } from "react";
-import styles from "../../styles/PrestamoVista.module.css";
-import global from "../../styles/Global.module.css";
+import React, { useState, useCallback, useMemo } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import styles from "../../styles/PrestamoVista.module.css";
+import global from "../../styles/Global.module.css";
 import NotificacionesCorreo from "./NotificacionesCorreo";
 
 // Importar componentes UI
@@ -19,66 +20,71 @@ import ConfirmarDevolucionModal from "../ui/ConfirmarDevolucionModal";
 import DetallesPrestamoModal from "../ui/DetallesPrestamoModal";
 
 export default function PrestamoVista({ volverMenu }) {
-  console.count('🎯 PrestamoVista render'); // Para verificar renders del componente principal
-  // Datos de ejemplo basados en la estructura del JSON
-  const prestamos = [
-    {
-      _id: "5a934e000102030405000000",
-      ejemplarId: "64fae76d2f8f5c3a3c1b5678",
-      estado: "activo",
-      fechaDevolucionEstimada: "2025-09-20",
-      fechaDevolucionReal: null,
-      fechaPrestamo: "2025-08-20",
-      notificaciones: [
-        {
-          _id: "64fae76d2f8f5c3a3c1b9999",
-          asunto: "Recordatorio devolución",
-          fechaEnvio: "2025-09-15",
-          mensaje: "Tu libro debe devolverse antes del 20/09",
-        },
-      ],
-      usuarioId: "64fae76d2f8f5c3a3c1b0001",
-      usuario: "Maria Elizabeth Gonzalez Hernández", 
-      libro: "Cien Años de Soledad", 
-    },
-    {
-      _id: "5a934e000102030405000001",
-      ejemplarId: "64fae76d2f8f5c3a3c1b5679",
-      estado: "retrasado",
-      fechaDevolucionEstimada: "2025-09-05",
-      fechaDevolucionReal: null,
-      fechaPrestamo: "2025-08-05",
-      notificaciones: [],
-      usuarioId: "64fae76d2f8f5c3a3c1b0002",
-      usuario: "Carlos Rodriguez",
-      libro: "El Quijote",
-    },
-    {
-      _id: "5a934e000102030405000002",
-      ejemplarId: "64fae76d2f8f5c3a3c1b5680",
-      estado: "cerrado",
-      fechaDevolucionEstimada: "2025-09-03",
-      fechaDevolucionReal: "2025-09-02",
-      fechaPrestamo: "2025-08-03",
-      notificaciones: [],
-      usuarioId: "64fae76d2f8f5c3a3c1b0003",
-      usuario: "Ana Martinez",
-      libro: "Rayuela",
-    },
-    {
-      _id: "5a934e000102030405000003",
-      ejemplarId: "64fae76d2f8f5c3a3c1b5681",
-      estado: "cerrado",
-      fechaDevolucionEstimada: "2025-09-10",
-      fechaDevolucionReal: "2025-09-08",
-      fechaPrestamo: "2025-08-10",
-      notificaciones: [],
-      usuarioId: "64fae76d2f8f5c3a3c1b0004",
-      usuario: "Pedro Lopez",
-      libro: "La Sombra del Viento",
-    },
-  ];
+  const { logout } = useAuth();
 
+  // Datos de ejemplo
+  const prestamos = useMemo(
+    () => [
+      {
+        _id: "5a934e000102030405000000",
+        ejemplarId: "64fae76d2f8f5c3a3c1b5678",
+        estado: "activo",
+        fechaDevolucionEstimada: "2025-09-20",
+        fechaDevolucionReal: null,
+        fechaPrestamo: "2025-08-20",
+        notificaciones: [
+          {
+            _id: "64fae76d2f8f5c3a3c1b9999",
+            asunto: "Recordatorio devolución",
+            fechaEnvio: "2025-09-15",
+            mensaje: "Tu libro debe devolverse antes del 20/09",
+          },
+        ],
+        usuarioId: "64fae76d2f8f5c3a3c1b0001",
+        usuario: "Maria Elizabeth Gonzalez Hernández",
+        libro: "Cien Años de Soledad",
+      },
+      {
+        _id: "5a934e000102030405000001",
+        ejemplarId: "64fae76d2f8f5c3a3c1b5679",
+        estado: "retrasado",
+        fechaDevolucionEstimada: "2025-09-05",
+        fechaDevolucionReal: null,
+        fechaPrestamo: "2025-08-05",
+        notificaciones: [],
+        usuarioId: "64fae76d2f8f5c3a3c1b0002",
+        usuario: "Carlos Rodriguez",
+        libro: "El Quijote",
+      },
+      {
+        _id: "5a934e000102030405000002",
+        ejemplarId: "64fae76d2f8f5c3a3c1b5680",
+        estado: "cerrado",
+        fechaDevolucionEstimada: "2025-09-03",
+        fechaDevolucionReal: "2025-09-02",
+        fechaPrestamo: "2025-08-03",
+        notificaciones: [],
+        usuarioId: "64fae76d2f8f5c3a3c1b0003",
+        usuario: "Ana Martinez",
+        libro: "Rayuela",
+      },
+      {
+        _id: "5a934e000102030405000003",
+        ejemplarId: "64fae76d2f8f5c3a3c1b5681",
+        estado: "cerrado",
+        fechaDevolucionEstimada: "2025-09-10",
+        fechaDevolucionReal: "2025-09-08",
+        fechaPrestamo: "2025-08-10",
+        notificaciones: [],
+        usuarioId: "64fae76d2f8f5c3a3c1b0004",
+        usuario: "Pedro Lopez",
+        libro: "La Sombra del Viento",
+      },
+    ],
+    []
+  );
+
+  // Estados principales
   const [showModal, setShowModal] = useState(false);
   const [showModalDevolver, setShowModalDevolver] = useState(false);
   const [showModalDetalles, setShowModalDetalles] = useState(false);
@@ -90,11 +96,8 @@ export default function PrestamoVista({ volverMenu }) {
   const [mostrarNotificaciones, setMostrarNotificaciones] = useState(false);
   const [prestamoSeleccionado, setPrestamoSeleccionado] = useState(null);
   const [nuevaFechaDevolucion, setNuevaFechaDevolucion] = useState(null);
-  const [fechaRenovada, setFechaRenovada] = useState(false);
   const [errorRenovacion, setErrorRenovacion] = useState("");
-  
-  // 🎯 Usar useRef para el valor de búsqueda - no causa re-renders
-  const searchRef = useRef("");
+  const [searchValue, setSearchValue] = useState("");
 
   const [formData, setFormData] = useState({
     usuarioId: "",
@@ -105,9 +108,18 @@ export default function PrestamoVista({ volverMenu }) {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
-  // 🎯 Función memoizada para generar informe
+  // FUNCIÓN DE LOGOUT 
+  const handleLogout = useCallback(async () => {
+    try {
+      await logout(); // Esta función debería limpiar el token JWT y redirigir al login
+    } catch (error) {
+      console.error("Error durante logout:", error);
+    }
+  }, [logout]);
+
+  // Función memoizada para generar informe
   const handleGenerateReport = useCallback(() => {
-    console.log("Generando informe...");
+    // Lógica para generar informe
   }, []);
 
   const handleClose = useCallback(() => {
@@ -122,82 +134,83 @@ export default function PrestamoVista({ volverMenu }) {
     setFechaDevolucion(null);
     setPrestamoSeleccionado(null);
     setNuevaFechaDevolucion(null);
-    setFechaRenovada(false);
-    setErrorRenovacion(null);
+    setErrorRenovacion("");
   }, []);
 
-  // Memoizar funciones para evitar recreaciones innecesarias
   const handleBusqueda = useCallback((value) => {
-    searchRef.current = value;
+    setSearchValue(value);
   }, []);
 
   const handleShow = useCallback(() => setShowModal(true), []);
 
-  const handleInputChange = useCallback((e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    // Limpiar error del campo cuando el usuario empiece a escribir
-    if (errores[name]) {
-      setErrores((prev) => ({
+  const handleInputChange = useCallback(
+    (e) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({
         ...prev,
-        [name]: "",
+        [name]: value,
       }));
-    }
-  }, [errores]);
+      if (errores[name]) {
+        setErrores((prev) => ({
+          ...prev,
+          [name]: "",
+        }));
+      }
+    },
+    [errores]
+  );
 
-  const handleEjemplarChange = useCallback((index, value) => {
-    const newEjemplares = [...ejemplaresSeleccionados];
-    newEjemplares[index] = value;
-    setEjemplaresSeleccionados(newEjemplares);
+  const handleEjemplarChange = useCallback(
+    (index, value) => {
+      const newEjemplares = [...ejemplaresSeleccionados];
+      newEjemplares[index] = value;
+      setEjemplaresSeleccionados(newEjemplares);
+      if (errores.ejemplares) {
+        setErrores((prev) => ({
+          ...prev,
+          ejemplares: "",
+        }));
+      }
+    },
+    [ejemplaresSeleccionados, errores.ejemplares]
+  );
 
-    // Limpiar error de ejemplares si hay
-    if (errores.ejemplares) {
-      setErrores((prev) => ({
-        ...prev,
-        ejemplares: "",
-      }));
-    }
-  }, [ejemplaresSeleccionados, errores.ejemplares]);
+  const addEjemplar = useCallback(
+    () => setEjemplaresSeleccionados((prev) => [...prev, ""]),
+    []
+  );
 
-  const addEjemplar = useCallback(() =>
-    setEjemplaresSeleccionados(prev => [...prev, ""]), []);
-
-  const removeEjemplar = useCallback((index) =>
-    setEjemplaresSeleccionados(prev =>
-      prev.filter((_, i) => i !== index)
-    ), []);
+  const removeEjemplar = useCallback(
+    (index) =>
+      setEjemplaresSeleccionados((prev) => prev.filter((_, i) => i !== index)),
+    []
+  );
 
   const validarFormulario = useCallback(() => {
     const nuevosErrores = {};
+    if (!formData.tipoUsuario) {
+      nuevosErrores.tipoUsuario = "Seleccione el tipo de usuario";
+    }
 
-    // Validar nombre del usuario
     if (!formData.usuarioId.trim()) {
       nuevosErrores.usuarioId = "El nombre del usuario es requerido";
     }
 
-    // Validar ejemplares
     const ejemplaresVacios = ejemplaresSeleccionados.some((ej) => !ej.trim());
     if (ejemplaresVacios) {
       nuevosErrores.ejemplares = "Ingresar ejemplar";
     }
 
-    // Validar fecha de préstamo
     if (!fechaPrestamo) {
       nuevosErrores.fechaPrestamo = "La fecha de préstamo es requerida";
     }
 
-    // Validar fecha de devolución
     if (!fechaDevolucion) {
       nuevosErrores.fechaDevolucion =
         "La fecha de devolución estimada es requerida";
     } else if (fechaPrestamo) {
-      // Comparar las fechas como strings YYYY-MM-DD
       const fechaPrestamoStr = fechaPrestamo.toISOString().split("T")[0];
       const fechaDevolucionStr = fechaDevolucion.toISOString().split("T")[0];
-
       if (fechaDevolucionStr < fechaPrestamoStr) {
         nuevosErrores.fechaDevolucion =
           "La fecha de devolución debe ser mayor o igual a la fecha de préstamo";
@@ -206,60 +219,45 @@ export default function PrestamoVista({ volverMenu }) {
 
     setErrores(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;
-  }, [formData.usuarioId, ejemplaresSeleccionados, fechaPrestamo, fechaDevolucion]);
+  }, [
+    formData.tipoUsuario,
+    formData.usuarioId,
+    ejemplaresSeleccionados,
+    fechaPrestamo,
+    fechaDevolucion,
+  ]);
 
   const handleGuardarPrestamo = useCallback(() => {
-    if (!validarFormulario()) {
-      return;
-    }
+    if (!validarFormulario()) return;
 
     setGuardando(true);
-
-    // Simular guardado en base de datos luego se quita o rediseña
     setTimeout(() => {
-      console.log("Datos del préstamo:", {
-        usuarioId: formData.usuarioId,
-        ejemplares: ejemplaresSeleccionados,
-        fechaPrestamo: fechaPrestamo,
-        fechaDevolucionEstimada: fechaDevolucion,
-      });
-
       setGuardando(false);
       handleClose();
-
-      // Mostrar toast de éxito
       setToastMessage(
         `Préstamo de ${formData.usuarioId} agregado correctamente`
       );
       setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-      }, 3000);
+      setTimeout(() => setShowToast(false), 3000);
     }, 1000);
-  }, [validarFormulario, formData.usuarioId, ejemplaresSeleccionados, fechaPrestamo, fechaDevolucion]);
+  }, [validarFormulario, formData.usuarioId, handleClose]);
 
   const handleDevolverPrestamo = useCallback((prestamo) => {
     setPrestamoSeleccionado(prestamo);
-    setNuevaFechaDevolucion(null);
-    setFechaRenovada(false);
     setShowModalDevolver(true);
   }, []);
 
   const confirmarDevolucion = useCallback(() => {
-    // Simular devolución
     setTimeout(() => {
       handleClose();
       setToastMessage(
-        `Libro "${prestamoSeleccionado.libro}" devuelto correctamente`
+        `Libro "${prestamoSeleccionado?.libro}" devuelto correctamente`
       );
       setShowToast(true);
-      setTimeout(() => {
-        setShowToast(false);
-      }, 3000);
+      setTimeout(() => setShowToast(false), 3000);
     }, 500);
-  }, [prestamoSeleccionado]);
+  }, [prestamoSeleccionado, handleClose]);
 
-  // Función para renovar préstamo desde la lista
   const handleRenovarPrestamoLista = useCallback((prestamo) => {
     setPrestamoSeleccionado(prestamo);
     setNuevaFechaDevolucion(null);
@@ -267,66 +265,55 @@ export default function PrestamoVista({ volverMenu }) {
     setShowModalRenovar(true);
   }, []);
 
-  // Manejar cambio de fecha en renovación
-  const handleFechaRenovacionChange = useCallback((date) => {
-    setNuevaFechaDevolucion(date);
-    if (errorRenovacion) setErrorRenovacion("");
-  }, [errorRenovacion]);
+  const handleFechaRenovacionChange = useCallback(
+    (date) => {
+      setNuevaFechaDevolucion(date);
+      if (errorRenovacion) setErrorRenovacion("");
+    },
+    [errorRenovacion]
+  );
 
-  //Renovar Prestamo
   const handleRenovarPrestamo = useCallback(() => {
     if (!nuevaFechaDevolucion) {
       setErrorRenovacion("Debe seleccionar una nueva fecha de devolución");
       return;
     }
     setErrorRenovacion("");
-
     setTimeout(() => {
       handleClose();
       setToastMessage(
-        `Préstamo de "${prestamoSeleccionado.libro}" renovado hasta ${nuevaFechaDevolucion.toISOString().split("T")[0]}`
+        `Préstamo de "${prestamoSeleccionado?.libro}" renovado hasta ${
+          nuevaFechaDevolucion.toISOString().split("T")[0]
+        }`
       );
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     }, 500);
-  }, [nuevaFechaDevolucion, prestamoSeleccionado]);
+  }, [nuevaFechaDevolucion, prestamoSeleccionado, handleClose]);
 
   const verDetalles = useCallback((prestamo) => {
     setPrestamoSeleccionado(prestamo);
     setShowModalDetalles(true);
   }, []);
 
-  // Función para abrir notificaciones de correo electrónico
   const abrirNotificaciones = useCallback((prestamo) => {
     setPrestamoSeleccionado(prestamo);
     setMostrarNotificaciones(true);
   }, []);
 
-  // Función para volver a préstamos
   const volverPrestamos = useCallback(() => {
     setMostrarNotificaciones(false);
     setPrestamoSeleccionado(null);
+    setSearchValue("");
   }, []);
 
-  // REDIRECCIÓN A PANTALLA DE NOTIFICACIONES
-  if (mostrarNotificaciones) {
-    return (
-      <NotificacionesCorreo
-        volverPrestamos={volverPrestamos}
-        prestamo={prestamoSeleccionado}
-      />
-    );
-  }
-
-  // Función para formatear fecha
-  const formatearFecha = (fechaString) => {
+  const formatearFecha = useCallback((fechaString) => {
     if (!fechaString) return "No definida";
     const fecha = new Date(fechaString);
     return fecha.toLocaleDateString("es-ES");
-  };
+  }, []);
 
-  // Función para determinar el estado visual basado en el estado real
-  const obtenerEstadoVisual = (prestamo) => {
+  const obtenerEstadoVisual = useCallback((prestamo) => {
     switch (prestamo.estado) {
       case "activo":
         return "Activo";
@@ -337,79 +324,75 @@ export default function PrestamoVista({ volverMenu }) {
       default:
         return prestamo.estado;
     }
-  };
+  }, []);
 
-  // Función para determinar la clase CSS del estado
-  const obtenerClaseEstado = (prestamo) => {
-    switch (prestamo.estado) {
-      case "activo":
-        return styles.estadoActivo;
-      case "retrasado":
-        return styles.estadoRetrasado;
-      case "cerrado":
-        return styles.estadoCerrado;
-      default:
-        return styles.estadoActivo;
-    }
-  };
+  const obtenerClaseEstado = useCallback(
+    (prestamo) => {
+      switch (prestamo.estado) {
+        case "activo":
+          return styles.estadoActivo;
+        case "retrasado":
+          return styles.estadoRetrasado;
+        case "cerrado":
+          return styles.estadoCerrado;
+        default:
+          return styles.estadoActivo;
+      }
+    },
+    [styles]
+  );
 
-  //FILTRADO CON BÚSQUEDA Y ESTADO
   const prestamosFiltrados = useMemo(() => {
+    const searchLower = searchValue.toLowerCase();
     return prestamos.filter((p) => {
-      // Filtro por texto de búsqueda
-      const searchValue = searchRef.current?.toLowerCase() || '';
-      const cumpleFiltroTexto = !searchValue || 
-        p.usuario.toLowerCase().includes(searchValue) ||
-        p.libro.toLowerCase().includes(searchValue) ||
-        p.codigo.toLowerCase().includes(searchValue);
-
-      // Filtro por estado
-      const cumpleFiltroEstado = 
+      const cumpleFiltroTexto =
+        !searchValue ||
+        p.usuario.toLowerCase().includes(searchLower) ||
+        p.libro.toLowerCase().includes(searchLower);
+      const cumpleFiltroEstado =
         filtro === "Todos" ||
         (filtro === "Activos" && p.estado === "activo") ||
         (filtro === "Atrasados" && p.estado === "retrasado") ||
         (filtro === "Devueltos" && p.estado === "cerrado");
-
       return cumpleFiltroTexto && cumpleFiltroEstado;
     });
-  }, [prestamos, filtro]); // No incluir searchRef.current en dependencies
+  }, [prestamos, filtro, searchValue]);
 
-  console.count('PrestamoVista render');
+  if (mostrarNotificaciones) {
+    return (
+      <NotificacionesCorreo
+        volverPrestamos={volverPrestamos}
+        prestamo={prestamoSeleccionado}
+      />
+    );
+  }
 
-  //-----------------INICIO DE RETURN-----------------
   return (
     <div className={global.backgroundWrapper}>
-      {/* Toast de éxito */}
       <Toast show={showToast} message={toastMessage} />
 
-      {/* Header */}
-      <AppHeader onHomeClick={volverMenu} />
+      {/*HEADER CON LOGOUT */}
+      <AppHeader onHomeClick={volverMenu} onLogoutClick={handleLogout} />
 
-      {/* Título */}
       <PageTitle title="Préstamos" />
 
-      {/* CONTENEDOR PRINCIPAL: BOTONES LATERAL + PANEL DE PRÉSTAMOS */}
       <div className="container-fluid">
         <div className="row justify-content-center">
-          {/* ------------------ PANEL DE BOTONES LATERAL ------------------ */}
           <div className="col-md-3 col-lg-2 mb-4">
-            <FilterPanel 
+            <FilterPanel
               filtro={filtro}
               onFiltroChange={setFiltro}
               onGenerateReport={handleGenerateReport}
             />
           </div>
 
-          {/* ------------------ PANEL DE PRÉSTAMOS ------------------ */}
           <div className="col-md-9 col-lg-8">
             <div className={styles.mainContent}>
-              {/* Buscador y botón nuevo préstamo */}
-              <SearchSection 
+              <SearchSection
                 onSearchChange={handleBusqueda}
                 onNewItem={handleShow}
               />
-        
-             {/* Listado de préstamos CON SCROLL */}
+
               <div className={styles.loansListContainer}>
                 <div className={styles.loansList}>
                   {prestamosFiltrados.map((p) => (
@@ -432,7 +415,6 @@ export default function PrestamoVista({ volverMenu }) {
         </div>
       </div>
 
-      {/* Modales */}
       <NuevoPrestamoModal
         show={showModal}
         onClose={handleClose}
