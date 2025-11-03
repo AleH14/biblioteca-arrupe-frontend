@@ -3,7 +3,7 @@ import DatePicker from "react-datepicker";
 import styles from "../../styles/PrestamoVista.module.css";
 import global from "../../styles/Global.module.css";
 
-// 🎯 COMPONENTES MEMOIZADOS INDIVIDUALES - No se rerenderizan innecesariamente
+// COMPONENTES MEMOIZADOS INDIVIDUALES - No se rerenderizan innecesariamente
 const TipoUsuarioRadio = memo(({ value, checked, onChange, label, id, hasError }) => (
   <div className="form-check form-check-inline">
     <input

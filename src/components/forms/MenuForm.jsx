@@ -21,8 +21,8 @@ const Header = React.memo(({ onLogout }) => (
       <Image
         src="/images/logo_1000px.png"
         alt="Logo Colegio"
-        width={60}
-        height={60}
+        width={0}
+        height={0}
         priority={false}
         className={styles.logoHeader}
         sizes="60px"

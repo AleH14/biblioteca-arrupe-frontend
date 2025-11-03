@@ -9,7 +9,6 @@ const SearchSection = React.memo(({
   buttonText = "Nuevo Préstamo",
   initialValue = ""
 }) => {
-  console.count('🔍 SearchSection render'); // Para verificar renders
   
   // Estado local del input de búsqueda - no afecta al componente padre
   const [localSearchValue, setLocalSearchValue] = useState(initialValue);

@@ -2,7 +2,6 @@ import React from 'react';
 import global from '../../styles/Global.module.css';
 
 const PageTitle = React.memo(({ title, complementImage = "/images/complemento-1.png" }) => {
-  console.count('📄 PageTitle render'); // Para verificar renders
   return (
     <div className="container">
       <div className="row justify-content-center">

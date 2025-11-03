@@ -8,7 +8,6 @@ const FilterPanel = React.memo(({
   filters = ["Todos", "Activos", "Atrasados", "Devueltos"],
   onGenerateReport 
 }) => {
-  console.count('🔽 FilterPanel render'); // Para verificar renders
   return (
     <div className={styles.sidebarPanel}>
       <button 

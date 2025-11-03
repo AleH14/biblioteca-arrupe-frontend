@@ -2,7 +2,6 @@ import React from 'react';
 import styles from '../../styles/PrestamoVista.module.css';
 
 const Toast = React.memo(({ show, message, type = 'success' }) => {
-  console.count('🍞 Toast render'); // Para verificar renders
   if (!show) return null;
   
   return (

@@ -13,7 +13,6 @@ const PrestamoCard = React.memo(({
   obtenerEstadoVisual,
   obtenerClaseEstado 
 }) => {
-  console.count('💳 PrestamoCard render'); // Para verificar renders
   return (
     <div className={styles.card}>
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-center w-100">
