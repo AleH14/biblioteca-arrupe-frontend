@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import styles from '../../styles/PrestamoVista.module.css';
-import global from '../../styles/Global.module.css';
+import styles from '../../../styles/PrestamoVista.module.css';
+import global from '../../../styles/Global.module.css';
 
 const SearchSection = React.memo(({ 
   onSearchChange, 

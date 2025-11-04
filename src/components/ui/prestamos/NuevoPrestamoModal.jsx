@@ -1,7 +1,7 @@
 import React, { useState, useCallback, memo } from "react";
 import DatePicker from "react-datepicker";
-import styles from "../../styles/PrestamoVista.module.css";
-import global from "../../styles/Global.module.css";
+import styles from "../../../styles/PrestamoVista.module.css";
+import global from "../../../styles/Global.module.css";
 
 // COMPONENTES MEMOIZADOS INDIVIDUALES - No se rerenderizan innecesariamente
 const TipoUsuarioRadio = memo(({ value, checked, onChange, label, id, hasError }) => (

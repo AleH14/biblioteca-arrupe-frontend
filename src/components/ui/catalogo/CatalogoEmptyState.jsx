@@ -1,6 +1,6 @@
 import React from 'react';
 import { FiSearch } from 'react-icons/fi';
-import styles from '../../styles/catalogo.module.css';
+import styles from '../../../styles/catalogo.module.css';
 
 const CatalogoEmptyState = React.memo(({ 
   hasActiveFilters, 

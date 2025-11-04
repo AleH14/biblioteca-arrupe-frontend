@@ -1,6 +1,6 @@
 import React from 'react';
 import { FiX } from 'react-icons/fi';
-import styles from '../../styles/catalogo.module.css';
+import styles from '../../../styles/catalogo.module.css';
 
 const CatalogoFilters = React.memo(({ 
   filters,

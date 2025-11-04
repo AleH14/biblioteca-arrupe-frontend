@@ -1,8 +1,8 @@
 //componente de notifiaciones FORM DE ENVIAR CORREO
 import React, { useState, useCallback } from 'react';
 import { FiSend } from "react-icons/fi";
-import styles from '../../styles/NotificacionesCorreo.module.css';
-import global from '../../styles/Global.module.css';
+import global from '../../../styles/Global.module.css';
+import styles from '../../../styles/NotificacionesCorreo.module.css';
 
 const EnviarCorreo = React.memo(({ 
   prestamo,

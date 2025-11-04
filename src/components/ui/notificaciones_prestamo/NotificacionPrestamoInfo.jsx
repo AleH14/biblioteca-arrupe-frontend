@@ -1,6 +1,6 @@
 //PRIMER CARD EN NOTIFICACIONES DETALLE DEL PRESTAMO
 import React from 'react';
-import styles from '../../styles/NotificacionesCorreo.module.css';
+import styles from '../../../styles/NotificacionesCorreo.module.css';
 
 const NotificacionPrestamoInfo = React.memo(({ prestamo }) => {
   

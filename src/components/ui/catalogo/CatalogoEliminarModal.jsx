@@ -1,6 +1,6 @@
 import React from 'react';
-import global from '../../styles/Global.module.css';
-import styles from '../../styles/catalogo.module.css';
+import global from '../../../styles/Global.module.css';
+import styles from '../../../styles/catalogo.module.css';
 
 const CatalogoEliminarModal = React.memo(({ 
   show, 

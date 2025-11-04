@@ -1,6 +1,6 @@
 import React from 'react';
 import { FiEye } from "react-icons/fi";
-import styles from '../../styles/NotificacionesCorreo.module.css';
+import styles from '../../../styles/NotificacionesCorreo.module.css';
 
 const NotificacionesHistorial = React.memo(({ correosEnviados, onVerCorreo }) => {
   return (

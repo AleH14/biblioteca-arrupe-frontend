@@ -9,11 +9,11 @@ import AgregarLibro from "./AgregarLibro";
 // Importar componentes UI
 import AppHeader from "../ui/AppHeader";
 import PageTitle from "../ui/PageTitle";
-import CatalogoBarra from "../ui/CatalogoBarra";
-import CatalogoFilters from "../ui/CatalogoFilters";
-import CatalogoBookCard from "../ui/CatalogoBookCard";
-import CatalogoEmptyState from "../ui/CatalogoEmptyState";
-import CatalogoEliminarModal from "../ui/CatalogoEliminarModal";
+import CatalogoBarra from "../ui/catalogo/CatalogoBarra";
+import CatalogoFilters from "../ui/catalogo/CatalogoFilters";
+import CatalogoBookCard from "../ui/catalogo/CatalogoBookCard";
+import CatalogoEmptyState from "../ui/catalogo/CatalogoEmptyState";
+import CatalogoEliminarModal from "../ui/catalogo/CatalogoEliminarModal";
 import { useDebounce } from "../../hooks/useDebounce";
 
 // Datos estáticos

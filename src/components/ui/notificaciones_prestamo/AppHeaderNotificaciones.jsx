@@ -1,8 +1,8 @@
 import React from 'react';
 import { FiArrowLeft } from "react-icons/fi";
 import { MdLogout } from "react-icons/md";
-import global from '../../styles/Global.module.css';
-import styles from '../../styles/NotificacionesCorreo.module.css';
+import global from '../../../styles/Global.module.css';
+import styles from '../../../styles/NotificacionesCorreo.module.css';
 
 const AppHeaderNotificaciones = React.memo(({ onVolverClick, onLogoutClick }) => {
   return (

@@ -11,13 +11,13 @@ import NotificacionesCorreo from "./NotificacionesCorreo";
 import Toast from "../ui/Toast";
 import AppHeader from "../ui/AppHeader";
 import PageTitle from "../ui/PageTitle";
-import FilterPanel from "../ui/FilterPanel";
-import SearchSection from "../ui/SearchSection";
-import PrestamoCard from "../ui/PrestamoCard";
-import NuevoPrestamoModal from "../ui/NuevoPrestamoModal";
-import RenovarPrestamoModal from "../ui/RenovarPrestamoModal";
-import ConfirmarDevolucionModal from "../ui/ConfirmarDevolucionModal";
-import DetallesPrestamoModal from "../ui/DetallesPrestamoModal";
+import FilterPanel from "../ui/prestamos/FilterPanel";
+import SearchSection from "../ui/prestamos/SearchSection";
+import PrestamoCard from "../ui/prestamos/PrestamoCard";
+import NuevoPrestamoModal from "../ui/prestamos/NuevoPrestamoModal";
+import RenovarPrestamoModal from "../ui/prestamos/RenovarPrestamoModal";
+import ConfirmarDevolucionModal from "../ui/prestamos/ConfirmarDevolucionModal";
+import DetallesPrestamoModal from "../ui/prestamos/DetallesPrestamoModal";
 
 export default function PrestamoVista({ volverMenu }) {
   const { logout } = useAuth();

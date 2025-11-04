@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from '../../styles/PrestamoVista.module.css';
+import styles from '../../../styles/PrestamoVista.module.css';
 
 const ConfirmarDevolucionModal = React.memo(({ 
   show, 

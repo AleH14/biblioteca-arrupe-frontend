@@ -1,7 +1,7 @@
 import React from 'react';
 import { FiSearch, FiFilter } from 'react-icons/fi';
-import global from '../../styles/Global.module.css';
-import styles from '../../styles/catalogo.module.css';
+import global from '../../../styles/Global.module.css';
+import styles from '../../../styles/catalogo.module.css';
 
 const CatalogoBarra = React.memo(({ 
   searchValue,

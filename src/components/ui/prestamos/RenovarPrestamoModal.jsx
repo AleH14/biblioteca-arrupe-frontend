@@ -1,6 +1,6 @@
 import React from 'react';
 import DatePicker from 'react-datepicker';
-import styles from '../../styles/PrestamoVista.module.css';
+import styles from '../../../styles/PrestamoVista.module.css';
 
 const RenovarPrestamoModal = React.memo(({ 
   show, 

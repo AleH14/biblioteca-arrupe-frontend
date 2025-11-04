@@ -4,16 +4,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import styles from "../../styles/NotificacionesCorreo.module.css";
 import global from "../../styles/Global.module.css";
 
-// Componentes existentes
+// Componentes existentes reutilizables
 import PageTitle from "../ui/PageTitle";
 import Toast from "../ui/Toast";
 
 // Nuevos componentes
-import AppHeaderNotificaciones from "../ui/AppHeaderNotificaciones";
-import NotificacionPrestamoInfo from "../ui/NotificacionPrestamoInfo";
-import NotificacionesHistorial from "../ui/NotificacionesHistorial";
-import EnviarCorreo from "../ui/EnviarCorreo";
-import NotificacionesModal from "../ui/NotificacionesModal";
+import AppHeaderNotificaciones from "../ui/notificaciones_prestamo/AppHeaderNotificaciones";
+import NotificacionPrestamoInfo from "../ui/notificaciones_prestamo/NotificacionPrestamoInfo";
+import NotificacionesHistorial from "../ui/notificaciones_prestamo/NotificacionesHistorial";
+import EnviarCorreo from "../ui/notificaciones_prestamo/EnviarCorreo";
+import NotificacionesModal from "../ui/notificaciones_prestamo/NotificacionesModal";
 
 export default function NotificacionesCorreo({ volverPrestamos, prestamo }) {
   const { logout } = useAuth(); 

@@ -1,6 +1,6 @@
 //MODAL DE VER DETALLER DE CORREO EN NOTIFICACIONES
 import React from 'react';
-import styles from '../../styles/NotificacionesCorreo.module.css';
+import styles from '../../../styles/NotificacionesCorreo.module.css';
 
 const NotificacionesModal = React.memo(({ 
   correoSeleccionado, 

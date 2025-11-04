@@ -1,6 +1,6 @@
 import React from 'react';
 import { FiUser, FiBook, FiMapPin, FiCalendar } from 'react-icons/fi';
-import styles from '../../styles/PrestamoVista.module.css';
+import styles from '../../../styles/PrestamoVista.module.css';
 
 const DetallesPrestamoModal = React.memo(({ 
   show, 
