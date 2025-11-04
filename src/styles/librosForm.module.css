@@ -620,6 +620,45 @@
     opacity: 1;
   }
 }
+/* Botones Donado/Comprado */
+.selectorDonacionContainer {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  padding: 4px 6px;
+  flex-shrink: 0;
+  margin-top: 8px;
+}
+
+/* Botón base */
+.selectorBtn {
+  border: none;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 0.85rem;
+  font-weight: 400;
+  background: #fff;
+  color: #555;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+/* Estado activo: DONADO */
+.selectorBtnDonadoActivo {
+  background: #d6f5d6;
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+/* Estado activo: COMPRADO */
+.selectorBtnCompradoActivo {
+  background: #e3f2fd;
+  color: #1565c0;
+  font-weight: 600;
+}
+
 
 /* RESPONSIVIDAD */
 @media (max-width: 768px) {

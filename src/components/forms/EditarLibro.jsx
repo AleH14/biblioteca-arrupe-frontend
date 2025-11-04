@@ -1,595 +1,406 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import styles from "../../styles/librosForm.module.css";
 import global from "../../styles/Global.module.css";
-import { FiArrowLeft, FiLink } from "react-icons/fi";
-import { MdLogout } from "react-icons/md";
+import { useDebounce } from "../../hooks/useDebounce";
+import { buscarLibroPorISBN } from "../../services/googleBooks";
 
-export default function EditarLibro({ volverCatalogo, libro }) {
-  // Asegurarnos de que libro tenga los valores por defecto correctos
-  const [libroEditado, setLibroEditado] = useState({
-    titulo: libro?.titulo || "",
-    autor: libro?.autor || "",
-    editorial: libro?.editorial || "",
-    isbn: libro?.isbn || "",
-    precio: libro?.precio || "0.00",
-    portada: libro?.portada || "/images/libro-placeholder.png",
-  });
+// Componentes
+import PageTitle from "../ui/PageTitle";
+import ToastError from "../ui/ToastError";
+import AppHeaderLibro from "../ui/agregar_editar_libro/AppHeaderLibro";
+import LibroFormBase from "../ui/agregar_editar_libro/LibroFormBase";
+import EjemplaresManager from "../ui/agregar_editar_libro/EjemplaresManager";
+import ConfirmModal from "../ui/agregar_editar_libro/ConfirmModal";
 
-  // CORRECIÓN: Asegurar que ejemplares siempre sea un array
+// Componente memoizado para el botón de confirmación
+const ConfirmarEdicionButton = React.memo(({ onConfirm }) => {
+  return (
+    <div className={styles.botonesContainer}>
+      <button
+        type="button"
+        className={global.btnWarning}
+        onClick={onConfirm}
+      >
+        Confirmar Edición
+      </button>
+    </div>
+  );
+});
+
+ConfirmarEdicionButton.displayName = 'ConfirmarEdicionButton';
+
+export default function EditarLibro({ volverCatalogo, libro: libroProp }) {
+  const [libro, setLibro] = useState(() => ({
+    titulo: libroProp?.titulo || "",
+    autor: libroProp?.autor || "",
+    editorial: libroProp?.editorial || "",
+    isbn: libroProp?.isbn || "",
+    precio: libroProp?.precio || "0.00",
+    donado: libroProp?.donado ?? null,
+    portada: libroProp?.portada || "/images/libro-placeholder.png",
+    origen: libroProp?.origen || "",
+    categoriaId: libroProp?.categoriaId || ""
+  }));
+
   const [ejemplares, setEjemplares] = useState(() => {
-    // Si libro.ejemplares existe y es un array, lo usamos
-    if (libro?.ejemplares && Array.isArray(libro.ejemplares)) {
-      return libro.ejemplares;
+    if (libroProp?.ejemplares && Array.isArray(libroProp.ejemplares)) {
+      return libroProp.ejemplares.map(ej => ({
+        id: ej.id || Date.now() + Math.random(),
+        codigo: ej.codigo || "",
+        ubicacion: ej.ubicacion || "",
+        estado: ej.estado || "Disponible",
+        edificio: ej.edificio || ""
+      }));
     }
-    // Si no, creamos un array por defecto
-    return [
-      {
-        id: 1,
-        codigo: "",
-        ubicacion: "",
-        estado: "Disponible",
-      },
-    ];
+    return [{
+      id: 1,
+      codigo: "",
+      ubicacion: "",
+      estado: "Disponible",
+      edificio: ""
+    }];
   });
 
+  const [categorias, setCategorias] = useState([]);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showDeleteEjemplarModal, setShowDeleteEjemplarModal] = useState(false);
   const [ejemplarAEliminar, setEjemplarAEliminar] = useState(null);
   const [showValidationError, setShowValidationError] = useState(false);
   const [validationMessage, setValidationMessage] = useState("");
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setLibroEditado(prev => ({
+  // OPTIMIZACIÓN: Usar useRef para valores que no necesitan trigger re-renders
+  const validationTimeoutRef = useRef(null);
+  const lastISBNRef = useRef(libroProp?.isbn || "");
+  const libroRef = useRef(libro);
+  const ejemplaresRef = useRef(ejemplares);
+
+  // Sincronizar refs con estado
+  useEffect(() => {
+    libroRef.current = libro;
+    ejemplaresRef.current = ejemplares;
+  }, [libro, ejemplares]);
+
+  // Cargar categorías
+  useEffect(() => {
+    setCategorias([
+      { _id: "1", descripcion: "Literatura" },
+      { _id: "2", descripcion: "Ciencia" },
+      { _id: "3", descripcion: "Tecnología" },
+      { _id: "4", descripcion: "Historia" },
+      { _id: "5", descripcion: "Filosofía" }
+    ]);
+  }, []);
+
+  // OPTIMIZACIÓN: Debounce para ISBN con validación de cambio
+  const debouncedISBN = useDebounce(libro.isbn, 800);
+
+  // BÚSQUEDA POR ISBN OPTIMIZADA - solo si realmente cambió
+  useEffect(() => {
+    const buscarPorISBN = async () => {
+      // Validación: solo buscar si el ISBN cambió y no está vacío
+      if (!debouncedISBN.trim() || debouncedISBN === lastISBNRef.current) {
+        return;
+      }
+
+      // Validación: solo buscar si el ISBN tiene formato válido (mínimo 10 caracteres)
+      if (debouncedISBN.trim().length < 10) {
+        return;
+      }
+
+      try {
+        lastISBNRef.current = debouncedISBN;
+        
+        const datosLibro = await buscarLibroPorISBN(debouncedISBN.trim());
+        
+        if (datosLibro) {
+          setLibro(prev => ({
+            ...prev,
+            titulo: datosLibro.titulo || prev.titulo,
+            autor: datosLibro.autor || prev.autor,
+            editorial: datosLibro.editorial || prev.editorial,
+            portada: datosLibro.portada || prev.portada,
+          }));
+        }
+      } catch (error) {
+        // No mostrar error al usuario para no interrumpir la experiencia
+      }
+    };
+
+    buscarPorISBN();
+  }, [debouncedISBN]);
+
+  // OPTIMIZACIÓN: Handlers memoizados con dependencias mínimas
+  const handleLibroChange = useCallback((name, value) => {
+    setLibro(prev => ({
       ...prev,
       [name]: value
     }));
-  };
+  }, []);
 
-  const handleUrlFocus = (e) => {
-    e.target.select();
-  };
+  const handleISBNChange = useCallback((value) => {
+    setLibro(prev => ({
+      ...prev,
+      isbn: value
+    }));
+  }, []);
 
-  const handleEjemplarChange = (index, field, value) => {
-    const nuevosEjemplares = [...ejemplares];
-    nuevosEjemplares[index][field] = value;
-    setEjemplares(nuevosEjemplares);
-  };
+  const handleEjemplarChange = useCallback((index, field, value) => {
+    setEjemplares(prev => {
+      const nuevosEjemplares = [...prev];
+      nuevosEjemplares[index] = {
+        ...nuevosEjemplares[index],
+        [field]: value
+      };
+      return nuevosEjemplares;
+    });
+  }, []);
 
-  const agregarEjemplar = () => {
+  const agregarEjemplar = useCallback(() => {
     const nuevoId = ejemplares.length > 0 ? Math.max(...ejemplares.map(e => e.id)) + 1 : 1;
-    setEjemplares([
-      ...ejemplares,
+    setEjemplares(prev => [
+      ...prev,
       {
         id: nuevoId,
         codigo: "",
         ubicacion: "",
         estado: "Disponible",
+        edificio: ""
       },
     ]);
-  };
+  }, [ejemplares.length]);
 
-  const confirmarEliminarEjemplar = (ejemplar) => {
+  const confirmarEliminarEjemplar = useCallback((ejemplar) => {
     setEjemplarAEliminar(ejemplar);
     setShowDeleteEjemplarModal(true);
-  };
+  }, []);
 
-  const eliminarEjemplar = () => {
+  const eliminarEjemplar = useCallback(() => {
     if (ejemplarAEliminar) {
-      setEjemplares(ejemplares.filter((ej) => ej.id !== ejemplarAEliminar.id));
+      setEjemplares(prev => prev.filter((ej) => ej.id !== ejemplarAEliminar.id));
       setEjemplarAEliminar(null);
       setShowDeleteEjemplarModal(false);
     }
-  };
+  }, [ejemplarAEliminar]);
 
-  // FUNCIÓN DE VALIDACIÓN
-  const validarFormulario = () => {
-  let mensajeLibro = "";
+  // OPTIMIZACIÓN: Validación más eficiente usando refs
+  const validarFormulario = useCallback(() => {
+    // Clear previous timeout
+    if (validationTimeoutRef.current) {
+      clearTimeout(validationTimeoutRef.current);
+    }
 
-  // Validar campos obligatorios del libro
-  if (
-    !libroEditado.titulo.trim() ||
-    !libroEditado.autor.trim() ||
-    !libroEditado.editorial.trim() ||
-    !libroEditado.isbn.trim()
-  ) {
-    mensajeLibro += "Por favor, complete todos los campos obligatorios del libro (Título, Autor, Editorial, ISBN).";
-  }
+    const currentLibro = libroRef.current;
+    const currentEjemplares = ejemplaresRef.current;
 
-  // Validar selección de Donado o Comprado
-  if (libroEditado.donado === null || libroEditado.donado === undefined) {
-    if (mensajeLibro) mensajeLibro += " ";
-    mensajeLibro += "Seleccione si el libro es Donado o Comprado.";
-  }
+    let mensajeLibro = "";
 
-  // Validar precio solo si es Comprado
-  if (libroEditado.donado === false && (!libroEditado.precio || libroEditado.precio <= 0)) {
-    if (mensajeLibro) mensajeLibro += " ";
-    mensajeLibro += "Debe ingresar un precio estimado para los libros comprados.";
-  }
+    // Validación más rápida sin trim innecesarios
+    if (!currentLibro.titulo?.trim() || !currentLibro.autor?.trim() || !currentLibro.editorial?.trim() || 
+        !currentLibro.isbn?.trim() || !currentLibro.categoriaId?.trim()) {
+      mensajeLibro += "Complete todos los campos obligatorios del libro (Título, Autor, Editorial, ISBN, Categoría).";
+    }
 
-  // Mostrar mensaje si hay errores del libro
-  if (mensajeLibro) {
-    setValidationMessage(mensajeLibro);
-    return false;
-  }
+    if (currentLibro.donado === null || currentLibro.donado === undefined) {
+      if (mensajeLibro) mensajeLibro += " ";
+      mensajeLibro += "Seleccione si el libro es Donado o Comprado.";
+    }
 
-  // Validar ejemplares (que haya al menos uno con código y ubicación)
-  const ejemplaresValidos = ejemplares.filter(
-    (ejemplar) => ejemplar.codigo.trim() && ejemplar.ubicacion.trim()
-  );
+    if (currentLibro.donado === false && (!currentLibro.precio || Number(currentLibro.precio) <= 0)) {
+      if (mensajeLibro) mensajeLibro += " ";
+      mensajeLibro += "Debe ingresar un precio estimado para los libros comprados.";
+    }
 
-  if (ejemplaresValidos.length === 0) {
-    setValidationMessage("Debe tener al menos un ejemplar con código y ubicación completos.");
-    return false;
-  }
+    if (currentLibro.donado === true && !currentLibro.origen?.trim()) {
+      if (mensajeLibro) mensajeLibro += " ";
+      mensajeLibro += "Debe ingresar el origen para libros donados.";
+    }
 
-  // Si todo está correcto
-  setValidationMessage("");
-  return true;
-};
+    if (mensajeLibro) {
+      setValidationMessage(mensajeLibro);
+      return false;
+    }
 
+    // Validación más eficiente de ejemplares
+    const tieneEjemplaresValidos = currentEjemplares.some(
+      ejemplar => ejemplar.codigo?.trim() && ejemplar.ubicacion?.trim()
+    );
 
-  const handleConfirmarEdicion = () => {
-    // Validar el formulario antes de mostrar el modal
+    if (!tieneEjemplaresValidos) {
+      setValidationMessage("Debe tener al menos un ejemplar con código y ubicación completos.");
+      return false;
+    }
+
+    setValidationMessage("");
+    return true;
+  }, []);
+
+  const handleConfirmarEdicion = useCallback(() => {
     if (!validarFormulario()) {
       setShowValidationError(true);
-      // Ocultar el mensaje después de 5 segundos
-      setTimeout(() => {
+      // OPTIMIZACIÓN: Usar ref para el timeout
+      validationTimeoutRef.current = setTimeout(() => {
         setShowValidationError(false);
       }, 5000);
       return;
     }
     
-    // Si la validación es exitosa, mostrar el modal de confirmación
     setShowConfirmModal(true);
     setShowValidationError(false);
-  };
+  }, [validarFormulario]);
 
-  const handleGuardarConfirmado = () => {
-    console.log("Libro editado:", libroEditado);
-    console.log("Ejemplares:", ejemplares);
+  const handleGuardarConfirmado = useCallback(() => {
     setShowConfirmModal(false);
     volverCatalogo();
-  };
+  }, [volverCatalogo]);
+
+  const handleCloseValidationError = useCallback(() => {
+    setShowValidationError(false);
+    if (validationTimeoutRef.current) {
+      clearTimeout(validationTimeoutRef.current);
+    }
+  }, []);
+
+  const handleCloseConfirmModal = useCallback(() => {
+    setShowConfirmModal(false);
+  }, []);
+
+  const handleCloseDeleteModal = useCallback(() => {
+    setShowDeleteEjemplarModal(false);
+  }, []);
+
+  // Cleanup effect para timeouts
+  useEffect(() => {
+    return () => {
+      if (validationTimeoutRef.current) {
+        clearTimeout(validationTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const getCategoriaSeleccionada = useCallback(() => {
+    return categorias.find(cat => cat._id === libro.categoriaId);
+  }, [categorias, libro.categoriaId]);
+
+  // Componentes memoizados
+  const memoizedHeader = useMemo(() => (
+    <AppHeaderLibro onVolver={volverCatalogo}>
+      <ToastError 
+        show={showValidationError} 
+        message={validationMessage}
+        onClose={handleCloseValidationError}
+      />
+    </AppHeaderLibro>
+  ), [volverCatalogo, showValidationError, validationMessage, handleCloseValidationError]);
+
+  const memoizedPageTitle = useMemo(() => (
+    <PageTitle title={`EDICIÓN → ${libro.titulo || "Libro sin título"}`} />
+  ), [libro.titulo]);
+
+  const memoizedLibroFormBase = useMemo(() => (
+    <LibroFormBase
+      libro={libro}
+      categorias={categorias}
+      onLibroChange={handleLibroChange}
+      onISBNChange={handleISBNChange}
+      modoEdicion={true}
+    />
+  ), [libro, categorias, handleLibroChange, handleISBNChange]);
+
+  const memoizedEjemplaresManager = useMemo(() => (
+    <EjemplaresManager
+      ejemplares={ejemplares}
+      onEjemplarChange={handleEjemplarChange}
+      onAgregarEjemplar={agregarEjemplar}
+      onEliminarEjemplar={confirmarEliminarEjemplar}
+      showDeleteButton={true}
+    />
+  ), [ejemplares, handleEjemplarChange, agregarEjemplar, confirmarEliminarEjemplar]);
+
+  const memoizedConfirmButton = useMemo(() => (
+    <ConfirmarEdicionButton onConfirm={handleConfirmarEdicion} />
+  ), [handleConfirmarEdicion]);
 
   return (
     <div className={global.backgroundWrapper}>
-      {/* Header */}
-      <header
-        className={`${global.header} d-flex justify-content-between align-items-center`}
-      >
-        <button className={styles.volverBtn} onClick={volverCatalogo}>
-          <FiArrowLeft className={styles.volverIcon} />
-          <span className={styles.volverTexto}>Volver a Catálogo</span>
-        </button>
-        <button className={global.logoutBtn}>
-          <MdLogout className={global.logoutIcon} />
-          <span className="d-none d-sm-inline">Cerrar sesión</span>
-        </button>
-      </header>
+      {memoizedHeader}
+      {memoizedPageTitle}
 
-      {/* Título */}
-      <div className="container my-4">
-        <div className="row justify-content-center">
-          <div className="col-auto">
-            <div className="d-flex align-items-center">
-              <img
-                src="/images/complemento-1.png"
-                alt="Complemento"
-                className={global.complementoImg + " me-2"}
-              />
-              <h1 className={`${styles.tituloPagina} mb-0`}>
-                EDICIÓN → {libroEditado.titulo || "Libro sin título"}
-              </h1>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Mensaje de Error de Validación */}
-      {showValidationError && (
-        <div className={styles.notificacionError}>
-          <div className={styles.errorIcon}>⚠</div>
-          <span>{validationMessage}</span>
-          <button 
-            className={styles.errorCloseBtn}
-            onClick={() => setShowValidationError(false)}
-          >
-            ✖
-          </button>
-        </div>
-      )}
-
-      {/* Formulario de Edición */}
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-12 col-lg-11">
             <div className={styles.formContainer}>
-              
-              {/* Sección Superior: Imagen y Formulario */}
-              <div className="row mb-4">
-                {/* Imagen del Libro - Lado Izquierdo */}
-                <div className="col-12 col-md-4">
-                  <div className={styles.imagenContainer}>
-                    <div className={styles.portadaWrapper}>
-                      <img
-                        src={libroEditado.portada}
-                        alt={libroEditado.titulo || "Libro"}
-                        className={styles.portada}
-                        onError={(e) => {
-                          e.target.src = "/images/libro-placeholder.png";
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
+              {memoizedLibroFormBase}
 
-                {/* Formulario - Lado Derecho */}
-                <div className="col-12 col-md-8">
-                  <div className="row">
-                    {/* Título */}
-                    <div className="col-12 mb-3">
-                      <label className={styles.formLabel}>Título *</label>
-                      <input
-                        type="text"
-                        name="titulo"
-                        value={libroEditado.titulo}
-                        onChange={handleChange}
-                        className={styles.formInput}
-                        placeholder="Ingrese el título del libro"
-                        required
-                      />
-                    </div>
-
-                    {/* Autor */}
-                    <div className="col-12 col-md-6 mb-3">
-                      <label className={styles.formLabel}>Autor *</label>
-                      <input
-                        type="text"
-                        name="autor"
-                        value={libroEditado.autor}
-                        onChange={handleChange}
-                        className={styles.formInput}
-                        placeholder="Ingrese el autor"
-                        required
-                      />
-                    </div>
-
-                    {/* Editorial */}
-                    <div className="col-12 col-md-6 mb-3">
-                      <label className={styles.formLabel}>Editorial *</label>
-                      <input
-                        type="text"
-                        name="editorial"
-                        value={libroEditado.editorial}
-                        onChange={handleChange}
-                        className={styles.formInput}
-                        placeholder="Ingrese la editorial"
-                        required
-                      />
-                    </div>
-
-                    {/* ISBN */}
-                    <div className="col-12 col-md-6 mb-3">
-                      <label className={styles.formLabel}>ISBN *</label>
-                      <div className={styles.inputWithIcon}>
-                        <input
-                          type="text"
-                          name="isbn"
-                          value={libroEditado.isbn}
-                          onChange={handleChange}
-                          className={`${styles.formInput} ${styles.inputWithGoogleIcon}`}
-                          placeholder="Ingrese el ISBN"
-                          required
-                        />
-                        <img
-                          src="https://developers.google.com/books/images/google_watermark.gif"
-                          alt="Google Books"
-                          className={styles.googleBooksIcon}
-                        />
-                      </div>
-                    </div>
-
-                   {/* Precio Estimado */}
-
-                    <div className="col-12 col-md-6 mb-3">
-                      <label className={styles.formLabel}>
-                        Precio estimado{" "}
-                        {libroEditado.donado === false && (
-                          <span>*</span>
-                        )}
-                      </label>
-                      <div className={styles.precioInputGroup}>
-                        <span className={styles.precioPrefix}>$</span>
-                        <input
-                          type="number"
-                          name="precio"
-                          value={libroEditado.precio}
-                          onChange={handleChange}
-                          className={`${styles.formInput} ${styles.precioInput}`}
-                          placeholder="0.00"
-                          step="0.01"
-                          min="0"
-                          required={libroEditado.donado === false} // obligatorio solo si es comprado
-                        />
-                      </div>
-
-                      {/* Donado o Comprado */}
-                      <div className={global.selectorDonacionContainer}>
-                        <button
-                          type="button"
-                          onClick={() => setLibroEditado({ ...libroEditado, donado: true })}
-                          className={`${global.selectorBtn} ${
-                            libroEditado.donado ? global.selectorBtnDonadoActivo : ""
-                          }`}
-                        >
-                          📘 Donado
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setLibroEditado({ ...libroEditado, donado: false })}
-                          className={`${global.selectorBtn} ${
-                            libroEditado.donado === false ? global.selectorBtnCompradoActivo : ""
-                          }`}
-                        >
-                          💰 Comprado
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* URL de la imagen */}
-                    <div className="col-12 mb-3">
-                      <label className={styles.formLabel}>URL de la imagen del libro</label>
-                      <div className={styles.urlInputGroup}>
-                        <span className={styles.urlIcon}>
-                          <FiLink />
-                        </span>
-                        <input
-                          type="text"
-                          name="portada"
-                          value={libroEditado.portada}
-                          onChange={handleChange}
-                          onFocus={handleUrlFocus}
-                          className={styles.urlInput}
-                          placeholder="https://ejemplo.com/imagen.jpg"
-                        />
-                      </div>
-                      <small className={styles.helperText}>
-                        Los cambios se reflejarán inmediatamente en la imagen
-                      </small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Línea separadora */}
               <hr className={styles.separador} />
 
-              {/* Sección de Ejemplares */}
-              <div className="mb-4">
-                <div className={styles.encabezadoSeccion}>
-                  <h5 className={styles.tituloSeccion}>Ejemplares</h5>
-                  <button
-                    type="button"
-                    className={global.btnPrimary}
-                    onClick={agregarEjemplar}
-                  >
-                    <span className={global.btnPrimaryMas}>+</span> Agregar Ejemplar
-                  </button>
-                </div>
+              {memoizedEjemplaresManager}
 
-                {/* Tabla de Ejemplares Responsiva */}
-                <div className={styles.tablaResponsive}>
-                  <table className={styles.tabla}>
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Código</th>
-                        <th>Ubicación</th>
-                        <th>Edificio</th>
-                        <th>Estado</th>
-                        <th>Acción</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {/* CORRECIÓN: Aseguramos que ejemplares sea un array antes de usar map */}
-                      {Array.isArray(ejemplares) && ejemplares.map((ejemplar, index) => (
-                        <tr key={ejemplar.id || index}>
-                          <td className="fw-bold">{index + 1}</td>
-
-                          {/* Código */}
-
-                          <td>
-                            <input
-                              type="text"
-                              value={ejemplar.codigo || ""}
-                              onChange={(e) =>
-                                handleEjemplarChange(index, "codigo", e.target.value)
-                              }
-                              className={styles.tablaInput}
-                              placeholder="Código del ejemplar"
-                            />
-                          </td>
-
-                          {/* Ubicación */}
-
-                          <td>
-                            <input
-                              type="text"
-                              value={ejemplar.ubicacion || ""}
-                              onChange={(e) =>
-                                handleEjemplarChange(index, "ubicacion", e.target.value)
-                              }
-                              className={styles.tablaInput}
-                              placeholder="Ubicación del ejemplar"
-                            />
-                          </td>
-
-                           {/* Edificio */}
-                           
-                          <td>
-                            <select
-                              value={ejemplar.edificio || ""}
-                              onChange={(e) =>
-                                handleEjemplarChange(index, "edificio", e.target.value)
-                              }
-                              className={styles.tablaSelect}
-                            >
-                              <option value="">Seleccione</option>
-                              <option value="1">1</option>
-                              <option value="2">2</option>
-                              <option value="3">3</option>
-                            </select>
-                          </td>
-
-                           {/* Estado */}
-                          <td>
-                            <select
-                              value={ejemplar.estado || "Disponible"}
-                              onChange={(e) =>
-                                handleEjemplarChange(index, "estado", e.target.value)
-                              }
-                              className={styles.tablaSelect}
-                            >
-                              <option value="Disponible">Disponible</option>
-                              <option value="Prestado">Prestado</option>
-                              <option value="Reservado">Reservado</option>
-                              <option value="Perdido">Perdido</option>
-                            </select>
-                          </td>
-
-                          {/* Acción */}
-
-                          <td>
-                            {/* Solo mostrar botón eliminar si hay más de un ejemplar */}
-                            {ejemplares.length > 1 && (
-                              <button
-                                type="button"
-                                className={`${global.btnSecondary} ${styles.eliminarBtn}`}
-                                onClick={() => confirmarEliminarEjemplar(ejemplar)}
-                              >
-                                Eliminar Ejemplar
-                              </button>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Línea separadora */}
               <hr className={styles.separador} />
 
-              {/* Botón de Confirmación */}
-              <div className={styles.botonesContainer}>
-                <button
-                  type="button"
-                  className={global.btnWarning}
-                  onClick={handleConfirmarEdicion}
-                >
-                  Confirmar Edición
-                </button>
-              </div>
+              {memoizedConfirmButton}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Modal de Confirmación de Edición */}
-      {showConfirmModal && (
-        <div className={styles.modalBackdrop}>
-          <div className={styles.modalContent}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Confirmar Edición</h3>
-              <button 
-                className={styles.modalCloseBtn}
-                onClick={() => setShowConfirmModal(false)}
-              >
-                ✖
-              </button>
-            </div>
-            <div className={styles.modalBody}>
-              <p className={styles.modalText}>¿Estás seguro de que deseas guardar los cambios realizados en el libro?</p>
-              <div className={styles.libroInfo}>
-                <strong className={styles.libroTitulo}>{libroEditado.titulo}</strong>
-                <br />
-                <small className={styles.libroDetalle}>por {libroEditado.autor}</small>
-                <br />
-                <small className={styles.libroDetalle}>Editorial: {libroEditado.editorial}</small>
-                <br />
-                <small className={styles.libroDetalle}>ISBN: {libroEditado.isbn}</small>
-                <br />
-                <small className={styles.libroDetalle}>Precio: ${libroEditado.precio}</small>
-                <br />
-                <small className={styles.libroDetalle}>Ejemplares: {ejemplares.length}</small>
-              </div>
-            </div>
-            <div className={styles.modalFooter}>
-              <button
-                className={global.btnSecondary}
-                onClick={() => setShowConfirmModal(false)}
-              >
-                Cancelar
-              </button>
-              <button
-                className={global.btnWarning}
-                onClick={handleGuardarConfirmado}
-              >
-                Sí, Guardar Cambios
-              </button>
-            </div>
-          </div>
+      {/* Modales */}
+      <ConfirmModal
+        show={showConfirmModal}
+        onClose={handleCloseConfirmModal}
+        onConfirm={handleGuardarConfirmado}
+        title="Confirmar Edición"
+        message="¿Estás seguro de que deseas guardar los cambios realizados en este libro?"
+        confirmText="Sí, Guardar Cambios"
+      >
+        <div className={styles.libroInfo}>
+          <strong className={styles.libroTitulo}>{libro.titulo}</strong>
+          <br />
+          <small className={styles.libroDetalle}>por {libro.autor}</small>
+          <br />
+          <small className={styles.libroDetalle}>Editorial: {libro.editorial}</small>
+          <br />
+          <small className={styles.libroDetalle}>Categoría: {getCategoriaSeleccionada()?.descripcion || "No seleccionada"}</small>
+          <br />
+          <small className={styles.libroDetalle}>ISBN: {libro.isbn}</small>
+          <br />
+          <small className={styles.libroDetalle}>Precio: ${libro.precio}</small>
+          {libro.donado && libro.origen && (
+            <>
+              <br />
+              <small className={styles.libroDetalle}>Origen: {libro.origen}</small>
+            </>
+          )}
+          <br />
+          <small className={styles.libroDetalle}>Ejemplares: {ejemplares.length}</small>
         </div>
-      )}
+      </ConfirmModal>
 
-      {/* Modal de Confirmación de Eliminar Ejemplar */}
-      {showDeleteEjemplarModal && ejemplarAEliminar && (
-        <div className={styles.modalBackdrop}>
-          <div className={styles.modalContent}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Eliminar Ejemplar</h3>
-              <button 
-                className={styles.modalCloseBtn}
-                onClick={() => setShowDeleteEjemplarModal(false)}
-              >
-                ✖
-              </button>
-            </div>
-            <div className={styles.modalBody}>
-              <p className={styles.modalText}>¿Estás seguro de que deseas eliminar este ejemplar?</p>
-              <div className={styles.ejemplarInfo}>
-                <strong className={styles.ejemplarCodigo}>{ejemplarAEliminar.codigo || "Ejemplar sin código"}</strong>
-                <br />
-                <small className={styles.ejemplarDetalle}>Ubicación: {ejemplarAEliminar.ubicacion || "Sin ubicación"}</small>
-                <br />
-                <small className={styles.ejemplarDetalle}>Estado: {ejemplarAEliminar.estado}</small>
-              </div>
-              <p className={styles.modalWarning}>
-                Esta acción no se puede deshacer.
-              </p>
-            </div>
-            <div className={styles.modalFooter}>
-              <button
-                className={global.btnSecondary}
-                onClick={() => setShowDeleteEjemplarModal(false)}
-              >
-                Cancelar
-              </button>
-              <button
-                className={global.btnWarning}
-                onClick={eliminarEjemplar}
-              >
-                Sí, Eliminar
-              </button>
-            </div>
-          </div>
+      <ConfirmModal
+        show={showDeleteEjemplarModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={eliminarEjemplar}
+        title="Eliminar Ejemplar"
+        message="¿Estás seguro de que deseas eliminar este ejemplar?"
+        confirmText="Sí, Eliminar"
+      >
+        <div className={styles.ejemplarInfo}>
+          <strong className={styles.ejemplarCodigo}>
+            {ejemplarAEliminar?.codigo || "Ejemplar sin código"}
+          </strong>
+          <br />
+          <small className={styles.ejemplarDetalle}>
+            Ubicación: {ejemplarAEliminar?.ubicacion || "Sin ubicación"}
+          </small>
+          <br />
+          <small className={styles.ejemplarDetalle}>
+            Estado: {ejemplarAEliminar?.estado}
+          </small>
         </div>
-      )}
+        <p className={styles.modalWarning}>
+          Esta acción no se puede deshacer.
+        </p>
+      </ConfirmModal>
     </div>
   );
 }
