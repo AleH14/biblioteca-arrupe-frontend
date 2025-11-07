@@ -358,6 +358,29 @@
   color: #dc2626;
 }
 
+/*Creditos de imagen*/
+.imageCredit {
+  margin-top: 8px;
+  padding: 8px 0; /* Más padding vertical */
+  min-height: 24px; /* Altura*/
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Alinear a la izquierda */
+}
+
+.imageCredit .googleBooksIcon {
+  height: 20px;
+  width: auto; /* Mantener proporción */
+  opacity: 0.7;
+  margin-left: 6px;
+}
+.creditText {
+  font-size: 0.8rem;
+  color: #6c757d;
+  opacity: 0.7;
+  font-style: italic;
+}
+
 /* === BOTONES === */
 .btnUniforme {
   width: 100px;

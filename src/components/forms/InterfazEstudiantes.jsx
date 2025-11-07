@@ -65,7 +65,7 @@ const libros = [
       },
     ],
     portada:
-      "http://books.google.com/books/content?id=qg9fAAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+      "https://cdn.creazilla.com/emojis/52888/closed-book-emoji-clipart-md.png",
     isbn: "9780394722160",
     categoriaId: "2",
     donado: true,
@@ -275,7 +275,7 @@ const prestamos = [
     usuario: "Carlos Rodriguez",
     libro: "El Quijote",
     portada:
-      "http://books.google.com/books/content?id=aHM5PwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+      "https://cdn.creazilla.com/emojis/52888/closed-book-emoji-clipart-md.png",
   },
   {
     _id: "5a934e000102030405000002",

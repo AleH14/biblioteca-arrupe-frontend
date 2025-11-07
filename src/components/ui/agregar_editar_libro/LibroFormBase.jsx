@@ -86,7 +86,7 @@ const LibroFormBase = React.memo(
             {imageSource === "google" && (
               <div className={styles.creditContainer}>
                 <img
-                  src="https://developers.google.com/books/images/google_watermark.gif"
+                  src="https://books.google.com/googlebooks/images/poweredby.png?hl=es-419"
                   alt="Google Books"
                   className={styles.googleBooksIcon}
                 />
@@ -106,7 +106,7 @@ const LibroFormBase = React.memo(
         {/* Formulario - Lado Derecho */}
         <div className="col-12 col-md-8">
           <div className="row">
-            {/* ISBN - MANTENIENDO LA FUNCIONALIDAD DE BÚSQUEDA */}
+            {/* ISBN  */}
             <div className="col-12 col-md-6 mb-3">
               <label htmlFor={fieldIds.isbn} className={styles.formLabel}>
                 ISBN *
@@ -122,6 +122,11 @@ const LibroFormBase = React.memo(
                   placeholder="Ingrese el ISBN"
                   required
                   autoComplete="isbn"
+                />
+                <img
+                  src="https://developers.google.com/books/images/google_watermark.gif"
+                  alt="Google Books"
+                  className={styles.googleBooksIcon}
                 />
               </div>
             </div>

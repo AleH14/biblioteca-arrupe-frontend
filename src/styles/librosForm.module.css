@@ -153,16 +153,34 @@
 
 /* Estilo para el icono de Google Books en créditos */
 .creditContainer .googleBooksIcon {
-  height: 16px;
+  height: 30px;
   opacity: 0.7;
 }
 
 /* Estilo para el texto de Creazilla */
 .creazillaCredit {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   color: #6c757d;
   opacity: 0.7;
   font-style: italic;
+}
+
+/*CREDITO DE GOOGLE EN INPUT*/
+.inputWithIcon {
+  position: relative;
+}
+
+.inputWithIcon .googleBooksIcon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 16px;
+  opacity: 0.7;
+}
+
+.inputWithIcon .formInput {
+  padding-right: 35px; /* Espacio para el icono */
 }
 
 /* BOTON DE IMAGEN PREDETERMINADA */

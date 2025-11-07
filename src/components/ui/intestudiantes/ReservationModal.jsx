@@ -3,6 +3,27 @@ import { FiX } from 'react-icons/fi';
 import { MdDateRange } from 'react-icons/md';
 import styles from '../../../styles/IntEstudiantes.module.css';
 
+// Función helper para detectar el origen de la imagen
+const getImageSource = (imageUrl) => {
+  if (!imageUrl) return null;
+
+  const url = imageUrl.toLowerCase();
+
+  if (
+    url.includes("google.com") ||
+    url.includes("googleapis.com") ||
+    url.includes("gstatic.com")
+  ) {
+    return "google";
+  }
+
+  if (url.includes("creazilla.com")) {
+    return "creazilla";
+  }
+
+  return null;
+};
+
 const ReservationModal = React.memo(({ 
   show, 
   libro, 
@@ -28,6 +49,9 @@ const ReservationModal = React.memo(({
     return categoria ? categoria.descripcion : "Sin categoría";
   };
 
+  // Obtener el origen de la imagen actual
+  const imageSource = getImageSource(libro.portada);
+
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modal}>
@@ -50,6 +74,26 @@ const ReservationModal = React.memo(({
               <span className={styles.modalCategory}>
                 {getCategoriaDescripcion()}
               </span>
+              {/* Créditos de imagen */}
+              {imageSource === "google" && (
+                <div className={styles.imageCredit}>
+                   <span className={styles.creditText}>
+                    Imagen: 
+                  </span>
+                  <img
+                    src="https://books.google.com/googlebooks/images/poweredby.png?hl=es-419"
+                    alt="Google Books"
+                    className={styles.googleBooksIcon}
+                  />
+                </div>
+              )}
+              {imageSource === "creazilla" && (
+                <div className={styles.imageCredit}>
+                  <span className={styles.creditText}>
+                    Imagen vía Creazilla.com
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
