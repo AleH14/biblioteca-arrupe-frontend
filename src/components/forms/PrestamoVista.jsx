@@ -18,11 +18,12 @@ import NuevoPrestamoModal from "../ui/prestamos/NuevoPrestamoModal";
 import RenovarPrestamoModal from "../ui/prestamos/RenovarPrestamoModal";
 import ConfirmarDevolucionModal from "../ui/prestamos/ConfirmarDevolucionModal";
 import DetallesPrestamoModal from "../ui/prestamos/DetallesPrestamoModal";
+import ConfirmarPrestamoModal from "../ui/prestamos/ConfirmarPrestamoModal";
 
 export default function PrestamoVista({ volverMenu }) {
   const { logout } = useAuth();
 
-  // Datos de ejemplo
+  // Datos de ejemplo actualizados
   const prestamos = useMemo(
     () => [
       {
@@ -43,6 +44,8 @@ export default function PrestamoVista({ volverMenu }) {
         usuarioId: "64fae76d2f8f5c3a3c1b0001",
         usuario: "Maria Elizabeth Gonzalez Hernández",
         libro: "Cien Años de Soledad",
+        portada:
+          "http://books.google.com/books/content?id=WV_pAAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
       },
       {
         _id: "5a934e000102030405000001",
@@ -55,6 +58,8 @@ export default function PrestamoVista({ volverMenu }) {
         usuarioId: "64fae76d2f8f5c3a3c1b0002",
         usuario: "Carlos Rodriguez",
         libro: "El Quijote",
+        portada:
+          "http://books.google.com/books/content?id=aHM5PwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
       },
       {
         _id: "5a934e000102030405000002",
@@ -67,6 +72,8 @@ export default function PrestamoVista({ volverMenu }) {
         usuarioId: "64fae76d2f8f5c3a3c1b0003",
         usuario: "Ana Martinez",
         libro: "Rayuela",
+        portada:
+          "http://books.google.com/books/content?id=Zf2APwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
       },
       {
         _id: "5a934e000102030405000003",
@@ -78,7 +85,23 @@ export default function PrestamoVista({ volverMenu }) {
         notificaciones: [],
         usuarioId: "64fae76d2f8f5c3a3c1b0004",
         usuario: "Pedro Lopez",
-        libro: "La Sombra del Viento",
+        libro: "El Principito",
+        portada:
+          "http://books.google.com/books/content?id=Zf2APwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+      },
+      {
+        _id: "5a934e000102030405000004",
+        ejemplarId: "64fae76d2f8f5c3a3c1b5682",
+        estado: "reservado",
+        fechaDevolucionEstimada: null,
+        fechaDevolucionReal: null,
+        fechaPrestamo: null,
+        notificaciones: [],
+        usuarioId: "64fae76d2f8f5c3a3c1b0005",
+        usuario: "Laura García",
+        libro: "1984",
+        portada:
+          "http://books.google.com/books/content?id=Zf2APwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
       },
     ],
     []
@@ -89,6 +112,8 @@ export default function PrestamoVista({ volverMenu }) {
   const [showModalDevolver, setShowModalDevolver] = useState(false);
   const [showModalDetalles, setShowModalDetalles] = useState(false);
   const [showModalRenovar, setShowModalRenovar] = useState(false);
+  const [showModalConfirmarPrestamo, setShowModalConfirmarPrestamo] =
+    useState(false);
   const [ejemplaresSeleccionados, setEjemplaresSeleccionados] = useState([""]);
   const [filtro, setFiltro] = useState("Todos");
   const [fechaPrestamo, setFechaPrestamo] = useState(new Date());
@@ -108,10 +133,10 @@ export default function PrestamoVista({ volverMenu }) {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
-  // FUNCIÓN DE LOGOUT 
+  // FUNCIÓN DE LOGOUT
   const handleLogout = useCallback(async () => {
     try {
-      await logout(); // Esta función debería limpiar el token JWT y redirigir al login
+      await logout();
     } catch (error) {
       console.error("Error durante logout:", error);
     }
@@ -127,6 +152,7 @@ export default function PrestamoVista({ volverMenu }) {
     setShowModalDevolver(false);
     setShowModalDetalles(false);
     setShowModalRenovar(false);
+    setShowModalConfirmarPrestamo(false);
     setErrores({});
     setFormData({ usuarioId: "", correo: "" });
     setEjemplaresSeleccionados([""]);
@@ -247,6 +273,14 @@ export default function PrestamoVista({ volverMenu }) {
     setShowModalDevolver(true);
   }, []);
 
+  // FUNCIÓN FALTANTE - AÑADIDA
+  const handleRenovarPrestamoLista = useCallback((prestamo) => {
+    setPrestamoSeleccionado(prestamo);
+    setNuevaFechaDevolucion(null);
+    setErrorRenovacion("");
+    setShowModalRenovar(true);
+  }, []);
+
   const confirmarDevolucion = useCallback(() => {
     setTimeout(() => {
       handleClose();
@@ -258,11 +292,10 @@ export default function PrestamoVista({ volverMenu }) {
     }, 500);
   }, [prestamoSeleccionado, handleClose]);
 
-  const handleRenovarPrestamoLista = useCallback((prestamo) => {
+  // Nueva función para manejar préstamo de reserva
+  const handlePrestarReserva = useCallback((prestamo) => {
     setPrestamoSeleccionado(prestamo);
-    setNuevaFechaDevolucion(null);
-    setErrorRenovacion("");
-    setShowModalRenovar(true);
+    setShowModalConfirmarPrestamo(true);
   }, []);
 
   const handleFechaRenovacionChange = useCallback(
@@ -290,6 +323,22 @@ export default function PrestamoVista({ volverMenu }) {
       setTimeout(() => setShowToast(false), 3000);
     }, 500);
   }, [nuevaFechaDevolucion, prestamoSeleccionado, handleClose]);
+
+  const confirmarPrestamo = useCallback(
+    (fechaDevolucionEstimada) => {
+      setTimeout(() => {
+        handleClose();
+        setToastMessage(
+          `Préstamo de "${prestamoSeleccionado?.libro}" confirmado para ${
+            prestamoSeleccionado?.usuario
+          }. Devolución: ${fechaDevolucionEstimada.toLocaleDateString("es-ES")}`
+        );
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      }, 500);
+    },
+    [prestamoSeleccionado, handleClose]
+  );
 
   const verDetalles = useCallback((prestamo) => {
     setPrestamoSeleccionado(prestamo);
@@ -321,6 +370,8 @@ export default function PrestamoVista({ volverMenu }) {
         return "Entrega Retrasada";
       case "cerrado":
         return "Devuelto";
+      case "reservado":
+        return "Reservado";
       default:
         return prestamo.estado;
     }
@@ -335,6 +386,8 @@ export default function PrestamoVista({ volverMenu }) {
           return styles.estadoRetrasado;
         case "cerrado":
           return styles.estadoCerrado;
+        case "reservado":
+          return styles.estadoReservado;
         default:
           return styles.estadoActivo;
       }
@@ -353,7 +406,8 @@ export default function PrestamoVista({ volverMenu }) {
         filtro === "Todos" ||
         (filtro === "Activos" && p.estado === "activo") ||
         (filtro === "Atrasados" && p.estado === "retrasado") ||
-        (filtro === "Devueltos" && p.estado === "cerrado");
+        (filtro === "Devueltos" && p.estado === "cerrado") ||
+        (filtro === "Reservados" && p.estado === "reservado");
       return cumpleFiltroTexto && cumpleFiltroEstado;
     });
   }, [prestamos, filtro, searchValue]);
@@ -383,6 +437,13 @@ export default function PrestamoVista({ volverMenu }) {
               filtro={filtro}
               onFiltroChange={setFiltro}
               onGenerateReport={handleGenerateReport}
+              filters={[
+                "Todos",
+                "Activos",
+                "Atrasados",
+                "Devueltos",
+                "Reservados",
+              ]}
             />
           </div>
 
@@ -403,6 +464,7 @@ export default function PrestamoVista({ volverMenu }) {
                       onDevolver={handleDevolverPrestamo}
                       onVerDetalles={verDetalles}
                       onNotificaciones={abrirNotificaciones}
+                      onPrestarReserva={handlePrestarReserva}
                       formatearFecha={formatearFecha}
                       obtenerEstadoVisual={obtenerEstadoVisual}
                       obtenerClaseEstado={obtenerClaseEstado}
@@ -459,6 +521,14 @@ export default function PrestamoVista({ volverMenu }) {
         formatearFecha={formatearFecha}
         obtenerEstadoVisual={obtenerEstadoVisual}
         obtenerClaseEstado={obtenerClaseEstado}
+      />
+
+      <ConfirmarPrestamoModal
+        show={showModalConfirmarPrestamo}
+        onClose={handleClose}
+        prestamo={prestamoSeleccionado}
+        onConfirmar={confirmarPrestamo}
+        formatearFecha={formatearFecha}
       />
     </div>
   );

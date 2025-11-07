@@ -9,6 +9,7 @@ const PrestamoCard = React.memo(({
   onDevolver, 
   onVerDetalles, 
   onNotificaciones,
+  onPrestarReserva,
   formatearFecha,
   obtenerEstadoVisual,
   obtenerClaseEstado 
@@ -22,7 +23,10 @@ const PrestamoCard = React.memo(({
           <small>{prestamo.libro}</small>
           <br />
           <small className={styles.fecha}>
-            Préstamo: {formatearFecha(prestamo.fechaPrestamo)}
+            {prestamo.estado === "reservado" 
+              ? "Reservado - Pendiente de préstamo"
+              : `Préstamo: ${formatearFecha(prestamo.fechaPrestamo)}`
+            }
           </small>
         </div>
         <div className={styles.loanStatus}>
@@ -33,12 +37,25 @@ const PrestamoCard = React.memo(({
           <small className={styles.fecha}>
             {prestamo.fechaDevolucionReal
               ? `Devuelto: ${formatearFecha(prestamo.fechaDevolucionReal)}`
-              : `Vence: ${formatearFecha(prestamo.fechaDevolucionEstimada)}`}
+              : prestamo.estado === "reservado"
+              ? "Fecha por definir"
+              : `Vence: ${formatearFecha(prestamo.fechaDevolucionEstimada)}`
+            }
           </small>
         </div>
         <div className="d-flex gap-2">
-          {/* BOTÓN RENOVAR */}
-          {prestamo.estado !== "cerrado" && (
+          {/* BOTÓN PRESTAR PARA RESERVADOS */}
+          {prestamo.estado === "reservado" && (
+            <button
+              className={global.btnWarning}
+              onClick={() => onPrestarReserva(prestamo)}
+            >
+              Prestar
+            </button>
+          )}
+          
+          {/* BOTÓN RENOVAR PARA ACTIVOS Y ATRASADOS */}
+          {(prestamo.estado === "activo" || prestamo.estado === "retrasado") && (
             <button
               className={global.btnWarning}
               onClick={() => onRenovar(prestamo)}
@@ -46,29 +63,36 @@ const PrestamoCard = React.memo(({
               Renovar
             </button>
           )}
-          <button
-            className={global.btnSecondary}
-            onClick={() =>
-              prestamo.estado === "cerrado"
-                ? onVerDetalles(prestamo)
-                : onDevolver(prestamo)
-            }
-          >
-            {prestamo.estado === "cerrado" ? "Ver Detalles" : "Devolver"}
-          </button>
-          {/* Botón de Notificaciones */}
-          <button
-            className={styles.notificationBtn}
-            onClick={() => onNotificaciones(prestamo)}
-            title="Enviar notificación"
-          >
-            <FiBell className={styles.notificationIcon} />
-            {prestamo.notificaciones && prestamo.notificaciones.length > 0 && (
-              <span className={styles.notificationNumber}>
-                {prestamo.notificaciones.length}
-              </span>
-            )}
-          </button>
+          
+          {/* BOTÓN DEVOLVER/VER DETALLES - OCULTAR PARA RESERVADOS */}
+          {prestamo.estado !== "reservado" && (
+            <button
+              className={global.btnSecondary}
+              onClick={() =>
+                prestamo.estado === "cerrado"
+                  ? onVerDetalles(prestamo)
+                  : onDevolver(prestamo)
+              }
+            >
+              {prestamo.estado === "cerrado" ? "Ver Detalles" : "Devolver"}
+            </button>
+          )}
+          
+          {/* Botón de Notificaciones - OCULTAR PARA RESERVADOS */}
+          {prestamo.estado !== "reservado" && (
+            <button
+              className={styles.notificationBtn}
+              onClick={() => onNotificaciones(prestamo)}
+              title="Enviar notificación"
+            >
+              <FiBell className={styles.notificationIcon} />
+              {prestamo.notificaciones && prestamo.notificaciones.length > 0 && (
+                <span className={styles.notificationNumber}>
+                  {prestamo.notificaciones.length}
+                </span>
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>

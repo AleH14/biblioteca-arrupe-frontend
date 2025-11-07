@@ -249,6 +249,33 @@
   cursor: not-allowed;
 }
 
+/*RESERVAS*/
+/* Estado Reservado */
+.estadoReservado {
+  color: #ffc107;
+  font-weight: bold;
+}
+
+/* Estilos para la portada en el modal */
+.portadaContainer {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.portadaImagen {
+  max-width: 100%;
+  max-height: 100px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Ajustes para el modal de confirmación de préstamo */
+.confirmacionInfo h6 {
+  color: #333;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
 /* Toast de éxito */
 .toastSuccess {
   position: fixed;

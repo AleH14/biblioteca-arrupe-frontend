@@ -5,7 +5,7 @@ import global from '../../../styles/Global.module.css';
 const FilterPanel = React.memo(({ 
   filtro, 
   onFiltroChange, 
-  filters = ["Todos", "Activos", "Atrasados", "Devueltos"],
+  filters = ["Todos", "Activos", "Atrasados", "Devueltos", "Reservados"], // Actualizado
   onGenerateReport 
 }) => {
   return (
