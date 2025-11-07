@@ -34,12 +34,9 @@ const libros = [
     titulo: "Don Quijote de la Manchachita",
     autor: "Miguel de Cervantes Saavedra",
     editorial: "Signet Classics",
-    ejemplares: [
-      { id: 1, codigo: "DQ-001", ubicacion: "Estante A-1", edificio: "1", estado: "Disponible" },
-      { id: 2, codigo: "DQ-002", ubicacion: "Estante A-2", edificio: "1", estado: "Disponible" },
-      { id: 3, codigo: "DQ-003", ubicacion: "Estante A-3", edificio: "1", estado: "Prestado" },
-    ],
-    portada: "http://books.google.com/books/content?id=aHM5PwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    ejemplares: [],
+    portada:
+      "http://books.google.com/books/content?id=aHM5PwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     isbn: "9780451525079",
     categoriaId: "1",
     donado: false,
@@ -52,10 +49,23 @@ const libros = [
     autor: "Manlio Argueta",
     editorial: "UCA",
     ejemplares: [
-      { id: 4, codigo: "UDV-001", ubicacion: "Estante B-1", edificio: "2", estado: "Disponible" },
-      { id: 5, codigo: "UDV-002", ubicacion: "Estante B-2", edificio: "2", estado: "Disponible" },
+      {
+        id: 4,
+        codigo: "UDV-001",
+        ubicacion: "Estante B-1",
+        edificio: "2",
+        estado: "Disponible",
+      },
+      {
+        id: 5,
+        codigo: "UDV-002",
+        ubicacion: "Estante B-2",
+        edificio: "2",
+        estado: "Disponible",
+      },
     ],
-    portada: "http://books.google.com/books/content?id=qg9fAAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    portada:
+      "http://books.google.com/books/content?id=qg9fAAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     isbn: "9780394722160",
     categoriaId: "2",
     donado: true,
@@ -68,11 +78,30 @@ const libros = [
     autor: "Santiago Nogales",
     editorial: "Loqueleo Santillana",
     ejemplares: [
-      { id: 6, codigo: "VEC-001", ubicacion: "Estante C-1", edificio: "1", estado: "Disponible" },
-      { id: 7, codigo: "VEC-002", ubicacion: "Estante C-2", edificio: "1", estado: "Prestado" },
-      { id: 8, codigo: "VEC-003", ubicacion: "Estante C-3", edificio: "1", estado: "Disponible" },
+      {
+        id: 6,
+        codigo: "VEC-001",
+        ubicacion: "Estante C-1",
+        edificio: "1",
+        estado: "Disponible",
+      },
+      {
+        id: 7,
+        codigo: "VEC-002",
+        ubicacion: "Estante C-2",
+        edificio: "1",
+        estado: "Prestado",
+      },
+      {
+        id: 8,
+        codigo: "VEC-003",
+        ubicacion: "Estante C-3",
+        edificio: "1",
+        estado: "Disponible",
+      },
     ],
-    portada: "http://books.google.com/books/content?id=Rtk8PgAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    portada:
+      "http://books.google.com/books/content?id=Rtk8PgAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     isbn: "9788467591735",
     categoriaId: "3",
     donado: false,
@@ -85,11 +114,30 @@ const libros = [
     autor: "Gabriel García Márquez",
     editorial: "Harper",
     ejemplares: [
-      { id: 9, codigo: "100AS-001", ubicacion: "Estante D-1", edificio: "3", estado: "Disponible" },
-      { id: 10, codigo: "100AS-002", ubicacion: "Estante D-2", edificio: "3", estado: "Disponible" },
-      { id: 11, codigo: "100AS-003", ubicacion: "Estante D-3", edificio: "3", estado: "Disponible" },
+      {
+        id: 9,
+        codigo: "100AS-001",
+        ubicacion: "Estante D-1",
+        edificio: "3",
+        estado: "Prestado",
+      },
+      {
+        id: 10,
+        codigo: "100AS-002",
+        ubicacion: "Estante D-2",
+        edificio: "3",
+        estado: "Prestado",
+      },
+      {
+        id: 11,
+        codigo: "100AS-003",
+        ubicacion: "Estante D-3",
+        edificio: "3",
+        estado: "Reservado",
+      },
     ],
-    portada: "http://books.google.com/books/content?id=WV_pAAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    portada:
+      "http://books.google.com/books/content?id=WV_pAAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     isbn: "9780380015030",
     categoriaId: "4",
     donado: true,
@@ -102,10 +150,23 @@ const libros = [
     autor: "Gabriel García Márquez",
     editorial: "Penguin",
     ejemplares: [
-      { id: 12, codigo: "CAS-001", ubicacion: "Estante E-1", edificio: "2", estado: "Disponible" },
-      { id: 13, codigo: "CAS-002", ubicacion: "Estante E-2", edificio: "2", estado: "Reservado" },
+      {
+        id: 12,
+        codigo: "CAS-001",
+        ubicacion: "Estante E-1",
+        edificio: "2",
+        estado: "Disponible",
+      },
+      {
+        id: 13,
+        codigo: "CAS-002",
+        ubicacion: "Estante E-2",
+        edificio: "2",
+        estado: "Reservado",
+      },
     ],
-    portada: "http://books.google.com/books/content?id=WV_pAAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    portada:
+      "http://books.google.com/books/content?id=WV_pAAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     isbn: "9780141032484",
     categoriaId: "4",
     donado: false,
@@ -118,10 +179,23 @@ const libros = [
     autor: "Antoine de Saint-Exupéry",
     editorial: "Harcourt",
     ejemplares: [
-      { id: 14, codigo: "EP-001", ubicacion: "Estante F-1", edificio: "1", estado: "Disponible" },
-      { id: 15, codigo: "EP-002", ubicacion: "Estante F-2", edificio: "1", estado: "Perdido" },
+      {
+        id: 14,
+        codigo: "EP-001",
+        ubicacion: "Estante F-1",
+        edificio: "1",
+        estado: "Disponible",
+      },
+      {
+        id: 15,
+        codigo: "EP-002",
+        ubicacion: "Estante F-2",
+        edificio: "1",
+        estado: "Perdido",
+      },
     ],
-    portada: "http://books.google.com/books/content?id=Zf2APwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    portada:
+      "http://books.google.com/books/content?id=Zf2APwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     isbn: "9780156013987",
     categoriaId: "1",
     donado: true,
@@ -134,11 +208,30 @@ const libros = [
     autor: "George Orwell",
     editorial: "Secker & Warburg",
     ejemplares: [
-      { id: 16, codigo: "1984-001", ubicacion: "Estante G-1", edificio: "3", estado: "Disponible" },
-      { id: 17, codigo: "1984-002", ubicacion: "Estante G-2", edificio: "3", estado: "Prestado" },
-      { id: 18, codigo: "1984-003", ubicacion: "Estante G-3", edificio: "3", estado: "Disponible" },
+      {
+        id: 16,
+        codigo: "1984-001",
+        ubicacion: "Estante G-1",
+        edificio: "3",
+        estado: "Disponible",
+      },
+      {
+        id: 17,
+        codigo: "1984-002",
+        ubicacion: "Estante G-2",
+        edificio: "3",
+        estado: "Prestado",
+      },
+      {
+        id: 18,
+        codigo: "1984-003",
+        ubicacion: "Estante G-3",
+        edificio: "3",
+        estado: "Disponible",
+      },
     ],
-    portada: "http://books.google.com/books/content?id=Y-HzPgAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    portada:
+      "http://books.google.com/books/content?id=Y-HzPgAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
     isbn: "9780451524935",
     categoriaId: "5",
     donado: false,
@@ -223,7 +316,11 @@ export default function InterfazEstudiantes({ volverMenu }) {
   const [showReservaModal, setShowReservaModal] = useState(false);
   const [libroAReservar, setLibroAReservar] = useState(null);
   const [showFiltros, setShowFiltros] = useState(false);
-  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
 
   // Usuario logueado
   const userName = useMemo(() => {
@@ -233,39 +330,86 @@ export default function InterfazEstudiantes({ volverMenu }) {
     return "Usuario";
   }, [user]);
 
-  // 🔍 Búsqueda y filtros
+  // Búsqueda y filtros
   const [busquedaInmediata, setBusquedaInmediata] = useState("");
-  const [filtros, setFiltros] = useState({ categoria: "" });
+  const [filtros, setFiltros] = useState({
+    categoria: "",
+    autor: "",
+    editorial: "",
+  });
   const busquedaDebounced = useDebounce(busquedaInmediata, 300);
 
   // Crear variable para pasar a Filters
   const categoriasEstudiante = categorias;
 
   // Autores únicos
-  const autoresUnicos = useMemo(() => [...new Set(libros.map((libro) => libro.autor))], [libros]);
+  const autoresUnicos = useMemo(
+    () => [...new Set(libros.map((libro) => libro.autor))],
+    [libros]
+  );
 
   // Editoriales únicas
-  const editorialesUnicas = useMemo(() => [...new Set(libros.map((libro) => libro.editorial))], [libros]);
+  const editorialesUnicas = useMemo(
+    () => [...new Set(libros.map((libro) => libro.editorial))],
+    [libros]
+  );
 
-  // Filtrado de libros corregido
+  // Filtrado de libros CORREGIDO - incluye todos los filtros
   const librosFiltrados = useMemo(() => {
     return listaLibros.filter((libro) => {
+      // Filtro de búsqueda
       const coincideBusqueda =
+        !busquedaDebounced ||
         libro.titulo.toLowerCase().includes(busquedaDebounced.toLowerCase()) ||
-        libro.autor.toLowerCase().includes(busquedaDebounced.toLowerCase());
+        libro.autor.toLowerCase().includes(busquedaDebounced.toLowerCase()) ||
+        libro.editorial.toLowerCase().includes(busquedaDebounced.toLowerCase());
 
-      const coincideCategoria = !filtros.categoria || libro.categoriaId === filtros.categoria;
+      // Filtro de categoría
+      const coincideCategoria =
+        !filtros.categoria || libro.categoriaId === filtros.categoria;
 
-      return coincideBusqueda && coincideCategoria;
+      // Filtro de autor
+      const coincideAutor = !filtros.autor || libro.autor === filtros.autor;
+
+      // Filtro de editorial
+      const coincideEditorial =
+        !filtros.editorial || libro.editorial === filtros.editorial;
+
+      return (
+        coincideBusqueda &&
+        coincideCategoria &&
+        coincideAutor &&
+        coincideEditorial
+      );
     });
-  }, [listaLibros, busquedaDebounced, filtros.categoria]);
+  }, [
+    listaLibros,
+    busquedaDebounced,
+    filtros.categoria,
+    filtros.autor,
+    filtros.editorial,
+  ]);
+
+  // Calcular disponibilidad para cada libro
+  const librosConDisponibilidad = useMemo(() => {
+    return librosFiltrados.map((libro) => {
+      const disponibles = libro.ejemplares
+        ? libro.ejemplares.filter((ej) => ej.estado === "Disponible").length
+        : 0;
+      return {
+        ...libro,
+        disponibles,
+        disponible: disponibles > 0,
+      };
+    });
+  }, [librosFiltrados]);
 
   const handleFiltroChange = (nuevoFiltro) => {
     setFiltros((prevFiltros) => ({ ...prevFiltros, ...nuevoFiltro }));
   };
 
   const limpiarFiltros = () => {
-    setFiltros({ categoria: "", autor: "", busqueda: "" });
+    setFiltros({ categoria: "", autor: "", editorial: "" });
   };
 
   // Contar cuántos filtros están activos
@@ -273,7 +417,7 @@ export default function InterfazEstudiantes({ volverMenu }) {
     ([key, valor]) => ["categoria", "autor", "editorial"].includes(key) && valor
   ).length;
 
-  // 🕓 Reserva (3 días)
+  //  Reserva (3 días)
   const handleReservar = useCallback((libro) => {
     setLibroAReservar(libro);
     setShowReservaModal(true);
@@ -294,6 +438,9 @@ export default function InterfazEstudiantes({ volverMenu }) {
       fechaDevolucionReal: null,
       fechaReserva: fechaReserva.toISOString().split("T")[0],
       fechaExpiracion: fechaExpiracion.toISOString().split("T")[0],
+      libro: libroAReservar.titulo,
+      portada: libroAReservar.portada,
+      usuario: userName,
     };
 
     setListaPrestamos((prev) => [...prev, nuevaReserva]);
@@ -304,22 +451,28 @@ export default function InterfazEstudiantes({ volverMenu }) {
       message: `¡Reserva de "${libroAReservar.titulo}" realizada con éxito por 3 días!`,
       type: "success",
     });
-  }, [libroAReservar]);
+  }, [libroAReservar, userName]);
 
   // Cerrar sesión
   const handleLogout = useCallback(async () => {
     try {
       await logout();
     } catch {
-      setToast({ show: true, message: "Error al cerrar sesión", type: "error" });
+      setToast({
+        show: true,
+        message: "Error al cerrar sesión",
+        type: "error",
+      });
     }
   }, [logout]);
 
-  const handleCloseToast = () => setToast((prev) => ({ ...prev, show: false }));
-
   // 📋 Filtrar reservas y préstamos
-  const reservasActivas = listaPrestamos.filter((p) => p.estado === "reservado");
-  const prestamosActivos = listaPrestamos.filter((p) => p.estado !== "reservado");
+  const reservasActivas = listaPrestamos.filter(
+    (p) => p.estado === "reservado"
+  );
+  const prestamosActivos = listaPrestamos.filter(
+    (p) => p.estado !== "reservado"
+  );
 
   const EmptyState = ({ type }) => (
     <div className={styles.noHistory}>
@@ -332,10 +485,25 @@ export default function InterfazEstudiantes({ volverMenu }) {
     </div>
   );
 
+  // Efecto para cerrar automáticamente el Toast
+  React.useEffect(() => {
+    if (toast.show) {
+      const timer = setTimeout(() => {
+        setToast({ show: false, message: "", type: "success" });
+      }, 4000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [toast.show]);
+
   return (
     <div className={global.backgroundWrapper}>
-      <AppHeader onHomeClick={volverMenu} onLogoutClick={handleLogout} userName={userName} />
-      <PageTitle title="Catálogo de Biblioteca" />
+      <AppHeader
+        onHomeClick={volverMenu}
+        onLogoutClick={handleLogout}
+        userName={userName}
+      />
+      <PageTitle title="Biblioteca Padre Arrupe" />
       <Menu activeView={vistaActual} onViewChange={setVistaActual} />
 
       <main className={styles.mainContent}>
@@ -359,19 +527,24 @@ export default function InterfazEstudiantes({ volverMenu }) {
                   uniqueAuthors={autoresUnicos}
                   uniquePublishers={editorialesUnicas}
                   activeFiltersCount={filtrosActivos}
-                  filteredBooksCount={librosFiltrados.length}
+                  filteredBooksCount={librosConDisponibilidad.length}
                   totalBooksCount={libros.length}
                 />
               )}
 
               <div className="row justify-content-center g-2 g-lg-3">
-                {librosFiltrados.length > 0 ? (
-                  librosFiltrados.map((libro) => (
-                    <BookCard key={libro.id} libro={libro} onReserve={handleReservar} />
+                {librosConDisponibilidad.length > 0 ? (
+                  librosConDisponibilidad.map((libro) => (
+                    <BookCard
+                      key={libro.id}
+                      libro={libro}
+                      onReserve={handleReservar}
+                    />
                   ))
                 ) : (
                   <div className={styles.noResults}>
                     <h3>No se encontraron libros</h3>
+                    <p>Intenta ajustar los filtros de búsqueda</p>
                   </div>
                 )}
               </div>
@@ -379,7 +552,10 @@ export default function InterfazEstudiantes({ volverMenu }) {
           ) : (
             <>
               {prestamosActivos.length > 0 || reservasActivas.length > 0 ? (
-                <ActivityItems prestamos={prestamosActivos} reservas={reservasActivas} />
+                <ActivityItems
+                  prestamos={prestamosActivos}
+                  reservas={reservasActivas}
+                />
               ) : (
                 <EmptyState type="reserva" />
               )}
@@ -402,8 +578,8 @@ export default function InterfazEstudiantes({ volverMenu }) {
         show={toast.show}
         message={toast.message}
         type={toast.type}
-        onClose={handleCloseToast}
-        duration={4000}
+        onClose={() => setToast({ show: false, message: "", type: "success" })}
+        duration={null} // Desactiva el timer interno del Toast
       />
     </div>
   );

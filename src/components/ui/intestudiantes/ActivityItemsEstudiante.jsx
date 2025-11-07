@@ -92,7 +92,7 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
                     {item.estado === "cerrado"
                       ? "Cerrado"
                       : item.estado === "retrasado"
-                      ? "Retrasado"
+                      ? "Activo" //pero con entraga atrasada entonces se pone en rojo
                       : "Activo"}
                   </span>
                 </div>

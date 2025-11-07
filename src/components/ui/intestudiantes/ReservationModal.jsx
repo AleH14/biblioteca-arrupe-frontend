@@ -12,7 +12,21 @@ const ReservationModal = React.memo(({
   if (!show || !libro) return null;
 
   const reservationDate = new Date().toLocaleDateString('es-ES');
-  const dueDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES');
+  //3 días en milisegundos
+  const dueDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES');
+
+  // Obtener la descripción de la categoría
+  const getCategoriaDescripcion = () => {
+    const categorias = [
+      { _id: "1", descripcion: "Literatura" },
+      { _id: "2", descripcion: "Ciencia" },
+      { _id: "3", descripcion: "Tecnología" },
+      { _id: "4", descripcion: "Historia" },
+      { _id: "5", descripcion: "Filosofía" },
+    ];
+    const categoria = categorias.find(cat => cat._id === libro.categoriaId);
+    return categoria ? categoria.descripcion : "Sin categoría";
+  };
 
   return (
     <div className={styles.modalOverlay}>
@@ -33,7 +47,9 @@ const ReservationModal = React.memo(({
             <div>
               <h4>{libro.titulo}</h4>
               <p>{libro.autor}</p>
-              <span className={styles.modalCategory}>{libro.categoria}</span>
+              <span className={styles.modalCategory}>
+                {getCategoriaDescripcion()}
+              </span>
             </div>
           </div>
 
@@ -46,12 +62,7 @@ const ReservationModal = React.memo(({
               <span>ISBN:</span>
               <span>{libro.isbn}</span>
             </div>
-            <div className={styles.detailRow}>
-              <span>Disponibilidad:</span>
-              <span className={libro.disponibles > 0 ? styles.textAvailable : styles.textUnavailable}>
-                {libro.disponibles} ejemplares
-              </span>
-            </div>
+            {/* Eliminada la sección de disponibilidad */}
             <div className={styles.detailRow}>
               <span>Fecha de Reserva:</span>
               <span>{reservationDate}</span>
@@ -64,7 +75,7 @@ const ReservationModal = React.memo(({
 
           <div className={styles.reservationNotice}>
             <MdDateRange className={styles.noticeIcon} />
-            <p>Tienes 2 días para recoger el libro en la biblioteca.</p>
+            <p>La reserva estará activa por 3 días. Debes recoger el libro antes de esta fecha.</p>
           </div>
         </div>
 
