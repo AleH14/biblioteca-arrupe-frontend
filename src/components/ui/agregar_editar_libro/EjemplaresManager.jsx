@@ -113,7 +113,6 @@ const EjemplaresManager = React.memo(({
                     <option value="Disponible">Disponible</option>
                     <option value="Prestado">Prestado</option>
                     <option value="Reservado">Reservado</option>
-                    <option value="Perdido">Perdido</option>
                   </select>
                 </td>
 

@@ -1,5 +1,11 @@
 "use client";
-import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import styles from "../../styles/librosForm.module.css";
 import global from "../../styles/Global.module.css";
 import { useDebounce } from "../../hooks/useDebounce";
@@ -25,17 +31,23 @@ const MemoizedEjemplaresManager = React.memo(EjemplaresManager);
 const MemoizedConfirmModal = React.memo(ConfirmModal);
 const MemoizedGestionCategorias = React.memo(GestionCategorias);
 
-export default function AgregarLibro({ volverCatalogo }) {  
+export default function AgregarLibro({ volverCatalogo }) {
   // Estado del libro - SEPARADO del estado de ejemplares
   const [libro, setLibro] = useState({
-    titulo: "", autor: "", editorial: "", isbn: "", precio: "0.00",
-    donado: null, portada: "/images/libro-placeholder.jpg",
-    categoriaId: "", origen: ""
+    titulo: "",
+    autor: "",
+    editorial: "",
+    isbn: "",
+    precio: "0.00",
+    donado: null,
+    portada: "/images/libro-placeholder.jpg",
+    categoriaId: "",
+    origen: "",
   });
 
   // Estado de ejemplares - SEPARADO
   const [ejemplares, setEjemplares] = useState([
-    { id: 1, codigo: "", ubicacion: "", estado: "Disponible", edificio: "" }
+    { id: 1, codigo: "", ubicacion: "", estado: "Disponible", edificio: "" },
   ]);
 
   const [categorias, setCategorias] = useState([]);
@@ -49,7 +61,7 @@ export default function AgregarLibro({ volverCatalogo }) {
 
   // Refs para optimización - ESTABLES
   const searchAbortControllerRef = useRef(null);
-  
+
   // Refs para handlers estables
   const volverCatalogoRef = useRef(volverCatalogo);
 
@@ -58,16 +70,32 @@ export default function AgregarLibro({ volverCatalogo }) {
     volverCatalogoRef.current = volverCatalogo;
   }, [volverCatalogo]);
 
+  // Efecto para cerrar automáticamente el ToastError después de 5 segundos
+useEffect(() => {
+  let timeoutId;
+  if (showValidationError) {
+    timeoutId = setTimeout(() => {
+      setShowValidationError(false);
+    }, 3000); // 5 segundos
+  }
+  
+  return () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  };
+}, [showValidationError]);
+
   // Debounce para ISBN
   const debouncedISBN = useDebounce(libro.isbn, 1000);
 
   // Efecto para limpiar campos cuando el ISBN no es válido
   useEffect(() => {
     const isbn = debouncedISBN.trim();
-    
+
     if (!isbn || isbn.length < 10 || isbn.length > 13) {
       // Si el ISBN está vacío o no es válido, limpiar campos automáticamente
-      setLibro(prev => ({
+      setLibro((prev) => ({
         ...prev,
         titulo: "",
         autor: "",
@@ -85,7 +113,7 @@ export default function AgregarLibro({ volverCatalogo }) {
     }
 
     const isbn = debouncedISBN.trim();
-    
+
     // Validar antes de hacer la búsqueda
     if (!isbn || isbn.length < 10 || isbn.length > 13) {
       return;
@@ -97,9 +125,9 @@ export default function AgregarLibro({ volverCatalogo }) {
 
       try {
         const datosLibro = await buscarLibroPorISBN(isbn, controller.signal);
-        
+
         if (!controller.signal.aborted && datosLibro) {
-          setLibro(prev => ({
+          setLibro((prev) => ({
             ...prev,
             titulo: datosLibro.titulo || "",
             autor: datosLibro.autor || "",
@@ -108,7 +136,7 @@ export default function AgregarLibro({ volverCatalogo }) {
           }));
         }
       } catch (error) {
-        if (error.name !== 'AbortError') {
+        if (error.name !== "AbortError") {
           console.error("Error en búsqueda por ISBN:", error);
         }
       }
@@ -130,22 +158,24 @@ export default function AgregarLibro({ volverCatalogo }) {
       { _id: "2", descripcion: "Ciencia" },
       { _id: "3", descripcion: "Tecnología" },
       { _id: "4", descripcion: "Historia" },
-      { _id: "5", descripcion: "Filosofía" }
+      { _id: "5", descripcion: "Filosofía" },
     ]);
   }, []);
 
   // Handlers para libro - MEMOIZADOS y ESTABLES
   const handleLibroChange = useCallback((name, value) => {
-    setLibro(prev => prev[name] === value ? prev : { ...prev, [name]: value });
+    setLibro((prev) =>
+      prev[name] === value ? prev : { ...prev, [name]: value }
+    );
   }, []);
 
   const handleISBNChange = useCallback((value) => {
-    setLibro(prev => prev.isbn === value ? prev : { ...prev, isbn: value });
+    setLibro((prev) => (prev.isbn === value ? prev : { ...prev, isbn: value }));
   }, []);
 
   // Handlers para ejemplares - MEMOIZADOS y SEPARADOS
   const handleEjemplarChange = useCallback((index, field, value) => {
-    setEjemplares(prev => {
+    setEjemplares((prev) => {
       if (prev[index]?.[field] === value) return prev;
       const nuevos = [...prev];
       nuevos[index] = { ...nuevos[index], [field]: value };
@@ -154,11 +184,18 @@ export default function AgregarLibro({ volverCatalogo }) {
   }, []);
 
   const handleAgregarEjemplar = useCallback(() => {
-    setEjemplares(prev => {
-      const nuevoId = prev.length > 0 ? Math.max(...prev.map(e => e.id)) + 1 : 1;
+    setEjemplares((prev) => {
+      const nuevoId =
+        prev.length > 0 ? Math.max(...prev.map((e) => e.id)) + 1 : 1;
       return [
         ...prev,
-        { id: nuevoId, codigo: "", ubicacion: "", estado: "Disponible", edificio: "" },
+        {
+          id: nuevoId,
+          codigo: "",
+          ubicacion: "",
+          estado: "Disponible",
+          edificio: "",
+        },
       ];
     });
   }, []);
@@ -170,7 +207,9 @@ export default function AgregarLibro({ volverCatalogo }) {
 
   const handleConfirmarEliminarEjemplar = useCallback(() => {
     if (ejemplarAEliminar) {
-      setEjemplares(prev => prev.filter((ej) => ej.id !== ejemplarAEliminar.id));
+      setEjemplares((prev) =>
+        prev.filter((ej) => ej.id !== ejemplarAEliminar.id)
+      );
       setEjemplarAEliminar(null);
       setShowDeleteEjemplarModal(false);
     }
@@ -200,8 +239,13 @@ export default function AgregarLibro({ volverCatalogo }) {
 
   // Validación
   const validarFormulario = useCallback(() => {
-    if (!libro.titulo?.trim() || !libro.autor?.trim() || !libro.editorial?.trim() || 
-        !libro.isbn?.trim() || !libro.categoriaId?.trim()) {
+    if (
+      !libro.titulo?.trim() ||
+      !libro.autor?.trim() ||
+      !libro.editorial?.trim() ||
+      !libro.isbn?.trim() ||
+      !libro.categoriaId?.trim()
+    ) {
       setValidationMessage("Complete todos los campos obligatorios.");
       return false;
     }
@@ -211,7 +255,10 @@ export default function AgregarLibro({ volverCatalogo }) {
       return false;
     }
 
-    if (libro.donado === false && (!libro.precio || Number(libro.precio) <= 0)) {
+    if (
+      libro.donado === false &&
+      (!libro.precio || Number(libro.precio) <= 0)
+    ) {
       setValidationMessage("Ingrese precio para libros comprados.");
       return false;
     }
@@ -221,9 +268,33 @@ export default function AgregarLibro({ volverCatalogo }) {
       return false;
     }
 
-    const ejemplarValido = ejemplares.some(ej => ej.codigo?.trim() && ej.ubicacion?.trim());
-    if (!ejemplarValido) {
-      setValidationMessage("Agregue un ejemplar con código y ubicación.");
+    // Validación de URL de imagen
+    if (
+      !libro.portada?.trim() ||
+      libro.portada === "/images/libro-placeholder.jpg"
+    ) {
+      setValidationMessage("Agregue url de imagen");
+      return false;
+    }
+
+    // Validación de ejemplares
+    if (ejemplares.length === 0) {
+      setValidationMessage("Debe agregar al menos un ejemplar.");
+      return false;
+    }
+
+    // Validar que todos los ejemplares tengan los campos completos
+    const ejemplaresCompletos = ejemplares.every(
+      (ej) =>
+        ej.codigo?.trim() &&
+        ej.ubicacion?.trim() &&
+        ej.edificio?.trim() &&
+        ej.estado?.trim()
+    );
+    if (!ejemplaresCompletos) {
+      setValidationMessage(
+        "Complete todos los campos de cada ejemplar (código, ubicación, edificio y estado)."
+      );
       return false;
     }
 
@@ -249,64 +320,89 @@ export default function AgregarLibro({ volverCatalogo }) {
   }, []);
 
   const getCategoriaSeleccionada = useCallback(() => {
-    return categorias.find(cat => cat._id === libro.categoriaId);
+    return categorias.find((cat) => cat._id === libro.categoriaId);
   }, [categorias, libro.categoriaId]);
 
   // Componentes memoizados para evitar re-renders
-  const header = useMemo(() => (
-    <MemoizedAppHeaderLibro onVolver={volverCatalogo} />
-  ), [volverCatalogo]);
+  const header = useMemo(
+    () => <MemoizedAppHeaderLibro onVolver={volverCatalogo} />,
+    [volverCatalogo]
+  );
 
-  const pageTitle = useMemo(() => (
-    <MemoizedPageTitle title="AGREGAR NUEVO LIBRO" />
-  ), []);
+  const pageTitle = useMemo(
+    () => <MemoizedPageTitle title="AGREGAR NUEVO LIBRO" />,
+    []
+  );
 
-  const libroFormBase = useMemo(() => (
-    <MemoizedLibroFormBase
-      libro={libro}
-      categorias={categorias}
-      onLibroChange={handleLibroChange}
-      onISBNChange={handleISBNChange}
-      onShowGestionCategorias={handleShowGestionCategorias}
-      modoEdicion={false}
-    />
-  ), [libro, categorias, handleLibroChange, handleISBNChange, handleShowGestionCategorias]);
+  const libroFormBase = useMemo(
+    () => (
+      <MemoizedLibroFormBase
+        libro={libro}
+        categorias={categorias}
+        onLibroChange={handleLibroChange}
+        onISBNChange={handleISBNChange}
+        onShowGestionCategorias={handleShowGestionCategorias}
+        modoEdicion={false}
+      />
+    ),
+    [
+      libro,
+      categorias,
+      handleLibroChange,
+      handleISBNChange,
+      handleShowGestionCategorias,
+    ]
+  );
 
-  const ejemplaresManager = useMemo(() => (
-    <MemoizedEjemplaresManager
-      ejemplares={ejemplares}
-      onEjemplarChange={handleEjemplarChange}
-      onAgregarEjemplar={handleAgregarEjemplar}
-      onEliminarEjemplar={handleEliminarEjemplar}
-      showDeleteButton={true}
-    />
-  ), [ejemplares, handleEjemplarChange, handleAgregarEjemplar, handleEliminarEjemplar]);
+  const ejemplaresManager = useMemo(
+    () => (
+      <MemoizedEjemplaresManager
+        ejemplares={ejemplares}
+        onEjemplarChange={handleEjemplarChange}
+        onAgregarEjemplar={handleAgregarEjemplar}
+        onEliminarEjemplar={handleEliminarEjemplar}
+        showDeleteButton={true}
+      />
+    ),
+    [
+      ejemplares,
+      handleEjemplarChange,
+      handleAgregarEjemplar,
+      handleEliminarEjemplar,
+    ]
+  );
 
-  const confirmButton = useMemo(() => (
-    <div className={styles.botonesContainer}>
-      <button
-        type="button"
-        className={global.btnWarning}
-        onClick={handleConfirmarAgregado}
-      >
-        Confirmar Agregado
-      </button>
-    </div>
-  ), [handleConfirmarAgregado]);
+  const confirmButton = useMemo(
+    () => (
+      <div className={styles.botonesContainer}>
+        <button
+          type="button"
+          className={global.btnWarning}
+          onClick={handleConfirmarAgregado}
+        >
+          Confirmar Agregado
+        </button>
+      </div>
+    ),
+    [handleConfirmarAgregado]
+  );
 
   return (
     <div className={global.backgroundWrapper}>
       {header}
       {pageTitle}
-      
+
       {/* ToastError separado - no dentro del header */}
-      <MemoizedToastError 
-        show={showValidationError} 
+      <MemoizedToastError
+        show={showValidationError}
         message={validationMessage}
         onClose={handleCloseValidationError}
       />
-      
-      <MemoizedToast show={showSuccessToast} message={`"${libro.titulo}" agregado correctamente`} />
+
+      <MemoizedToast
+        show={showSuccessToast}
+        message={`"${libro.titulo}" agregado correctamente`}
+      />
 
       <div className="container">
         <div className="row justify-content-center">
@@ -349,15 +445,22 @@ export default function AgregarLibro({ volverCatalogo }) {
           <br />
           <small className={styles.libroDetalle}>por {libro.autor}</small>
           <br />
-          <small className={styles.libroDetalle}>Editorial: {libro.editorial}</small>
+          <small className={styles.libroDetalle}>
+            Editorial: {libro.editorial}
+          </small>
           <br />
-          <small className={styles.libroDetalle}>Categoría: {getCategoriaSeleccionada()?.descripcion || "No seleccionada"}</small>
+          <small className={styles.libroDetalle}>
+            Categoría:{" "}
+            {getCategoriaSeleccionada()?.descripcion || "No seleccionada"}
+          </small>
           <br />
           <small className={styles.libroDetalle}>ISBN: {libro.isbn}</small>
           <br />
           <small className={styles.libroDetalle}>Precio: ${libro.precio}</small>
           <br />
-          <small className={styles.libroDetalle}>Ejemplares: {ejemplares.length}</small>
+          <small className={styles.libroDetalle}>
+            Ejemplares: {ejemplares.length}
+          </small>
         </div>
       </MemoizedConfirmModal>
 
@@ -378,9 +481,7 @@ export default function AgregarLibro({ volverCatalogo }) {
             Ubicación: {ejemplarAEliminar?.ubicacion || "Sin ubicación"}
           </small>
         </div>
-        <p className={styles.modalWarning}>
-          Esta acción no se puede deshacer.
-        </p>
+        <p className={styles.modalWarning}>Esta acción no se puede deshacer.</p>
       </MemoizedConfirmModal>
     </div>
   );
