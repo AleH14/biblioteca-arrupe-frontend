@@ -3,7 +3,9 @@ import styles from "../../../styles/IntEstudiantes.module.css";
 
 const BookCardEstudiante = React.memo(({ libro, onReserve }) => {
   const handleReserveClick = React.useCallback(() => {
-    onReserve(libro);
+    if (libro.disponibles > 0) {
+      onReserve(libro);
+    }
   }, [libro, onReserve]);
 
   return (
@@ -12,13 +14,16 @@ const BookCardEstudiante = React.memo(({ libro, onReserve }) => {
         className={`${styles.card} ${
           libro.disponibles === 0 ? styles.cardUnavailable : ""
         }`}
+        // el click en toda la tarjeta activa el modal
+        onClick={handleReserveClick}
+        style={{ cursor: libro.disponibles > 0 ? "pointer" : "not-allowed" }}
       >
         <div className={styles.coverWrapper}>
           <img
             src={libro.portada}
             alt={libro.titulo}
             className={styles.cover}
-            loading="lazy"
+            loading="lazy" /*render mejorado*/
             width="120"
             height="160"
           />
@@ -26,16 +31,21 @@ const BookCardEstudiante = React.memo(({ libro, onReserve }) => {
             <div className={styles.unavailableBadge}>No Disponible</div>
           )}
         </div>
+
         <div className="p-2 text-center">
           <h5 className={styles.bookTitle}>{libro.titulo}</h5>
           <p className={styles.bookAuthor}>{libro.autor}</p>
           <p className={styles.bookEditorial}>{libro.editorial}</p>
+
           <div className="d-flex justify-content-center gap-2 mt-1">
             <button
               className={`${styles.reserveBtn} ${
-                libro.disponibles === 0 ? styles.reserveBtn : ""
+                libro.disponibles === 0 ? styles.reserveBtnDisabled : ""
               }`}
-              onClick={handleReserveClick}
+              onClick={(e) => {
+                e.stopPropagation(); // evita doble ejecución del click en tarjeta
+                handleReserveClick();
+              }}
               disabled={libro.disponibles === 0}
             >
               Reservar
