@@ -216,24 +216,39 @@ export default function EditarLibro({ volverCatalogo, libro: libroProp }) {
       mensajeLibro += "Debe ingresar el origen para libros donados.";
     }
 
-    if (mensajeLibro) {
-      setValidationMessage(mensajeLibro);
+ // Validación de URL de imagen
+    if (
+      !libro.portada?.trim() ||
+      libro.portada === "/images/libro-placeholder.jpg"
+    ) {
+      setValidationMessage("Agregue url de imagen");
       return false;
     }
 
-    // Validación más eficiente de ejemplares
-    const tieneEjemplaresValidos = currentEjemplares.some(
-      ejemplar => ejemplar.codigo?.trim() && ejemplar.ubicacion?.trim()
-    );
+    // Validación de ejemplares
+    if (ejemplares.length === 0) {
+      setValidationMessage("Debe agregar al menos un ejemplar.");
+      return false;
+    }
 
-    if (!tieneEjemplaresValidos) {
-      setValidationMessage("Debe tener al menos un ejemplar con código y ubicación completos.");
+    // Validar que todos los ejemplares tengan los campos completos
+    const ejemplaresCompletos = ejemplares.every(
+      (ej) =>
+        ej.codigo?.trim() &&
+        ej.ubicacion?.trim() &&
+        ej.edificio?.trim() &&
+        ej.estado?.trim()
+    );
+    if (!ejemplaresCompletos) {
+      setValidationMessage(
+        "Complete todos los campos de cada ejemplar (código, ubicación, edificio y estado)."
+      );
       return false;
     }
 
     setValidationMessage("");
     return true;
-  }, []);
+  }, [libro, ejemplares]);
 
   const handleConfirmarEdicion = useCallback(() => {
     if (!validarFormulario()) {

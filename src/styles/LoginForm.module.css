@@ -1,5 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400..800&display=swap');
+
 .backgroundWrapper {
-  font-family: "Baloo 2", cursive;
+  font-family: "Baloo 2", "Poppins", cursive;
   background: url('/images/fondo_login.png') center/cover no-repeat;
   min-height: 100vh;
   overflow-x: hidden;
@@ -145,6 +147,144 @@
 
 .forgotPassword:hover {
   text-decoration: underline;
+}
+
+/* Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modalContent {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 450px;
+  animation: modalSlideIn 0.3s ease-out;
+  overflow: hidden;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 1.5rem 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.modalTitle {
+  margin: 0;
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 1.25rem;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+  background-color: #f8f9fa;
+  color: #495057;
+}
+
+.modalBody {
+  padding: 1.5rem;
+}
+
+.modalIcon {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.modalIcon i {
+  font-size: 3rem;
+  color: #3498db;
+}
+
+.modalSubtitle {
+  text-align: center;
+  color: #2c3e50;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.modalText {
+  text-align: center;
+  color: #6c757d;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.instructions {
+  background-color:#f8f9fa;
+  border: 1px solid #d0cfcc;
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.instructionsText {
+  color:  #495057;
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.modalFooter {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.confirmButton {
+  background-color: #f8b932;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.confirmButton:hover {
+  background-color: #dda429;
+  transform: translateY(-1px);
 }
 
 @media (max-width: 900px) {

@@ -7,6 +7,7 @@ import { useLoginForm } from '@/hooks/useAuth';
 import styles from "../../styles/LoginForm.module.css";
 import LoginContent from '../ui/login/LoginContent';
 import RightPanel from '../ui/login/RightPanel';
+import PasswordResetModal from '../ui/login/PasswordResetModal';
 
 const LoadingScreen = () => (
   <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
@@ -27,6 +28,7 @@ export default function LoginForm({ loginExitoso }) {
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('error');
   const [redirecting, setRedirecting] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false); // Estado para el modal
 
   const loginExitosoRef = useRef(loginExitoso);
   useEffect(() => {
@@ -66,6 +68,16 @@ export default function LoginForm({ loginExitoso }) {
     else router.push('/dashboard');
   }, [router]);
 
+   // Handler para abrir el modal
+  const handleForgotPassword = useCallback(() => {
+    setShowPasswordModal(true);
+  }, []);
+
+  // Handler para cerrar el modal
+  const handleCloseModal = useCallback(() => {
+    setShowPasswordModal(false);
+  }, []);
+
   useEffect(() => {
     if (status === 'authenticated' && !redirecting) {
       setRedirecting(true);
@@ -92,14 +104,14 @@ export default function LoginForm({ loginExitoso }) {
     showAlert,
     alertMessage,
     alertType,
-    
     // Handlers estables (memoizados)
     handleChange: stableHandleChange,
     onSubmit,
-    setShowAlert: stableSetShowAlert
+    setShowAlert: stableSetShowAlert,
+    onForgotPassword: handleForgotPassword 
   }), [
-    formData, errors, isSubmitting, showAlert, alertMessage, alertType,
-    stableHandleChange, onSubmit, stableSetShowAlert
+   formData, errors, isSubmitting, showAlert, alertMessage, alertType,
+    stableHandleChange, onSubmit, stableSetShowAlert, handleForgotPassword
   ]);
 
   if (status === 'authenticated' || redirecting) {
@@ -119,6 +131,14 @@ export default function LoginForm({ loginExitoso }) {
         </div>
 
         <RightPanel />
+
+         {/* Modal de recuperación de contraseña */}
+        <PasswordResetModal 
+          isOpen={showPasswordModal}
+          onClose={handleCloseModal}
+        />
+
+        
       </div>
     </div>
   );

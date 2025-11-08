@@ -1,68 +1,117 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import LoginForm from '../components/forms/LoginForm';
-import MenuForm from '@/components/forms/MenuForm';
-import PrestamoVista from '@/components/forms/PrestamoVista';
-import Catalogo from '@/components/forms/Catalogo';
-import EditarLibro from '@/components/forms/EditarLibro';
-import Estadisticas from '@/components/forms/Estadisticas';
-import Usuarios from '@/components/forms/Usuarios';
+import dynamic from "next/dynamic"; // para carga dinámica y control de carga
+
+// Importación diferida (lazy loading) de vistas
+const LoginForm = dynamic(() => import('../components/forms/LoginForm'));
+const MenuForm = dynamic(() => import('@/components/forms/MenuForm'));
+const PrestamoVista = dynamic(() => import('@/components/forms/PrestamoVista'));
+const Catalogo = dynamic(() => import('@/components/forms/Catalogo'));
+const EditarLibro = dynamic(() => import('@/components/forms/EditarLibro'));
+const Estadisticas = dynamic(() => import('@/components/forms/Estadisticas'));
+const Usuarios = dynamic(() => import('@/components/forms/Usuarios'));
+const InterfazEstudiantes = dynamic(() => import('@/components/forms/InterfazEstudiantes'));
 
 export default function HomePage() {
-  const { isAuthenticated, loading, logout } = useAuth();
+  const { isAuthenticated, loading, logout, user } = useAuth();
   const [vista, setVista] = useState("login");
+  const [esperandoRol, setEsperandoRol] = useState(false);
+  const [componentesCargados, setComponentesCargados] = useState(false);
 
-  // Actualizar vista basada en el estado de autenticación
+  // Determinar vista inicial según rol
+  const determinarVistaInicial = useCallback(() => {
+    if (!user || !user.role) {
+      return null;
+    }
+    switch(user.role.toLowerCase()) {
+      case 'estudiante':
+        return "estudiante-catalogo";
+      case 'admin':
+      case 'administrador':
+        return "menu";
+      default:
+        return "menu";
+    }
+  }, [user]);
+
+  // Efecto principal
   useEffect(() => {
     if (!loading) {
       const authenticated = isAuthenticated();
       if (authenticated && vista === "login") {
-        // Solo cambiar al menú si estamos en login y nos autenticamos
-        setVista("menu");
+        if (user && user.role) {
+          const vistaInicial = determinarVistaInicial();
+          setVista(vistaInicial);
+          setEsperandoRol(false);
+        } else {
+          setEsperandoRol(true);
+        }
       } else if (!authenticated && vista !== "login") {
-        // Solo cambiar a login si no estamos autenticados y no estamos ya en login
         setVista("login");
+        setEsperandoRol(false);
+        setComponentesCargados(false);
       }
     }
-  }, [isAuthenticated, loading, vista]);
+  }, [isAuthenticated, loading, vista, user, determinarVistaInicial]);
 
-  // Función para manejar login exitoso - estabilizada con useCallback
-  const handleLoginExitoso = useCallback(() => {
-    // Solo forzar cambio de vista si no está autenticado
-    // El useEffect se encargará del resto
-    if (!isAuthenticated()) {
-      setVista("menu");
+  // Esperar al rol
+  useEffect(() => {
+    if (esperandoRol && user && user.role) {
+      const vistaInicial = determinarVistaInicial();
+      setVista(vistaInicial);
+      setEsperandoRol(false);
     }
-  }, [isAuthenticated]);
+  }, [esperandoRol, user, determinarVistaInicial]);
 
-  // Función para manejar logout - estabilizada con useCallback
+  // Control de carga de componentes (solo tras login)
+  useEffect(() => {
+    if (vista !== "login") {
+      setComponentesCargados(false);
+      const timer = setTimeout(() => setComponentesCargados(true), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [vista]);
+
+  // Manejar login
+  const handleLoginExitoso = useCallback(() => {}, []);
+
+  // Logout
   const handleLogout = useCallback(async () => {
     try {
       await logout();
       setVista("login");
+      setComponentesCargados(false);
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-      // Forzar vista de login aunque haya error
       setVista("login");
+      setComponentesCargados(false);
     }
   }, [logout]);
 
-  // Funciones de navegación estabilizadas
+  // Navegación entre vistas
   const irPrestamos = useCallback(() => setVista("prestamos"), []);
   const irCatalogo = useCallback(() => setVista("catalogo"), []);
   const irEstadisticas = useCallback(() => setVista("estadisticas"), []);
   const irUsuarios = useCallback(() => setVista("usuarios"), []);
-  const volverMenu = useCallback(() => setVista("menu"), []);
+  const volverMenu = useCallback(() => {
+    const vistaInicial = determinarVistaInicial();
+    setVista(vistaInicial);
+  }, [determinarVistaInicial]);
 
-  // Mostrar loading mientras se verifica la autenticación
-  if (loading) {
-    return <LoadingSpinner message="Verificando sesión..." />;
+  // Mostrar spinner mientras carga autenticación o rol
+  if (loading || esperandoRol) {
+    return <LoadingSpinner message="Biblioteca Padre Arrupe" />;
   }
 
+  // Mostrar spinner tras login mientras los componentes cargan
+ /* if (vista !== "login" && !componentesCargados) {
+    return <LoadingSpinner message="Cargando..." />;
+  }*/
+
+  //Renderizado principal con Suspense (por si Next.js tarda en montar)
   return (
-    <>
+    <Suspense fallback={<LoadingSpinner message="Cargando..." />}>
       {vista === "login" && (
         <LoginForm loginExitoso={handleLoginExitoso} />
       )}
@@ -74,6 +123,9 @@ export default function HomePage() {
           irLogin={handleLogout}
           irUsuarios={irUsuarios}
         />
+      )}
+      {vista === "estudiante-catalogo" && (
+        <InterfazEstudiantes volverMenu={volverMenu} />
       )}
       {vista === "prestamos" && (
         <PrestamoVista volverMenu={volverMenu} />
@@ -87,6 +139,6 @@ export default function HomePage() {
       {vista === "usuarios" && (
         <Usuarios volverMenu={volverMenu} />
       )}
-    </>
+    </Suspense>
   );
 }

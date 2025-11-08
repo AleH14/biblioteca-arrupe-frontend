@@ -25,7 +25,7 @@ const categorias = [
   { _id: "5", descripcion: "Filosofía" },
 ];
 
-const librosIniciales = [
+const libros = [
   {
     id: 1,
     titulo: "Don Quijote de la Manchachita",
@@ -185,7 +185,7 @@ const librosIniciales = [
       },
     ],
     portada:
-      "http://books.google.com/books/content?id=WV_pAAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+      "https://www.rae.es/sites/default/files/portada_cien_anos_de_soledad_0.jpg",
     isbn: "9780141032484",
     categoriaId: "4",
     donado: false,
@@ -257,13 +257,35 @@ const librosIniciales = [
     origen: null,
     precio: 19.99,
   },
+  {
+    id: 8,
+    titulo: "Una prueba más",
+    autor: "Anónimo",
+    editorial: "Ninguna",
+    ejemplares: [
+      {
+        id: 16,
+        codigo: "1984-001",
+        ubicacion: "Estante G-1",
+        edificio: "3",
+        estado: "Disponible",
+      }
+    ],
+    portada:
+      "https://cdn.creazilla.com/emojis/52888/closed-book-emoji-clipart-md.png",
+    isbn: "9780451524935",
+    categoriaId: "5",
+    donado: false,
+    origen: null,
+    precio: 19.99,
+  },
 ];
 
 export default function Catalogo({ volverMenu }) {
   const { logout } = useAuth();
 
   // Estados principales
-  const [libros, setLibros] = useState(librosIniciales);
+  const [Libros, setLibros] = useState(libros);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [libroAEliminar, setLibroAEliminar] = useState(null);
   const [mostrarEditarLibro, setMostrarEditarLibro] = useState(false);
@@ -365,13 +387,13 @@ export default function Catalogo({ volverMenu }) {
 
   // Cálculos memoizados para optimización
   const autoresUnicos = useMemo(
-    () => [...new Set(libros.map((libro) => libro.autor))],
-    [libros]
+    () => [...new Set(Libros.map((libro) => libro.autor))],
+    [Libros]
   );
 
   const editorialesUnicas = useMemo(
-    () => [...new Set(libros.map((libro) => libro.editorial))],
-    [libros]
+    () => [...new Set(Libros.map((libro) => libro.editorial))],
+    [Libros]
   );
 
   const filtrosActivos = useMemo(
@@ -382,7 +404,7 @@ export default function Catalogo({ volverMenu }) {
     [filtros]
   );
 
-  // Filtrado de libros memoizado y optimizado
+  // Filtrado de Libros memoizado y optimizado
   const librosFiltrados = useMemo(() => {
     const normalize = (txt) =>
       txt
@@ -391,7 +413,7 @@ export default function Catalogo({ volverMenu }) {
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "") || "";
 
-    return libros.filter((libro) => {
+    return Libros.filter((libro) => {
       // Solo aplicar filtro de búsqueda si hay texto
       if (filtros.busqueda) {
         const textoBusqueda = normalize(filtros.busqueda);
@@ -448,7 +470,7 @@ export default function Catalogo({ volverMenu }) {
 
       return true;
     });
-  }, [libros, filtros, contarTotalEjemplares]);
+  }, [Libros, filtros, contarTotalEjemplares]);
 
   // Renderizado condicional
   if (mostrarAgregarLibro)
@@ -486,7 +508,7 @@ export default function Catalogo({ volverMenu }) {
               uniqueAuthors={autoresUnicos}
               uniquePublishers={editorialesUnicas}
               filteredBooksCount={librosFiltrados.length}
-              totalBooksCount={libros.length}
+              totalBooksCount={Libros.length}
               activeFiltersCount={filtrosActivos}
             />
           )}
