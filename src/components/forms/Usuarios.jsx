@@ -1,12 +1,11 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import styles from "../../styles/Usuarios.module.css";
 import global from "../../styles/Global.module.css";
-import { FiHome } from "react-icons/fi";
+import { FiHome, FiEdit, FiTrash2, FiX, FiCheck, FiEye, FiEyeOff } from "react-icons/fi";
 import { MdLogout } from "react-icons/md";
-import { FiEdit, FiTrash2, FiX, FiCheck } from "react-icons/fi";
 
-// Datos y configuración
+// Colores según rol
 const rolColor = {
   "Bibliotecario": { border: "#FF0004" },
   "Administrativo": { border: "#00C8FF" },
@@ -14,23 +13,23 @@ const rolColor = {
   "Estudiante": { border: "#9370db" }
 };
 
+// Usuarios iniciales
 const usuariosData = [
-  { id: 1, nombre: "René Abarca", rol: "Bibliotecario", email: "rene@fundacionpadrearrupe.org", telefono: "7788-6625", fecha: "12/10/2024" },
-  { id: 2, nombre: "Luis Rivas", rol: "Administrativo", email: "lrivas@fundacionpadrearrupe.org", telefono: "7688-6625", fecha: "12/10/2024" },
-  { id: 3, nombre: "Carla Méndez", rol: "Colaborador", email: "carla@fundacionpadrearrupe.org", telefono: "7777-1234", fecha: "15/10/2024" },
-  { id: 4, nombre: "Jorge López", rol: "Estudiante", email: "jorge@fundacionpadrearrupe.org", telefono: "7666-4321", fecha: "20/10/2024" }
+  { id: 1, nombre: "René Abarca", rol: "Bibliotecario", email: "rene@fundacionpadrearrupe.org", telefono: "7788-6625", fecha: "12/10/2024", password: "123456" },
+  { id: 2, nombre: "Luis Rivas", rol: "Administrativo", email: "lrivas@fundacionpadrearrupe.org", telefono: "7688-6625", fecha: "12/10/2024", password: "admin2024" },
+  { id: 3, nombre: "Carla Méndez", rol: "Colaborador", email: "carla@fundacionpadrearrupe.org", telefono: "7777-1234", fecha: "15/10/2024", password: "carla123" },
+  { id: 4, nombre: "Jorge López", rol: "Estudiante", email: "jorge@fundacionpadrearrupe.org", telefono: "7666-4321", fecha: "20/10/2024", password: "jorgepass" },
 ];
 
 const roles = ["Todos", "Bibliotecario", "Administrativo", "Colaborador", "Estudiante"];
 
-// Componente Toast para notificaciones
-const Toast = ({ message, type = "success", isVisible, onClose }) => {
+// ===== COMPONENTES =====
+
+// Toast Notification
+const Toast = React.memo(({ message, type = "success", isVisible, onClose }) => {
   useEffect(() => {
     if (isVisible) {
-      const timer = setTimeout(() => {
-        onClose();
-      }, 3000); // Auto-cerrar después de 3 segundos
-
+      const timer = setTimeout(onClose, 3000);
       return () => clearTimeout(timer);
     }
   }, [isVisible, onClose]);
@@ -48,494 +47,230 @@ const Toast = ({ message, type = "success", isVisible, onClose }) => {
       </button>
     </div>
   );
-};
+});
 
-// Componente Modal Base
-const Modal = ({ isOpen, onClose, children, className = "" }) => {
+// Modal genérico
+const ModalGenerico = React.memo(({ isOpen, onClose, titulo, children, footer }) => {
   if (!isOpen) return null;
   return (
     <div className={styles.modalBackdrop}>
-      <div className={`${styles.modalContent} ${className}`}>
-        {children}
+      <div className={styles.modalContent}>
+        <div className={styles.modalHeader}>
+          <h3>{titulo}</h3>
+          <button className={styles.closeButton} onClick={onClose}>
+            <FiX size={20} />
+          </button>
+        </div>
+        <div className={styles.modalBody}>{children}</div>
+        {footer && <div className={styles.modalFooter}>{footer}</div>}
       </div>
     </div>
   );
-};
+});
 
-// Componente Modal de Edición
-const ModalEditarUsuario = ({ usuario, isOpen, onClose, onGuardar }) => {
-  const [formData, setFormData] = useState({
-    nombre: "", 
-    rol: "", 
-    email: "", 
-    telefono: ""
-  });
-  const [errors, setErrors] = useState({});
-
-  // useEffect para cargar datos cuando cambia el usuario o se abre el modal
-  useEffect(() => {
-    if (usuario && isOpen) {
-      setFormData({
-        nombre: usuario.nombre || "",
-        rol: usuario.rol || "",
-        email: usuario.email || "",
-        telefono: usuario.telefono || ""
-      });
-    }
-  }, [usuario, isOpen]);
-
-  const validarFormulario = () => {
-    const nuevosErrores = {};
-    if (!formData.nombre.trim()) nuevosErrores.nombre = "El nombre es requerido";
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.email.trim()) nuevosErrores.email = "El email es requerido";
-    else if (!emailRegex.test(formData.email)) nuevosErrores.email = "El formato del email no es válido";
-    
-    const telefonoRegex = /^\d{4}-\d{4}$/;
-    if (!formData.telefono.trim()) nuevosErrores.telefono = "El teléfono es requerido";
-    else if (!telefonoRegex.test(formData.telefono)) nuevosErrores.telefono = "El formato debe ser ####-####";
-    
-    if (!formData.rol) nuevosErrores.rol = "El rol es requerido";
-    
-    setErrors(nuevosErrores);
-    return Object.keys(nuevosErrores).length === 0;
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    
-    if (name === "telefono") {
-      let formattedValue = value.replace(/\D/g, '');
-      if (formattedValue.length > 4) formattedValue = formattedValue.slice(0, 4) + '-' + formattedValue.slice(4, 8);
-      setFormData(prev => ({ ...prev, [name]: formattedValue }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
-    
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validarFormulario()) onGuardar(formData);
-  };
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <div className={styles.modalHeader}>
-        <h3>Editar Usuario</h3>
-        <button className={styles.closeButton} onClick={onClose}><FiX size={20} /></button>
-      </div>
-      
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <div className={styles.formGroup}>
-          <label>Nombre completo</label>
-          <input 
-            type="text" 
-            name="nombre" 
-            value={formData.nombre} 
-            onChange={handleChange} 
-            className={errors.nombre ? styles.inputError : styles.lightInput} 
-          />
-          {errors.nombre && <span className={styles.errorText}>{errors.nombre}</span>}
-        </div>
-        
-        <div className={styles.formGroup}>
-          <label>Email</label>
-          <input 
-            type="email" 
-            name="email" 
-            value={formData.email} 
-            onChange={handleChange} 
-            className={errors.email ? styles.inputError : styles.lightInput} 
-          />
-          {errors.email && <span className={styles.errorText}>{errors.email}</span>}
-        </div>
-        
-        <div className={styles.formGroup}>
-          <label>Teléfono</label>
-          <input 
-            type="text" 
-            name="telefono" 
-            value={formData.telefono} 
-            onChange={handleChange} 
-            placeholder="####-####" 
-            maxLength="9" 
-            className={errors.telefono ? styles.inputError : styles.lightInput} 
-          />
-          {errors.telefono && <span className={styles.errorText}>{errors.telefono}</span>}
-        </div>
-        
-        <div className={styles.formGroup}>
-          <label>Rol</label>
-          <select 
-            name="rol" 
-            value={formData.rol} 
-            onChange={handleChange} 
-            className={errors.rol ? styles.inputError : styles.lightInput}
-          >
-            <option value="">Seleccionar rol</option>
-            <option value="Bibliotecario">Bibliotecario</option>
-            <option value="Administrativo">Administrativo</option>
-            <option value="Colaborador">Colaborador</option>
-            <option value="Estudiante">Estudiante</option>
-          </select>
-          {errors.rol && <span className={styles.errorText}>{errors.rol}</span>}
-        </div>
-        
-        <div className={styles.modalActions}>
-          <button type="button" className={global.btnSecondary} onClick={onClose}>Cancelar</button>
-          <button type="submit" className={global.btnWarning}>Guardar Cambios</button>
-        </div>
-      </form>
-    </Modal>
-  );
-};
-
-// Componente Modal de Agregar Usuario
-const ModalAgregarUsuario = ({ isOpen, onClose, onGuardar }) => {
-  const [formData, setFormData] = useState({ nombre: "", rol: "", email: "", telefono: "" });
-  const [errors, setErrors] = useState({});
-
-  const validarFormulario = () => {
-    const nuevosErrores = {};
-    if (!formData.nombre.trim()) nuevosErrores.nombre = "El nombre es requerido";
-    
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.email.trim()) nuevosErrores.email = "El email es requerido";
-    else if (!emailRegex.test(formData.email)) nuevosErrores.email = "El formato del email no es válido";
-    
-    const telefonoRegex = /^\d{4}-\d{4}$/;
-    if (!formData.telefono.trim()) nuevosErrores.telefono = "El teléfono es requerido";
-    else if (!telefonoRegex.test(formData.telefono)) nuevosErrores.telefono = "El formato debe ser ####-####";
-    
-    if (!formData.rol) nuevosErrores.rol = "El rol es requerido";
-    
-    setErrors(nuevosErrores);
-    return Object.keys(nuevosErrores).length === 0;
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    
-    if (name === "telefono") {
-      let formattedValue = value.replace(/\D/g, '');
-      if (formattedValue.length > 4) formattedValue = formattedValue.slice(0, 4) + '-' + formattedValue.slice(4, 8);
-      setFormData(prev => ({ ...prev, [name]: formattedValue }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
-    
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validarFormulario()) {
-      const nuevoUsuario = { ...formData, id: Date.now(), fecha: new Date().toLocaleDateString() };
-      onGuardar(nuevoUsuario);
-      setFormData({ nombre: "", rol: "", email: "", telefono: "" });
-    }
-  };
-
-  return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <div className={styles.modalHeader}>
-        <h3>Agregar Usuario</h3>
-        <button className={styles.closeButton} onClick={onClose}><FiX size={20} /></button>
-      </div>
-      
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <div className={styles.formGroup}>
-          <label>Nombre completo</label>
-          <input 
-            type="text" 
-            name="nombre" 
-            placeholder="Escriba nombre de usuario" 
-            value={formData.nombre} 
-            onChange={handleChange} 
-            className={errors.nombre ? styles.inputError : styles.lightInput} 
-          />
-          {errors.nombre && <span className={styles.errorText}>{errors.nombre}</span>}
-        </div>
-        
-        <div className={styles.formGroup}>
-          <label>Email</label>
-          <input 
-            type="email" 
-            name="email" 
-            placeholder="ejemplo@ejemplo.com" 
-            value={formData.email} 
-            onChange={handleChange} 
-            className={errors.email ? styles.inputError : styles.lightInput} 
-          />
-          {errors.email && <span className={styles.errorText}>{errors.email}</span>}
-        </div>
-        
-        <div className={styles.formGroup}>
-          <label>Teléfono</label>
-          <input 
-            type="text" 
-            name="telefono" 
-            value={formData.telefono} 
-            onChange={handleChange} 
-            placeholder="####-####" 
-            maxLength="9" 
-            className={errors.telefono ? styles.inputError : styles.lightInput} 
-          />
-          {errors.telefono && <span className={styles.errorText}>{errors.telefono}</span>}
-        </div>
-        
-        <div className={styles.formGroup}>
-          <label>Rol</label>
-          <select 
-            name="rol" 
-            value={formData.rol} 
-            onChange={handleChange} 
-            className={errors.rol ? styles.inputError : styles.lightInput}
-          >
-            <option value="">Seleccionar rol</option>
-            <option value="Bibliotecario">Bibliotecario</option>
-            <option value="Administrativo">Administrativo</option>
-            <option value="Colaborador">Colaborador</option>
-            <option value="Estudiante">Estudiante</option>
-          </select>
-          {errors.rol && <span className={styles.errorText}>{errors.rol}</span>}
-        </div>
-        
-        <div className={styles.modalActions}>
-          <button type="button" className={global.btnSecondary} onClick={onClose}>Cancelar</button>
-          <button type="submit" className={global.btnPrimary}>Agregar Usuario</button>
-        </div>
-      </form>
-    </Modal>
-  );
-};
-
-// Componente Modal de Confirmación de Eliminación
-const ModalConfirmarEliminar = ({ isOpen, onClose, onConfirm, usuario }) => {
-  return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <div className={styles.modalHeader}>
-        <h3 className={styles.deleteTitle}>ELIMINAR USUARIO</h3>
-        <button className={styles.closeButton} onClick={onClose}>✖</button>
-      </div>
-
-      <div className={styles.modalBody}>
-        <p className={styles.deleteText}>¿Seguro que deseas eliminar a <b>{usuario?.nombre}</b>?</p>
-        <p className={styles.deleteWarning}>Esta acción no se puede deshacer.</p>
-      </div>
-
-      <div className={styles.modalFooter}>
-        <div className="d-flex justify-content-center gap-2">
-          <button className={global.btnSecondary} onClick={() => onConfirm()}>Eliminar</button>
-        </div>
-      </div>
-    </Modal>
-  );
-};
-
-// Componente Tarjeta de Usuario
-
-const TarjetaUsuario = ({ usuario, onEditar, onEliminar }) => {
+// Tarjeta de usuario
+const TarjetaUsuario = React.memo(({ usuario, onEditar, onEliminar }) => {
   const color = rolColor[usuario?.rol] || { border: "#ccc" };
-
   return (
-    <div className={styles.card} style={{ borderTop: `5px solid ${color.border}`, position: 'relative' }}>
-      
-      <div className={styles.rolBadge} style={{ backgroundColor: color.border }}>
-        {usuario?.rol}
-      </div>
-
+    <div className={styles.card} style={{ borderTop: `5px solid ${color.border}`, position: "relative" }}>
+      <div className={styles.rolBadge} style={{ backgroundColor: color.border }}>{usuario?.rol}</div>
       <div className={styles.loanInfo}>
-        <strong>{usuario?.nombre}</strong>
-        <br />
-        <small>{usuario?.email}</small>
-        <br />
-        <small>{usuario?.telefono}</small>
-        <br />
+        <strong>{usuario?.nombre}</strong><br />
+        <small>{usuario?.email}</small><br />
+        <small>{usuario?.telefono}</small><br />
         <small className={styles.fecha}>Registrado: {usuario?.fecha}</small>
       </div>
-
       <div className="d-flex gap-3 mt-3 justify-content-end">
-        <FiEdit
-          className={styles.iconAction}
-          title="Editar usuario"
-          onClick={() => onEditar(usuario)}
-        />
-        <FiTrash2
-          className={styles.iconAction}
-          title="Eliminar usuario"
-          onClick={() => onEliminar(usuario)}
-        />
+        <FiEdit className={styles.iconAction} title="Editar usuario" onClick={() => onEditar(usuario)} />
+        <FiTrash2 className={styles.iconAction} title="Eliminar usuario" onClick={() => onEliminar(usuario)} />
       </div>
     </div>
   );
-};
+});
 
-// Componente Principal
+// Filtro lateral
+const FilterPanel = React.memo(({ filtroActivo, setFiltroActivo }) => (
+  <div className={styles.sidebarPanel}>
+    <div className={styles.filterSection}>
+      <label className={styles.filterLabel}>Categorías</label>
+      <div className={styles.filterButtons}>
+        {roles.map((rol) => {
+          const nombreMostrar =
+            rol === "Todos" ? "Todos" : rol === "Colaborador" ? "Colaboradores" : rol + "s";
+          return (
+            <button
+              key={rol}
+              className={`${styles.filterBtn} ${filtroActivo === rol ? styles.filterBtnActive : ""}`}
+              onClick={() => setFiltroActivo(rol)}
+            >
+              {nombreMostrar}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  </div>
+));
+
+// Buscador
+const SearchSection = React.memo(({ terminoBusqueda, setTerminoBusqueda, onAgregar }) => (
+  <div className={styles.searchSection}>
+    <div className="d-flex gap-2 flex-column flex-md-row">
+      <input
+        type="text"
+        placeholder="Buscar usuario"
+        className={`${styles.searchInput} flex-grow-1`}
+        value={terminoBusqueda}
+        onChange={(e) => setTerminoBusqueda(e.target.value)}
+      />
+      <button className={global.btnPrimary} onClick={onAgregar}>
+        <span className={global.btnPrimaryMas}>+</span> Agregar Usuario
+      </button>
+    </div>
+  </div>
+));
+
+// Home + Logout
+const HeaderActions = React.memo(({ onHomeClick, onLogoutClick }) => (
+  <div className="d-flex justify-content-between align-items-center w-100">
+    <button className={global.homeBtn} onClick={onHomeClick} title="Inicio">
+      <FiHome className={global.homeIcon} />
+    </button>
+    <button className={global.logoutBtn} onClick={onLogoutClick} title="Cerrar sesión">
+      <MdLogout className={global.logoutIcon} />
+      <span>Cerrar sesión</span>
+    </button>
+  </div>
+));
+
+// ===== COMPONENTE PRINCIPAL =====
 export default function Usuarios({ volverMenu }) {
   const [usuarios, setUsuarios] = useState(usuariosData);
   const [filtroActivo, setFiltroActivo] = useState("Todos");
   const [terminoBusqueda, setTerminoBusqueda] = useState("");
-  const [modalAbierto, setModalAbierto] = useState(null);
-  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
+  const [modal, setModal] = useState(null);
+  const [usuarioSel, setUsuarioSel] = useState(null);
   const [toast, setToast] = useState({ isVisible: false, message: "", type: "success" });
+  const [formData, setFormData] = useState({ nombre: "", email: "", telefono: "", rol: "", password: "" });
+  const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Filtrar usuarios
-  const usuariosFiltrados = usuarios.filter(usuario => {
-    const coincideFiltro = filtroActivo === "Todos" || usuario.rol === filtroActivo;
-    const coincideBusqueda = !terminoBusqueda.trim() || 
-      usuario.nombre.toLowerCase().includes(terminoBusqueda.toLowerCase()) ||
-      usuario.email.toLowerCase().includes(terminoBusqueda.toLowerCase()) ||
-      usuario.telefono.includes(terminoBusqueda);
-    return coincideFiltro && coincideBusqueda;
-  });
+  // Filtrado con useMemo para evitar recalculos innecesarios
+  const usuariosFiltrados = useMemo(() => {
+    return usuarios.filter((u) => {
+      const coincideFiltro = filtroActivo === "Todos" || u.rol === filtroActivo;
+      const coincideBusqueda =
+        !terminoBusqueda.trim() ||
+        u.nombre.toLowerCase().includes(terminoBusqueda.toLowerCase()) ||
+        u.email.toLowerCase().includes(terminoBusqueda.toLowerCase()) ||
+        u.telefono.includes(terminoBusqueda);
+      return coincideFiltro && coincideBusqueda;
+    });
+  }, [usuarios, filtroActivo, terminoBusqueda]);
 
-  // Control de modales
-  const abrirModal = (tipoModal, usuario = null) => {
-    setUsuarioSeleccionado(usuario);
-    setModalAbierto(tipoModal);
-  };
+  // Modal
+  const abrirModal = useCallback((tipo, usuario = null) => {
+    setUsuarioSel(usuario);
+    setModal(tipo);
+  }, []);
+  const cerrarModal = useCallback(() => {
+    setModal(null);
+    setUsuarioSel(null);
+  }, []);
 
-  const cerrarModales = () => {
-    setModalAbierto(null);
-    setUsuarioSeleccionado(null);
-  };
+  // Toast
+  const mostrarToast = useCallback((msg, type = "success") => setToast({ isVisible: true, message: msg, type }), []);
+  const cerrarToast = useCallback(() => setToast(prev => ({ ...prev, isVisible: false })), []);
 
-  // Mostrar toast
-  const mostrarToast = (message, type = "success") => {
-    setToast({ isVisible: true, message, type });
-  };
+  // Formulario
+  useEffect(() => {
+    if (modal === "editar" && usuarioSel) setFormData({ ...usuarioSel, password: usuarioSel.password });
+    if (modal === "agregar") setFormData({ nombre: "", email: "", telefono: "", rol: "", password: "" });
+    setErrors({});
+    setShowPassword(false);
+  }, [modal, usuarioSel]);
 
-  const cerrarToast = () => {
-    setToast(prev => ({ ...prev, isVisible: false }));
-  };
+  const handleChange = useCallback((e) => {
+    const { name, value } = e.target;
+    let val = value;
+    if (name === "telefono") {
+      val = value.replace(/\D/g, "");
+      if (val.length > 4) val = val.slice(0, 4) + "-" + val.slice(4, 8);
+    }
+    setFormData(prev => ({ ...prev, [name]: val }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }));
+  }, [errors]);
 
-  // Operaciones CRUD
-  const guardarUsuarioEditado = (datosEditados) => {
-    setUsuarios(prev => prev.map(usuario => 
-      usuario.id === usuarioSeleccionado.id ? { ...usuario, ...datosEditados } : usuario
-    ));
-    mostrarToast("Usuario actualizado correctamente", "success");
-    cerrarModales();
-  };
+  const validar = useCallback(() => {
+    const newErrors = {};
+    if (!formData.nombre.trim()) newErrors.nombre = "El nombre es requerido";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email.trim()) newErrors.email = "El email es requerido";
+    else if (!emailRegex.test(formData.email)) newErrors.email = "Formato inválido";
+    const telRegex = /^\d{4}-\d{4}$/;
+    if (!formData.telefono.trim()) newErrors.telefono = "El teléfono es requerido";
+    else if (!telRegex.test(formData.telefono)) newErrors.telefono = "Formato ####-####";
+    if (!formData.rol) newErrors.rol = "El rol es requerido";
 
-  const agregarUsuario = (nuevoUsuario) => {
-    setUsuarios(prev => [...prev, nuevoUsuario]);
-    mostrarToast("Usuario agregado correctamente", "success");
-    cerrarModales();
-  };
+    if (modal === "agregar" && !formData.password.trim()) newErrors.password = "La contraseña es requerida";
+    else if (formData.password && formData.password.length < 6) newErrors.password = "Mínimo 6 caracteres";
 
-  const eliminarUsuario = () => {
-    setUsuarios(prev => prev.filter(usuario => usuario.id !== usuarioSeleccionado.id));
-    cerrarModales();
-  };
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }, [formData, modal]);
+
+  const guardarUsuario = useCallback(() => {
+    if (!validar()) return;
+    if (modal === "agregar") {
+      setUsuarios(prev => [...prev, { ...formData, id: Date.now(), fecha: new Date().toLocaleDateString() }]);
+      mostrarToast("Usuario agregado correctamente");
+    } else if (modal === "editar") {
+      setUsuarios(prev =>
+        prev.map(u =>
+          u.id === usuarioSel.id
+            ? { ...u, ...formData, password: formData.password || u.password }
+            : u
+        )
+      );
+      mostrarToast("Usuario actualizado correctamente");
+    }
+    cerrarModal();
+  }, [formData, modal, usuarioSel, validar, mostrarToast, cerrarModal]);
+
+  const eliminarUsuario = useCallback(() => {
+    setUsuarios(prev => prev.filter(u => u.id !== usuarioSel.id));
+    cerrarModal();
+  }, [usuarioSel, cerrarModal]);
+
+  const handleLogout = useCallback(() => console.log("Cerrar sesión"), []);
 
   return (
     <div className={global.backgroundWrapper}>
-      {/* Toast Notification */}
-      <Toast 
-        message={toast.message}
-        type={toast.type}
-        isVisible={toast.isVisible}
-        onClose={cerrarToast}
-      />
-
-      {/* Header */}
+      <Toast {...toast} onClose={cerrarToast} />
       <header className={`${global.header} d-flex justify-content-between align-items-center`}>
-        <button className={global.homeBtn} onClick={volverMenu}>
-          <FiHome className={global.homeIcon} />
-        </button>
-        <button className={global.logoutBtn}>
-          <MdLogout className={global.logoutIcon} />
-          <span>Cerrar sesión</span>
-        </button>
+        <HeaderActions onHomeClick={volverMenu} onLogoutClick={handleLogout} />
       </header>
 
-      {/* Título */}
-      <div className="container">
-        <div className="row justify-content-center">
-          <div className="col-auto">
-            <div className="d-flex align-items-center">
-              <img src="/images/complemento-1.png" alt="Complemento" className={global.complementoImg + " me-2"} />
-              <h1 className={`${global.title} mb-0`}>USUARIOS</h1>
-            </div>
-          </div>
-        </div>
+      <div className="container text-center mb-4">
+        <h1 className={global.title}>USUARIOS</h1>
       </div>
 
-      {/* Contenedor principal */}
       <div className="container-fluid">
         <div className="row justify-content-center">
-          {/* Panel lateral de filtros */}
           <div className="col-12 col-md-3 col-lg-2 mb-4">
-            <div className={styles.sidebarPanel}>
-              <div className={styles.filterSection}>
-                <label className={styles.filterLabel}>Categorías</label>
-                <div className={styles.filterButtons}>
-                  {roles.map((rol) => {
-                    // Definimos el texto a mostrar
-                    const nombreMostrar =
-                      rol === "Todos"
-                        ? "Todos"
-                        : rol === "Colaborador"
-                        ? "Colaboradores"
-                        : rol + "s";
-
-                    return (
-                      <button
-                        key={rol}
-                        className={`${styles.filterBtn} ${
-                          filtroActivo === rol ? styles.filterBtnActive : ""
-                        }`}
-                        onClick={() => setFiltroActivo(rol)}
-                      >
-                        {nombreMostrar}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+            <FilterPanel filtroActivo={filtroActivo} setFiltroActivo={setFiltroActivo} />
           </div>
-
-          {/* Contenido principal */}
           <div className="col-12 col-md-9 col-lg-8">
             <div className={styles.mainContent}>
-              {/* Buscador y botón agregar */}
-              <div className={styles.searchSection}>
-                <div className="d-flex gap-2 flex-column flex-md-row">
-                  <input
-                    type="text"
-                    placeholder="Buscar usuario"
-                    className={`${styles.searchInput} flex-grow-1`}
-                    value={terminoBusqueda}
-                    onChange={(e) => setTerminoBusqueda(e.target.value)}
-                  />
-                  <button className={global.btnPrimary} onClick={() => abrirModal('agregar')}>
-                    <span className={global.btnPrimaryMas}>+</span> Agregar Usuario
-                  </button>
-                </div>
-              </div>
+              <SearchSection terminoBusqueda={terminoBusqueda} setTerminoBusqueda={setTerminoBusqueda} onAgregar={() => abrirModal("agregar")} />
 
-              {/* Lista de usuarios */}
               <div className={styles.loansListContainer}>
-                <div className={styles.loansList}>
-                  {usuariosFiltrados.map(usuario => (
-                    <TarjetaUsuario 
-                      key={usuario.id}
-                      usuario={usuario}
-                      onEditar={(usuario) => abrirModal('editar', usuario)}
-                      onEliminar={(usuario) => abrirModal('eliminar', usuario)}
-                    />
+                <div className={styles.loansList} style={{ maxHeight: "500px", overflowY: "auto" }}>
+                  {usuariosFiltrados.map(u => (
+                    <TarjetaUsuario key={u.id} usuario={u} onEditar={() => abrirModal("editar", u)} onEliminar={() => abrirModal("eliminar", u)} />
                   ))}
-                  
                   {usuariosFiltrados.length === 0 && (
-                    <div className={styles.noResults}>
-                      <p>No se encontraron usuarios</p>
-                    </div>
+                    <div className={styles.noResults}><p>No se encontraron usuarios</p></div>
                   )}
                 </div>
               </div>
@@ -544,26 +279,78 @@ export default function Usuarios({ volverMenu }) {
         </div>
       </div>
 
-      {/* Modales */}
-      <ModalEditarUsuario
-        usuario={usuarioSeleccionado}
-        isOpen={modalAbierto === 'editar'}
-        onClose={cerrarModales}
-        onGuardar={guardarUsuarioEditado}
-      />
+      {/* Modal Agregar/Editar */}
+      <ModalGenerico
+        isOpen={modal === "agregar" || modal === "editar"}
+        onClose={cerrarModal}
+        titulo={modal === "agregar" ? "Agregar Usuario" : "Editar Usuario"}
+        footer={
+          <div className="d-flex justify-content-end gap-2">
+            <button className={global.btnSecondary} onClick={cerrarModal}>Cancelar</button>
+            <button className={global.btnWarning} onClick={guardarUsuario}>{modal === "agregar" ? "Agregar" : "Guardar"}</button>
+          </div>
+        }
+      >
+        <div className={styles.form}>
+          <div className={styles.formGroup}>
+            <label>Nombre completo</label>
+            <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} className={errors.nombre ? styles.inputError : styles.lightInput} />
+            {errors.nombre && <span className={styles.errorText}>{errors.nombre}</span>}
+          </div>
+          <div className={styles.formGroup}>
+            <label>Email</label>
+            <input type="email" name="email" value={formData.email} onChange={handleChange} className={errors.email ? styles.inputError : styles.lightInput} />
+            {errors.email && <span className={styles.errorText}>{errors.email}</span>}
+          </div>
+          <div className={styles.formGroup}>
+            <label>Teléfono</label>
+            <input type="text" name="telefono" value={formData.telefono} onChange={handleChange} placeholder="####-####" maxLength={9} className={errors.telefono ? styles.inputError : styles.lightInput} />
+            {errors.telefono && <span className={styles.errorText}>{errors.telefono}</span>}
+          </div>
+          <div className={styles.formGroup}>
+            <label>Rol</label>
+            <select name="rol" value={formData.rol} onChange={handleChange} className={errors.rol ? styles.inputError : styles.lightInput}>
+              <option value="">Seleccionar rol</option>
+              <option value="Bibliotecario">Bibliotecario</option>
+              <option value="Administrativo">Administrativo</option>
+              <option value="Colaborador">Colaborador</option>
+              <option value="Estudiante">Estudiante</option>
+            </select>
+            {errors.rol && <span className={styles.errorText}>{errors.rol}</span>}
+          </div>
+          <div className={styles.formGroup}>
+            <label>Contraseña</label>
+            <div className={styles.passwordContainer}>
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className={errors.password ? styles.inputError : styles.lightInput}
+              />
+              <button type="button" className={styles.togglePassword} onClick={() => setShowPassword(prev => !prev)}>
+                {showPassword ? <FiEyeOff /> : <FiEye />}
+              </button>
+            </div>
+            {errors.password && <span className={styles.errorText}>{errors.password}</span>}
+          </div>
+        </div>
+      </ModalGenerico>
 
-      <ModalAgregarUsuario
-        isOpen={modalAbierto === 'agregar'}
-        onClose={cerrarModales}
-        onGuardar={agregarUsuario}
-      />
-
-      <ModalConfirmarEliminar
-        usuario={usuarioSeleccionado}
-        isOpen={modalAbierto === 'eliminar'}
-        onClose={cerrarModales}
-        onConfirm={eliminarUsuario}
-      />
+      {/* Modal eliminar */}
+      <ModalGenerico
+        isOpen={modal === "eliminar"}
+        onClose={cerrarModal}
+        titulo="ELIMINAR USUARIO"
+        footer={
+          <div className="d-flex justify-content-center gap-2">
+            <button className={global.btnSecondary} onClick={eliminarUsuario}>Eliminar</button>
+          </div>
+        }
+      >
+        <p className={styles.deleteText}>¿Seguro que deseas eliminar a <b>{usuarioSel?.nombre}</b>?</p>
+        <p className={styles.deleteWarning}>Esta acción no se puede deshacer.</p>
+      </ModalGenerico>
     </div>
   );
 }
