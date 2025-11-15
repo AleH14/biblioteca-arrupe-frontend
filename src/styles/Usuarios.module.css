@@ -402,30 +402,73 @@
 }
 
 /* ===== CONTRASEÑA ===== */
+
 .passwordContainer {
   position: relative;
-  display: flex;
-  align-items: center;
 }
 
-.passwordContainer input {
-  flex: 1;
-  padding-right: 40px; 
+.passwordInputWrapper {
+  position: relative;
   width: 100%;
+}
+
+.passwordInputWrapper input {
+  width: 100%;
+  padding-right: 2.5rem; 
   box-sizing: border-box;
 }
 
 .togglePassword {
   position: absolute;
-  right: 10px;
+  top: 50%;
+  right: 0.75rem; 
+  transform: translateY(-50%);
   background: transparent;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 100%;
+  padding: 0;
   color: #555;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 }
 
 .togglePassword:hover { color: #000; }
+
+/* ==== MODAL ====*/
+
+.modalFooter .buttonsRight {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  width: auto; 
+  align-items: center;
+}
+
+.modalFooter .equalButton {
+  flex: 0 0 auto !important;   
+  width: 110px !important;      
+  min-width: 110px !important;
+  max-width: 110px !important;
+  padding: 8px 12px !important;
+  box-sizing: border-box;
+  align-self: center;
+}
+
+.modalFooter .deleteRounded {
+  border-radius: 10px !important;
+}
+
+.modalFooter .btnSecondary {
+  width: auto !important;
+}
+
+.modalFooter .equalButton,
+.modalFooter .equalButton > span {
+  text-align: center !important;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
