@@ -7,15 +7,15 @@ import { FiHome } from "react-icons/fi";
 import { MdLogout } from "react-icons/md";
 
 // Importación de los componentes
-import GlobalFilter from "../estadisticas/GlobalFilter";
-import MetricCards from "../estadisticas/MetricCards";
-import BarChart from "../estadisticas/BarChart";
-import TopLibrosList from "../estadisticas/TopLibrosList";
-import CategoriesChart from "../estadisticas/CategoriesChart";
-import ResumenBiblioteca from "../estadisticas/ResumenBiblioteca";
-import ModalCategoria from "../estadisticas/ModalCategoria";
-import ModalDevoluciones from "../estadisticas/ModalDevoluciones";
-import ModalReservas from "../estadisticas/ModalReservas";
+import GlobalFilter from "../ui/estadisticas/GlobalFilter";
+import MetricCards from "../ui/estadisticas/MetricCards";
+import BarChart from "../ui/estadisticas/BarChart";
+import TopLibrosList from "../ui/estadisticas/TopLibrosList";
+import CategoriesChart from "../ui/estadisticas/CategoriesChart";
+import ResumenBiblioteca from "../ui/estadisticas/ResumenBiblioteca";
+import ModalCategoria from "../ui/estadisticas/ModalCategoria";
+import ModalDevoluciones from "../ui/estadisticas/ModalDevoluciones";
+import ModalReservas from "../ui/estadisticas/ModalReservas";
 import AppHeader from "../ui/AppHeader";
 import PageTitle from "../ui/PageTitle";
 
@@ -55,19 +55,16 @@ export default function Estadisticas({ volverMenu }) {
       hoy: {
         prestamosTotales: 24,
         prestamosActivos: 8,
-        usuariosRegistrados: 15,
         librosBiblioteca: 1560,
       },
       mensual: {
         prestamosTotales: 1247,
         prestamosActivos: 89,
-        usuariosRegistrados: 542,
         librosBiblioteca: 1560,
       },
       anual: {
         prestamosTotales: 14964,
         prestamosActivos: 89,
-        usuariosRegistrados: 6504,
         librosBiblioteca: 1560,
       },
     };

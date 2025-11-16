@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "../../styles/estadisticas.module.css";
+import styles from "../../../styles/estadisticas.module.css";
 import { FiTrendingUp } from "react-icons/fi";
 
 export default function ResumenBiblioteca({

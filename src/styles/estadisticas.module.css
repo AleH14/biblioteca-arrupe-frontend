@@ -217,7 +217,7 @@
 /* Gráfico de barras */
 .chartContainer {
   padding: 1.5rem 0;
-  height: 250px;
+  height: 400px;
   display: flex;
   align-items: flex-end;
 }
@@ -436,12 +436,14 @@
 
 .categoryItem {
   display: flex;
+  margin-top: 2px;
+  margin-bottom: 2px;
   align-items: center;
   gap: 1rem;
-  padding: 1rem;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
+  color: #1f2937;
   border: 1px solid #f3f4f6;
 }
 
@@ -704,13 +706,6 @@
     gap: 1rem;
     align-items: flex-start;
   }
-
-  .categoryItem {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
   .categoryBar {
     width: 100%;
   }

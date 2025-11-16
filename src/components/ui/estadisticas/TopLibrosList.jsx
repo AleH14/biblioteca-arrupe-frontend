@@ -1,5 +1,5 @@
 import React from "react";
-import styles from "../../styles/estadisticas.module.css";
+import styles from "../../../styles/estadisticas.module.css";
 import { FiArrowUp, FiArrowDown } from "react-icons/fi";
 
 export default function TopLibrosList({
@@ -48,7 +48,7 @@ export default function TopLibrosList({
             </div>
             <div className={styles.itemInfo}>
               <h5 className={styles.itemTitle}>{libro.titulo}</h5>
-              <p className={styles.itemCategory}>{libro.autor}</p>
+              <p className={styles.categoryItem}>{libro.autor}</p>
             </div>
             <div className={styles.itemValue}>
               <span>{libro.prestamos}</span>

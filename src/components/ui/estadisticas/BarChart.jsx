@@ -1,9 +1,9 @@
 import React from "react";
-import styles from "../../styles/estadisticas.module.css";
+import styles from "../../../styles/estadisticas.module.css";
 
 export default function BarChart({ filtroGlobal, tendenciaActual, metricasActuales }) {
   const maxPrestamos = Math.max(...tendenciaActual.map(i => i.prestamos));
-  const minHeight = 30, maxHeight = 180;
+  const minHeight = 30, maxHeight = 300;
 
   const calcAltura = (p) => {
     if (maxPrestamos === 0) return minHeight;
