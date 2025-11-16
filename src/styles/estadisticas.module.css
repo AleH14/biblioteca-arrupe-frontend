@@ -1,5 +1,6 @@
 /* Filtros Globales - CENTRADO EN RESPONSIVE */
 .globalFilters {
+  margin-top: 1rem;
   display: flex;
   gap: 1rem;
   background: #f8fafc;
@@ -604,7 +605,6 @@
 }
 
 .diasAtraso {
-  background: #dc2626;
   color: white;
   padding: 0.3rem 0.6rem;
   border-radius: 20px;
