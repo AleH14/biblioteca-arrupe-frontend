@@ -38,16 +38,22 @@ export default function AgregarLibro({ volverCatalogo }) {
     autor: "",
     editorial: "",
     isbn: "",
-    precio: "0.00",
-    donado: null,
     portada: "/images/libro-placeholder.jpg",
     categoriaId: "",
-    origen: "",
   });
 
   // Estado de ejemplares - SEPARADO
   const [ejemplares, setEjemplares] = useState([
-    { id: 1, codigo: "", ubicacion: "", estado: "Disponible", edificio: "" },
+    {
+      id: 1,
+      codigo: "",
+      ubicacion: "",
+      estado: "Disponible",
+      edificio: "",
+      donado: null,
+      origen: "",
+      precio: "",
+    },
   ]);
 
   const [categorias, setCategorias] = useState([]);
@@ -71,20 +77,20 @@ export default function AgregarLibro({ volverCatalogo }) {
   }, [volverCatalogo]);
 
   // Efecto para cerrar automáticamente el ToastError después de 5 segundos
-useEffect(() => {
-  let timeoutId;
-  if (showValidationError) {
-    timeoutId = setTimeout(() => {
-      setShowValidationError(false);
-    }, 3000); // 5 segundos
-  }
-  
-  return () => {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
+  useEffect(() => {
+    let timeoutId;
+    if (showValidationError) {
+      timeoutId = setTimeout(() => {
+        setShowValidationError(false);
+      }, 3000); // 5 segundos
     }
-  };
-}, [showValidationError]);
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [showValidationError]);
 
   // Debounce para ISBN
   const debouncedISBN = useDebounce(libro.isbn, 1000);
@@ -195,6 +201,9 @@ useEffect(() => {
           ubicacion: "",
           estado: "Disponible",
           edificio: "",
+          donado: null, 
+          origen: "", 
+          precio: "",
         },
       ];
     });
@@ -250,24 +259,6 @@ useEffect(() => {
       return false;
     }
 
-    if (libro.donado === null) {
-      setValidationMessage("Seleccione Donado o Comprado.");
-      return false;
-    }
-
-    if (
-      libro.donado === false &&
-      (!libro.precio || Number(libro.precio) <= 0)
-    ) {
-      setValidationMessage("Ingrese precio para libros comprados.");
-      return false;
-    }
-
-    if (libro.donado === true && !libro.origen?.trim()) {
-      setValidationMessage("Ingrese origen para libros donados.");
-      return false;
-    }
-
     // Validación de URL de imagen
     if (
       !libro.portada?.trim() ||
@@ -284,16 +275,31 @@ useEffect(() => {
     }
 
     // Validar que todos los ejemplares tengan los campos completos
-    const ejemplaresCompletos = ejemplares.every(
-      (ej) =>
+    const ejemplaresCompletos = ejemplares.every((ej) => {
+      const camposBase =
         ej.codigo?.trim() &&
         ej.ubicacion?.trim() &&
         ej.edificio?.trim() &&
-        ej.estado?.trim()
-    );
+        ej.estado?.trim();
+      // Validar campos específicos de donado/comprado
+      if (ej.donado === null) {
+        return false;
+      }
+
+      if (ej.donado === false && (!ej.precio || Number(ej.precio) <= 0)) {
+        return false;
+      }
+
+      if (ej.donado === true && !ej.origen?.trim()) {
+        return false;
+      }
+
+      return camposBase;
+    });
+
     if (!ejemplaresCompletos) {
       setValidationMessage(
-        "Complete todos los campos de cada ejemplar (código, ubicación, edificio y estado)."
+        "Complete todos los campos de cada ejemplar (código, ubicación, edificio, estado, origen)."
       );
       return false;
     }

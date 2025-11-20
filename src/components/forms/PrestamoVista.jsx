@@ -127,6 +127,7 @@ export default function PrestamoVista({ volverMenu }) {
   const [formData, setFormData] = useState({
     usuarioId: "",
     correo: "",
+    tipoPrestamo: ""
   });
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
@@ -214,8 +215,8 @@ export default function PrestamoVista({ volverMenu }) {
 
   const validarFormulario = useCallback(() => {
     const nuevosErrores = {};
-    if (!formData.tipoUsuario) {
-      nuevosErrores.tipoUsuario = "Seleccione el tipo de usuario";
+    if (!formData.tipoPrestamo) {
+      nuevosErrores.tipoPrestamo = "Seleccione el tipo de préstamo";
     }
 
     if (!formData.usuarioId.trim()) {
@@ -246,7 +247,7 @@ export default function PrestamoVista({ volverMenu }) {
     setErrores(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;
   }, [
-    formData.tipoUsuario,
+    formData.tipoPrestamo,
     formData.usuarioId,
     ejemplaresSeleccionados,
     fechaPrestamo,

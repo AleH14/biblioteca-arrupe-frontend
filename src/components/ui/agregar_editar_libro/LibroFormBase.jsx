@@ -61,8 +61,6 @@ const LibroFormBase = React.memo(
       titulo: `titulo-${Date.now()}`,
       autor: `autor-${Date.now()}`,
       editorial: `editorial-${Date.now()}`,
-      precio: `precio-${Date.now()}`,
-      origen: `origen-${Date.now()}`,
       portada: `portada-${Date.now()}`,
     };
 
@@ -225,78 +223,7 @@ const LibroFormBase = React.memo(
               />
             </div>
 
-            {/* Precio Estimado */}
-            <div className="col-12 col-md-6 mb-3">
-              <label htmlFor={fieldIds.precio} className={styles.formLabel}>
-                Precio estimado {libro.donado === false && "*"}
-              </label>
-              <div className="d-flex align-items-center gap-2">
-                <div className={styles.precioInputGroup} style={{ flex: 1 }}>
-                  <span className={styles.precioPrefix}>$</span>
-                  <input
-                    id={fieldIds.precio}
-                    type="number"
-                    name="precio"
-                    value={libro.precio}
-                    onChange={handleChange}
-                    className={`${styles.formInput} ${styles.precioInput}`}
-                    placeholder="0.00"
-                    step="0.01"
-                    min="0"
-                    required={libro.donado === false}
-                    autoComplete="transaction-amount"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Origen (solo si es Donado) */}
-            {libro.donado === true && (
-              <div className="col-12 col-md-6 mb-3">
-                <label htmlFor={fieldIds.origen} className={styles.formLabel}>
-                  Origen del libro *
-                </label>
-                <input
-                  id={fieldIds.origen}
-                  type="text"
-                  name="origen"
-                  value={libro.origen || ""}
-                  onChange={handleChange}
-                  className={styles.formInput}
-                  placeholder="Ingrese el origen"
-                  required
-                  autoComplete="off"
-                />
-              </div>
-            )}
-
-            {/* Selector Donado / Comprado */}
-            <div className="col-12 mb-3">
-              <div className={styles.selectorDonacionContainer}>
-                <button
-                  type="button"
-                  onClick={() => onLibroChange("donado", true)}
-                  className={`${styles.selectorBtn} ${
-                    libro.donado === true ? styles.selectorBtnDonadoActivo : ""
-                  }`}
-                >
-                  📘 Donado
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onLibroChange("donado", false)}
-                  className={`${styles.selectorBtn} ${
-                    libro.donado === false
-                      ? styles.selectorBtnCompradoActivo
-                      : ""
-                  }`}
-                >
-                  💰 Comprado
-                </button>
-              </div>
-            </div>
-
-            {/* URL de la imagen - ACTUALIZADO */}
+            {/* URL de la imagen*/}
             <div className="col-12 mb-3">
               <label htmlFor={fieldIds.portada} className={styles.formLabel}>
                 URL de la imagen del libro
