@@ -1,7 +1,7 @@
 import { Inter } from 'next/font/google';
 import './globals.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Providers from './providers'; // Componente para proveedores
+import Providers from './providers'; 
 import Footer from '@/components/Footer'; 
 
 const inter = Inter({ subsets: ['latin'] });

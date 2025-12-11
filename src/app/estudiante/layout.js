@@ -25,7 +25,7 @@ export default function EstudianteLayout({ children }) {
 
   // Si está cargando o no autenticado
   if (status === 'loading' || !user) {
-    return <LoadingSpinner message="Cargando..." />;
+    return <LoadingSpinner />;
   }
 
   return (
