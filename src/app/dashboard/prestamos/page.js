@@ -1,26 +1,27 @@
 "use client";
 import React, { useState, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import styles from "../../styles/PrestamoVista.module.css";
-import global from "../../styles/Global.module.css";
-import NotificacionesCorreo from "./NotificacionesCorreo";
+import styles from "@/styles/PrestamoVista.module.css";
+import global from "@/styles/Global.module.css";
 
 // Importar componentes UI
-import Toast from "../ui/Toast";
-import AppHeader from "../ui/AppHeader";
-import PageTitle from "../ui/PageTitle";
-import FilterPanel from "../ui/prestamos/FilterPanel";
-import SearchSection from "../ui/prestamos/SearchSection";
-import PrestamoCard from "../ui/prestamos/PrestamoCard";
-import NuevoPrestamoModal from "../ui/prestamos/NuevoPrestamoModal";
-import RenovarPrestamoModal from "../ui/prestamos/RenovarPrestamoModal";
-import ConfirmarDevolucionModal from "../ui/prestamos/ConfirmarDevolucionModal";
-import DetallesPrestamoModal from "../ui/prestamos/DetallesPrestamoModal";
-import ConfirmarPrestamoModal from "../ui/prestamos/ConfirmarPrestamoModal";
+import Toast from "@/components/ui/Toast";
+import AppHeader from "@/components/ui/AppHeader";
+import PageTitle from "@/components/ui/PageTitle";
+import FilterPanel from "@/components/ui/prestamos/FilterPanel";
+import SearchSection from "@/components/ui/prestamos/SearchSection";
+import PrestamoCard from "@/components/ui/prestamos/PrestamoCard";
+import NuevoPrestamoModal from "@/components/ui/prestamos/NuevoPrestamoModal";
+import RenovarPrestamoModal from "@/components/ui/prestamos/RenovarPrestamoModal";
+import ConfirmarDevolucionModal from "@/components/ui/prestamos/ConfirmarDevolucionModal";
+import DetallesPrestamoModal from "@/components/ui/prestamos/DetallesPrestamoModal";
+import ConfirmarPrestamoModal from "@/components/ui/prestamos/ConfirmarPrestamoModal";
 
-export default function PrestamoVista({ volverMenu }) {
+export default function PrestamosPage() {
+  const router = useRouter();
   const { logout } = useAuth();
 
   // Datos de ejemplo actualizados
@@ -118,7 +119,6 @@ export default function PrestamoVista({ volverMenu }) {
   const [filtro, setFiltro] = useState("Todos");
   const [fechaPrestamo, setFechaPrestamo] = useState(new Date());
   const [fechaDevolucion, setFechaDevolucion] = useState(null);
-  const [mostrarNotificaciones, setMostrarNotificaciones] = useState(false);
   const [prestamoSeleccionado, setPrestamoSeleccionado] = useState(null);
   const [nuevaFechaDevolucion, setNuevaFechaDevolucion] = useState(null);
   const [errorRenovacion, setErrorRenovacion] = useState("");
@@ -133,20 +133,6 @@ export default function PrestamoVista({ volverMenu }) {
   const [guardando, setGuardando] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
-
-  // FUNCIÓN DE LOGOUT
-  const handleLogout = useCallback(async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error("Error durante logout:", error);
-    }
-  }, [logout]);
-
-  // Función memoizada para generar informe
-  const handleGenerateReport = useCallback(() => {
-    // Lógica para generar informe
-  }, []);
 
   const handleClose = useCallback(() => {
     setShowModal(false);
@@ -167,8 +153,6 @@ export default function PrestamoVista({ volverMenu }) {
   const handleBusqueda = useCallback((value) => {
     setSearchValue(value);
   }, []);
-
-  const handleShow = useCallback(() => setShowModal(true), []);
 
   const handleInputChange = useCallback(
     (e) => {
@@ -274,7 +258,6 @@ export default function PrestamoVista({ volverMenu }) {
     setShowModalDevolver(true);
   }, []);
 
-  // FUNCIÓN FALTANTE - AÑADIDA
   const handleRenovarPrestamoLista = useCallback((prestamo) => {
     setPrestamoSeleccionado(prestamo);
     setNuevaFechaDevolucion(null);
@@ -293,7 +276,6 @@ export default function PrestamoVista({ volverMenu }) {
     }, 500);
   }, [prestamoSeleccionado, handleClose]);
 
-  // Nueva función para manejar préstamo de reserva
   const handlePrestarReserva = useCallback((prestamo) => {
     setPrestamoSeleccionado(prestamo);
     setShowModalConfirmarPrestamo(true);
@@ -348,14 +330,8 @@ export default function PrestamoVista({ volverMenu }) {
 
   const abrirNotificaciones = useCallback((prestamo) => {
     setPrestamoSeleccionado(prestamo);
-    setMostrarNotificaciones(true);
-  }, []);
-
-  const volverPrestamos = useCallback(() => {
-    setMostrarNotificaciones(false);
-    setPrestamoSeleccionado(null);
-    setSearchValue("");
-  }, []);
+    router.push(`/dashboard/prestamos/notificaciones?id=${prestamo._id}`);
+  }, [router]);
 
   const formatearFecha = useCallback((fechaString) => {
     if (!fechaString) return "No definida";
@@ -413,21 +389,12 @@ export default function PrestamoVista({ volverMenu }) {
     });
   }, [prestamos, filtro, searchValue]);
 
-  if (mostrarNotificaciones) {
-    return (
-      <NotificacionesCorreo
-        volverPrestamos={volverPrestamos}
-        prestamo={prestamoSeleccionado}
-      />
-    );
-  }
-
   return (
     <div className={global.backgroundWrapper}>
       <Toast show={showToast} message={toastMessage} />
 
-      {/*HEADER CON LOGOUT */}
-      <AppHeader onHomeClick={volverMenu} onLogoutClick={handleLogout} />
+      {/* HEADER */}
+      <AppHeader />
 
       <PageTitle title="Préstamos" />
 
@@ -437,7 +404,6 @@ export default function PrestamoVista({ volverMenu }) {
             <FilterPanel
               filtro={filtro}
               onFiltroChange={setFiltro}
-              onGenerateReport={handleGenerateReport}
               filters={[
                 "Todos",
                 "Activos",
@@ -452,7 +418,7 @@ export default function PrestamoVista({ volverMenu }) {
             <div className={styles.mainContent}>
               <SearchSection
                 onSearchChange={handleBusqueda}
-                onNewItem={handleShow}
+                onNewItem={() => setShowModal(true)}
               />
 
               <div className={styles.loansListContainer}>
@@ -464,7 +430,7 @@ export default function PrestamoVista({ volverMenu }) {
                       onRenovar={handleRenovarPrestamoLista}
                       onDevolver={handleDevolverPrestamo}
                       onVerDetalles={verDetalles}
-                      onNotificaciones={abrirNotificaciones}
+                      onNotificaciones={() => abrirNotificaciones(p)}
                       onPrestarReserva={handlePrestarReserva}
                       formatearFecha={formatearFecha}
                       obtenerEstadoVisual={obtenerEstadoVisual}

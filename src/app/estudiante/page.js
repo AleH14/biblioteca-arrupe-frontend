@@ -1,19 +1,17 @@
 "use client";
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
+import { useRouter } from 'next/navigation';
 import { useAuth } from "@/contexts/AuthContext";
-import styles from "../../styles/IntEstudiantes.module.css";
-import global from "../../styles/Global.module.css";
+import styles from "@/styles/IntEstudiantes.module.css";
 
-// Componentes UI
-import AppHeader from "../ui/intestudiantes/AppHeaderEstudiante";
-import PageTitle from "../ui/PageTitle";
-import Menu from "../ui/intestudiantes/MenuEstudiante";
-import SearchBar from "../ui/intestudiantes/SearchBarEstudiante";
-import Filters from "../ui/intestudiantes/FiltersEstudiante";
-import BookCard from "../ui/intestudiantes/BookCardEstudiante";
-import ActivityItems from "../ui/intestudiantes/ActivityItemsEstudiante";
-import ReservationModal from "../ui/intestudiantes/ReservationModal";
-import Toast from "../ui/Toast";
+// Componentes UI específicos de esta página
+import Menu from "@/components/ui/intestudiantes/MenuEstudiante";
+import SearchBar from "@/components/ui/intestudiantes/SearchBarEstudiante";
+import Filters from "@/components/ui/intestudiantes/FiltersEstudiante";
+import BookCard from "@/components/ui/intestudiantes/BookCardEstudiante";
+import ActivityItems from "@/components/ui/intestudiantes/ActivityItemsEstudiante";
+import ReservationModal from "@/components/ui/intestudiantes/ReservationModal";
+import Toast from "@/components/ui/Toast";
 
 // Hook personalizado
 import { useDebounce } from "../../hooks/useDebounce";
@@ -307,9 +305,11 @@ const prestamos = [
   },
 ];
 
-export default function InterfazEstudiantes({ volverMenu }) {
-  const { user, logout } = useAuth();
+export default function InterfazEstudiantes() {
+  const { user, logout, status } = useAuth();
+  const router = useRouter();
 
+  // Estados
   const [vistaActual, setVistaActual] = useState("catalogo");
   const [listaLibros, setListaLibros] = useState(libros);
   const [listaPrestamos, setListaPrestamos] = useState(prestamos);
@@ -321,15 +321,7 @@ export default function InterfazEstudiantes({ volverMenu }) {
     message: "",
     type: "success",
   });
-
-  // Usuario logueado
-  const userName = useMemo(() => {
-    if (user?.nombre) return user.nombre;
-    if (user?.name) return user.name;
-    if (user?.email) return user.email.split("@")[0];
-    return "Usuario";
-  }, [user]);
-
+  
   // Búsqueda y filtros
   const [busquedaInmediata, setBusquedaInmediata] = useState("");
   const [filtros, setFiltros] = useState({
@@ -337,60 +329,38 @@ export default function InterfazEstudiantes({ volverMenu }) {
     autor: "",
     editorial: "",
   });
+
+  // Hook personalizado
   const busquedaDebounced = useDebounce(busquedaInmediata, 300);
 
-  // Crear variable para pasar a Filters
-  const categoriasEstudiante = categorias;
+  // useMemo y useCallback¿
+  const userName = useMemo(() => {
+    if (user?.nombre) return user.nombre;
+    if (user?.name) return user.name;
+    if (user?.email) return user.email.split("@")[0];
+    return "Usuario";
+  }, [user]); // Depende de user, pero se declara aquí
 
-  // Autores únicos
-  const autoresUnicos = useMemo(
-    () => [...new Set(libros.map((libro) => libro.autor))],
-    [libros]
-  );
+  const categoriasEstudiante = useMemo(() => categorias, []);
+  const autoresUnicos = useMemo(() => [...new Set(libros.map((libro) => libro.autor))], [libros]);
+  const editorialesUnicas = useMemo(() => [...new Set(libros.map((libro) => libro.editorial))], [libros]);
 
-  // Editoriales únicas
-  const editorialesUnicas = useMemo(
-    () => [...new Set(libros.map((libro) => libro.editorial))],
-    [libros]
-  );
-
-  // Filtrado de libros CORREGIDO - incluye todos los filtros
   const librosFiltrados = useMemo(() => {
     return listaLibros.filter((libro) => {
-      // Filtro de búsqueda
       const coincideBusqueda =
         !busquedaDebounced ||
         libro.titulo.toLowerCase().includes(busquedaDebounced.toLowerCase()) ||
         libro.autor.toLowerCase().includes(busquedaDebounced.toLowerCase()) ||
         libro.editorial.toLowerCase().includes(busquedaDebounced.toLowerCase());
 
-      // Filtro de categoría
-      const coincideCategoria =
-        !filtros.categoria || libro.categoriaId === filtros.categoria;
-
-      // Filtro de autor
+      const coincideCategoria = !filtros.categoria || libro.categoriaId === filtros.categoria;
       const coincideAutor = !filtros.autor || libro.autor === filtros.autor;
+      const coincideEditorial = !filtros.editorial || libro.editorial === filtros.editorial;
 
-      // Filtro de editorial
-      const coincideEditorial =
-        !filtros.editorial || libro.editorial === filtros.editorial;
-
-      return (
-        coincideBusqueda &&
-        coincideCategoria &&
-        coincideAutor &&
-        coincideEditorial
-      );
+      return coincideBusqueda && coincideCategoria && coincideAutor && coincideEditorial;
     });
-  }, [
-    listaLibros,
-    busquedaDebounced,
-    filtros.categoria,
-    filtros.autor,
-    filtros.editorial,
-  ]);
+  }, [listaLibros, busquedaDebounced, filtros.categoria, filtros.autor, filtros.editorial]);
 
-  // Calcular disponibilidad para cada libro
   const librosConDisponibilidad = useMemo(() => {
     return librosFiltrados.map((libro) => {
       const disponibles = libro.ejemplares
@@ -404,20 +374,6 @@ export default function InterfazEstudiantes({ volverMenu }) {
     });
   }, [librosFiltrados]);
 
-  const handleFiltroChange = (nuevoFiltro) => {
-    setFiltros((prevFiltros) => ({ ...prevFiltros, ...nuevoFiltro }));
-  };
-
-  const limpiarFiltros = () => {
-    setFiltros({ categoria: "", autor: "", editorial: "" });
-  };
-
-  // Contar cuántos filtros están activos
-  const filtrosActivos = Object.entries(filtros).filter(
-    ([key, valor]) => ["categoria", "autor", "editorial"].includes(key) && valor
-  ).length;
-
-  //  Reserva (3 días)
   const handleReservar = useCallback((libro) => {
     setLibroAReservar(libro);
     setShowReservaModal(true);
@@ -453,26 +409,35 @@ export default function InterfazEstudiantes({ volverMenu }) {
     });
   }, [libroAReservar, userName]);
 
-  // Cerrar sesión
-  const handleLogout = useCallback(async () => {
-    try {
-      await logout();
-    } catch {
-      setToast({
-        show: true,
-        message: "Error al cerrar sesión",
-        type: "error",
-      });
-    }
-  }, [logout]);
+  // useEffects
+  useEffect(() => {
+    if (toast.show) {
+      const timer = setTimeout(() => {
+        setToast({ show: false, message: "", type: "success" });
+      }, 4000);
 
-  // 📋 Filtrar reservas y préstamos
-  const reservasActivas = listaPrestamos.filter(
-    (p) => p.estado === "reservado"
-  );
-  const prestamosActivos = listaPrestamos.filter(
-    (p) => p.estado !== "reservado"
-  );
+      return () => clearTimeout(timer);
+    }
+  }, [toast.show]);
+
+  if (status === 'loading' || !user) {
+    return <LoadingSpinner message="Cargando..." />;
+  }
+
+  const handleFiltroChange = (nuevoFiltro) => {
+    setFiltros((prevFiltros) => ({ ...prevFiltros, ...nuevoFiltro }));
+  };
+
+  const limpiarFiltros = () => {
+    setFiltros({ categoria: "", autor: "", editorial: "" });
+  };
+
+  const filtrosActivos = Object.entries(filtros).filter(
+    ([key, valor]) => ["categoria", "autor", "editorial"].includes(key) && valor
+  ).length;
+
+  const reservasActivas = listaPrestamos.filter((p) => p.estado === "reservado");
+  const prestamosActivos = listaPrestamos.filter((p) => p.estado !== "reservado");
 
   const EmptyState = ({ type }) => (
     <div className={styles.noHistory}>
@@ -485,25 +450,9 @@ export default function InterfazEstudiantes({ volverMenu }) {
     </div>
   );
 
-  // Efecto para cerrar automáticamente el Toast
-  React.useEffect(() => {
-    if (toast.show) {
-      const timer = setTimeout(() => {
-        setToast({ show: false, message: "", type: "success" });
-      }, 4000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [toast.show]);
-
   return (
-    <div className={global.backgroundWrapper}>
-      <AppHeader
-        onHomeClick={volverMenu}
-        onLogoutClick={handleLogout}
-        userName={userName}
-      />
-      <PageTitle title="Biblioteca Padre Arrupe" />
+    <>
+      
       <Menu activeView={vistaActual} onViewChange={setVistaActual} />
 
       <main className={styles.mainContent}>
@@ -579,8 +528,8 @@ export default function InterfazEstudiantes({ volverMenu }) {
         message={toast.message}
         type={toast.type}
         onClose={() => setToast({ show: false, message: "", type: "success" })}
-        duration={null} // Desactiva el timer interno del Toast
+        duration={null}
       />
-    </div>
+    </>
   );
 }

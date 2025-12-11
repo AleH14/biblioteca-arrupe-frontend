@@ -45,10 +45,10 @@ export const authOptions = {
             // NextAuth espera un objeto user con al menos id, name, email
             const user = {
               id: result.user.id,
-              name: result.user.nombre,
+              name: result.user.nombre || result.user.name,
               email: result.user.email,
-              role: result.user.rol,
-              active: result.user.activo,
+              role: result.user.rol || result.user.role,
+              active: result.user.activo || result.user.active,
               token: result.token
             };
             console.log('Returning user from authorize:', user);
@@ -56,9 +56,6 @@ export const authOptions = {
           }
 
           console.log('Login failed in authorize:', result.error);
-          // Devolver null causa CredentialsSignin
-          // Podríamos usar throw new Error() para un error más específico, pero NextAuth
-          // convertirá cualquier error en CredentialsSignin por seguridad
           return null;
         } catch (error) {
           console.error('Exception in authorize:', error);
@@ -94,13 +91,13 @@ export const authOptions = {
   },
   
   pages: {
-    signIn: '/login', // Página personalizada de login
-    error: '/login', // En caso de error, redirigir a login
+    signIn: '/login',
+    error: '/login',
   },
   
   session: {
     strategy: 'jwt',
-    maxAge: 1 * 60 * 60, // 1 hora (igual que el backend)
+    maxAge: 1 * 60 * 60, // 1 hora
   },
   
   jwt: {

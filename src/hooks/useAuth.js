@@ -58,7 +58,7 @@ export const useLoginForm = () => {
     if (!validateForm()) {
       return {
         success: false,
-        error: 'Por favor corrige los errores en el formulario'
+        error: 'Credenciales inválidas'
       };
     }
 
