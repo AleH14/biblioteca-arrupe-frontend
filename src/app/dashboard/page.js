@@ -72,15 +72,14 @@ PageTitle.displayName = 'PageTitle';
 // Componente memoizado para cada item del menú
 const MenuItem = React.memo(({ href, title, IconComponent, className = "" }) => {
   return (
-    <div className={`col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2 d-flex justify-content-center ${className}`}>
+    <div className={`col-auto d-flex justify-content-center ${className}`}>
       <Link
         href={href}
-        className="text-decoration-none w-100 d-flex justify-content-center"
+        className="text-decoration-none d-flex justify-content-center"
         aria-label={`Ir a ${typeof title === 'string' ? title : 'Préstamos/Devolución'}`}
         style={{ cursor: 'pointer' }}
       >
         <div
-          className="w-100"
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
