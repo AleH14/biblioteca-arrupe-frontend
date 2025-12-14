@@ -1,7 +1,6 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { useSession, signIn, signOut } from 'next-auth/react';
 import { authService } from '@/services';
 
 const AuthContext = createContext({});
@@ -15,77 +14,76 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const { data: session, status } = useSession();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
 
+  // Verificar si hay sesión guardada al montar el componente
   useEffect(() => {
-    if (status === 'loading') {
-      setLoading(true);
-      return;
-    }
+    const initAuth = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        const userData = localStorage.getItem('userData');
 
-    if (session?.user) {
-      setUser(session.user);
-    } else {
-      setUser(null);
+        console.log('AuthContext - initAuth:', { token: !!token, userData: !!userData });
+
+        if (token && userData) {
+          const parsedUser = JSON.parse(userData);
+          console.log('AuthContext - Setting user from localStorage:', parsedUser);
+          setUser(parsedUser);
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
+      } finally {
+        console.log('AuthContext - Setting loading to false');
+        setLoading(false);
+        setInitialized(true);
+      }
+    };
+
+    initAuth();
+  }, []);
+
+  // Efecto adicional para recargar usuario si no está presente pero hay datos en localStorage
+  useEffect(() => {
+    if (initialized && !user && !loading) {
+      const token = localStorage.getItem('authToken');
+      const userData = localStorage.getItem('userData');
+      
+      if (token && userData) {
+        console.log('AuthContext - Reloading user from localStorage');
+        try {
+          setUser(JSON.parse(userData));
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+        }
+      }
     }
-    
-    setLoading(false);
-  }, [session, status]);
+  }, [initialized, user, loading]);
 
   const login = async (credentials) => {
     try {
       console.log('AuthContext: Attempting login for:', credentials.email);
       
-      const result = await signIn('credentials', {
-        email: credentials.email,
-        password: credentials.password,
-        redirect: false,
-      });
+      const result = await authService.login(credentials);
 
-      console.log('AuthContext: signIn result:', result);
+      console.log('AuthContext: Login result:', result);
 
-      if (result?.error) {
-        // Solo mostrar en desarrollo
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('AuthContext: Login failed -', result.error);
-        }
-        
-        // Mapear diferentes tipos de errores de NextAuth
-        let errorMessage = 'Error al iniciar sesión';
-        
-        switch (result.error) {
-          case 'CredentialsSignin':
-            errorMessage = 'Email o contraseña incorrectos';
-            break;
-          case 'AccessDenied':
-            errorMessage = 'Acceso denegado';
-            break;
-          case 'Configuration':
-            errorMessage = 'Error de configuración del servidor';
-            break;
-          default:
-            errorMessage = 'Error al iniciar sesión';
-        }
-        
-        return {
-          success: false,
-          error: errorMessage
-        };
-      }
-
-      if (result?.ok) {
-        console.log('AuthContext: Login successful');
+      if (result.success) {
+        console.log('AuthContext: Login successful', result.user);
+        setUser(result.user);
         return {
           success: true,
-          message: 'Login exitoso'
+          message: 'Login exitoso',
+          user: result.user // Devolver el usuario en el resultado
         };
       }
 
       return {
         success: false,
-        error: 'Error desconocido al iniciar sesión'
+        error: result.error || 'Error al iniciar sesión'
       };
     } catch (error) {
       console.error('AuthContext: Login exception:', error);
@@ -98,7 +96,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await signOut({ redirect: false });
+      await authService.logout();
       setUser(null);
       return {
         success: true,
@@ -113,27 +111,30 @@ export const AuthProvider = ({ children }) => {
   };
 
   const isAuthenticated = () => {
-    return !!session?.user;
+    return !!user;
   };
 
   const hasRole = (role) => {
-    return user?.role === role;
+    return user?.rol === role;
   };
 
   const isAdmin = () => {
     return hasRole('admin');
   };
 
+  const hasAnyRole = (roles) => {
+    return roles.includes(user?.rol);
+  };
+
   const value = {
     user,
-    session,
     loading,
     login,
     logout,
     isAuthenticated,
     hasRole,
+    hasAnyRole,
     isAdmin,
-    status
   };
 
   return (

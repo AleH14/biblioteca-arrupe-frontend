@@ -16,18 +16,20 @@ export const login = async (credentials) => {
   try {
     const response = await apiClient.post('/api/auth/login', credentials);
     
-    const { token, user } = response.data;
+    // El backend devuelve { success: true, data: { accessToken, user }, mensaje }
+    const { data } = response.data;
+    const { accessToken, user } = data;
     
     // Guardar token en localStorage
-    if (typeof window !== 'undefined' && token) {
-      localStorage.setItem('authToken', token);
+    if (typeof window !== 'undefined' && accessToken) {
+      localStorage.setItem('authToken', accessToken);
       localStorage.setItem('userData', JSON.stringify(user));
     }
     
     return {
       success: true,
-      token,
-      user,
+      token: accessToken,
+      user: user,
       message: 'Login exitoso'
     };
   } catch (error) {

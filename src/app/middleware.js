@@ -1,33 +1,34 @@
-import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
-export default withAuth(
-  function middleware(req) {
-    const token = req.nextauth.token;
-    
-    // Protección de rutas por rol
-    const { pathname } = req.nextUrl;
-    
-    // Rutas de dashboard - solo para admin/bibliotecario/administrador
-    if (pathname.startsWith('/dashboard')) {
-      // Si es estudiante, redirigir a la interfaz de estudiante
-      if (token?.role === 'estudiante') {
-        const url = new URL('/estudiante', req.url);
-        return NextResponse.redirect(url);
-      }
-      
-      // Solo permitir si es admin, bibliotecario o administrador
-      const rolesPermitidos = ['admin', 'bibliotecario', 'administrador'];
-      if (!rolesPermitidos.includes(token?.role)) {
-        // Si no tiene un rol válido, redirigir al login
-        const url = new URL('/login', req.url);
-        return NextResponse.redirect(url);
-      }
-    }
-    
-    // Rutas de estudiante - solo para estudiantes
-    if (pathname.startsWith('/estudiante')) {
-      // Si NO es estudiante, redirigir al login
+export function middleware(req) {
+  const { pathname } = req.nextUrl;
+  
+  // Obtener token de las cookies
+  const token = req.cookies.get('authToken')?.value;
+  
+  // Si no hay token y está intentando acceder a rutas protegidas
+  if (!token && (pathname.startsWith('/dashboard') || pathname.startsWith('/estudiante'))) {
+    const url = new URL('/login', req.url);
+    return NextResponse.redirect(url);
+  }
+  
+  // Si hay token, permitir el acceso
+  // La validación de roles se hará en el cliente con el AuthContext
+  return NextResponse.next();
+}
+
+// Configuración de rutas protegidas
+export const config = {
+  matcher: [
+    '/dashboard/:path*',
+    '/estudiante/:path*'
+  ]
+};
+
+// Nota: La validación detallada de roles ahora se maneja en:
+// 1. AuthContext para el estado global
+// 2. Componentes individuales que verifican permisos
+// 3. Backend que es la fuente de verdad
       if (token?.role !== 'estudiante') {
         const url = new URL('/login', req.url);
         return NextResponse.redirect(url);

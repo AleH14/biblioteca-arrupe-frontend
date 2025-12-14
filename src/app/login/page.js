@@ -12,7 +12,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 export default function LoginForm() {
   const router = useRouter();
-  const { status, login, user } = useAuth(); // Asegúrate que useAuth devuelva 'user'
+  const { loading, login, user, isAuthenticated } = useAuth();
   
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
@@ -23,13 +23,13 @@ export default function LoginForm() {
 
   // Redirigir si ya está autenticado
   useEffect(() => {
-    if (status === 'authenticated') {
+    if (!loading && isAuthenticated()) {
       // Verificar si tenemos información del usuario
-      if (user && user.role) {
+      if (user && user.rol) {
         // Redirigir según el rol
-        if (user.role === 'estudiante' || user.role === 'user') {
+        if (user.rol === 'estudiante') {
           router.push('/estudiante');
-        } else if (user.role === 'admin' || user.role === 'bibliotecario') {
+        } else if (user.rol === 'admin' || user.rol === 'bibliotecario') {
           router.push('/dashboard');
         } else {
           // Rol por defecto
@@ -40,7 +40,7 @@ export default function LoginForm() {
         router.push('/estudiante');
       }
     }
-  }, [status, user, router]);
+  }, [loading, user, router, isAuthenticated]);
 
   const showMessage = (message, type = 'error') => {
     setAlertMessage(message);
@@ -58,8 +58,8 @@ export default function LoginForm() {
   };
 
   // Si está cargando, mostrar loading
- if (status === 'loading') {
-    return <LoadingSpinner/>; // ← USAR COMPONENTE
+  if (loading) {
+    return <LoadingSpinner/>; 
   }
 
   const onSubmit = async (e) => {
@@ -75,8 +75,28 @@ export default function LoginForm() {
     const result = await handleSubmit(e);
     
     if (result.success) {
-      //showMessage('¡Bienvenido! Redirigiendo...', 'success');
-      // La redirección se manejará automáticamente en el useEffect
+      showMessage('¡Bienvenido! Redirigiendo...', 'success');
+      
+      // Usar el usuario del resultado del login
+      const loggedUser = result.user;
+      console.log('Usuario logueado:', loggedUser);
+      
+      // Esperar un momento para que el estado se actualice
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
+      // Redirigir según el rol
+      if (loggedUser && loggedUser.rol) {
+        if (loggedUser.rol === 'estudiante') {
+          router.push('/estudiante');
+        } else if (loggedUser.rol === 'admin' || loggedUser.rol === 'bibliotecario') {
+          router.push('/dashboard');
+        } else {
+          router.push('/estudiante');
+        }
+      } else {
+        // Si no hay rol, ir a estudiante por defecto
+        router.push('/estudiante');
+      }
     } else {
       showMessage(result.error || 'Credenciales inválidas', 'error');
     }

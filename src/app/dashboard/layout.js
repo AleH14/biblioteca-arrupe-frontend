@@ -6,23 +6,23 @@ import { useEffect } from 'react';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 export default function DashboardLayout({ children }) {
-  const { status } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     // Redirigir si no está autenticado
-    if (status === 'unauthenticated') {
+    if (!loading && !user) {
       router.push('/login');
     }
-  }, [status, router]);
+  }, [user, loading, router]);
 
   // Mostrar loading mientras verifica autenticación
-  if (status === 'loading') {
+  if (loading) {
     return <LoadingSpinner message="Verificando autenticación..." />;
   }
 
   // Si está autenticado, mostrar el contenido
-  if (status === 'authenticated') {
+  if (user) {
     return <>{children}</>;
   }
 

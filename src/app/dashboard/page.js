@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -114,26 +114,31 @@ const HelpButton = React.memo(() => (
 HelpButton.displayName = 'HelpButton';
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession();
+  const { user, loading, logout } = useAuth();
   const router = useRouter();
 
+  // Debug: ver qué valores tenemos
+  console.log('Dashboard - loading:', loading, 'user:', user);
+
   React.useEffect(() => {
-    if (status === 'loading') return;
+    if (loading) return;
     
-    if (!session?.user) {
+    if (!user) {
+      console.log('Dashboard - No user, redirecting to login');
       router.push('/login');
       return;
     }
-  }, [session, status, router]);
+    
+    console.log('Dashboard - User authenticated:', user);
+  }, [user, loading, router]);
 
   const handleLogout = async () => {
     try {
-      await signOut({ 
-        callbackUrl: '/login',
-        redirect: true
-      });
+      await logout();
+      router.push('/login');
     } catch (error) {
-      window.location.href = '/login';
+      console.error('Error al cerrar sesión:', error);
+      router.push('/login');
     }
   };
 
@@ -146,7 +151,7 @@ export default function DashboardPage() {
     </>
   ), []);
 
-  if (status === 'loading' || !session?.user) {
+  if (loading || !user) {
     return (
       <div className={styles.backgroundWrapper}>
         <div className={`${styles.mainContainer} d-flex justify-content-center align-items-center`}>

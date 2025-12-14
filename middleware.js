@@ -1,30 +1,17 @@
-import { withAuth } from 'next-auth/middleware';
+import { NextResponse } from 'next/server';
 
-export default withAuth(
-  // `withAuth` augments your `Request` with the user's token.
-  function middleware(req) {
-    // Add any additional middleware logic here
-    console.log('Middleware executed for:', req.nextUrl.pathname);
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        // Check if user has token (is authenticated)
-        if (!token) {
-          return false;
-        }
-
-        // Check for admin routes
-        if (req.nextUrl.pathname.startsWith('/admin')) {
-          return token.role === 'admin';
-        }
-
-        // For other protected routes, just require authentication
-        return true;
-      },
-    },
-  }
-);
+export function middleware(req) {
+  const { pathname } = req.nextUrl;
+  
+  // Obtener token de localStorage no funciona en middleware, 
+  // así que verificaremos en el cliente
+  // El middleware ahora solo maneja redirecciones básicas
+  
+  // Si está en login y ya tiene token, podría redirigir a dashboard
+  // Pero esto se manejará mejor en el cliente
+  
+  return NextResponse.next();
+}
 
 // Specify which routes should be protected
 export const config = {
@@ -34,6 +21,6 @@ export const config = {
     '/libros/:path*',
     '/prestamos/:path*',
     '/usuarios/:path*',
-    '/api/protected/:path*'
+    '/estudiante/:path*'
   ]
 };

@@ -10,21 +10,21 @@ import Menu from '@/components/ui/intestudiantes/MenuEstudiante';
 import global from '@/styles/Global.module.css';
 
 export default function EstudianteLayout({ children }) {
-  const { user, status } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   // Verificar autenticación
   useEffect(() => {
-    if (status === 'loading') return;
+    if (loading) return;
     
-    if (status === 'unauthenticated' || !user) {
+    if (!user) {
       router.push('/login');
       return;
     }
-  }, [status, user, router]);
+  }, [loading, user, router]);
 
   // Si está cargando o no autenticado
-  if (status === 'loading' || !user) {
+  if (loading || !user) {
     return <LoadingSpinner />;
   }
 

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useSession, signOut } from 'next-auth/react';
+import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import global from "@/styles/Global.module.css";
 
@@ -101,7 +101,7 @@ const obtenerPrestamoSimulado = (id) => {
 };
 
 export default function NotificacionesCorreoPage() {
-  const { data: session, status } = useSession();
+  const { user, loading, logout } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -114,13 +114,13 @@ export default function NotificacionesCorreoPage() {
 
   // Verificar autenticación
   useEffect(() => {
-    if (status === 'loading') return;
+    if (loading) return;
     
-    if (!session?.user) {
+    if (!user) {
       router.push('/login');
       return;
     }
-  }, [session, status, router]);
+  }, [user, loading, router]);
 
   // Obtener el préstamo según el ID en los parámetros de búsqueda
   useEffect(() => {
@@ -150,14 +150,13 @@ export default function NotificacionesCorreoPage() {
 
   const handleLogout = React.useCallback(async () => {
     try {
-      await signOut({ 
-        callbackUrl: '/login',
-        redirect: true
-      });
+      await logout();
+      router.push('/login');
     } catch (error) {
-      window.location.href = '/login';
+      console.error('Error al cerrar sesión:', error);
+      router.push('/login');
     }
-  }, []);
+  }, [logout, router]);
 
   const handleVolverAPrestamos = React.useCallback(() => {
     router.push('/dashboard/prestamos');
@@ -180,7 +179,7 @@ export default function NotificacionesCorreoPage() {
     setCorreoSeleccionado(null);
   }, []);
 
-  if (status === 'loading' || !session?.user) {
+  if (loading || !user) {
     return <LoadingSpinner />;
   }
 

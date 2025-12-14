@@ -306,7 +306,7 @@ const prestamos = [
 ];
 
 export default function InterfazEstudiantes() {
-  const { user, logout, status } = useAuth();
+  const { user, logout, loading } = useAuth();
   const router = useRouter();
 
   // Estados
@@ -420,7 +420,7 @@ export default function InterfazEstudiantes() {
     }
   }, [toast.show]);
 
-  if (status === 'loading' || !user) {
+  if (loading || !user) {
     return <LoadingSpinner message="Cargando..." />;
   }
 
