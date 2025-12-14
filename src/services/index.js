@@ -8,6 +8,7 @@ export {
   default as authService,
   login,
   logout,
+  refreshToken,
   getCurrentUser,
   isAuthenticated,
   getAuthToken,

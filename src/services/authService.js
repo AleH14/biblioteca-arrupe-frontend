@@ -46,13 +46,49 @@ export const login = async (credentials) => {
 };
 
 /**
+ * Refresca el access token usando el refresh token (cookie httpOnly)
+ * @returns {Promise<Object>} Nuevo access token y datos del usuario
+ */
+export const refreshToken = async () => {
+  try {
+    const response = await apiClient.post('/api/auth/refreshToken', {});
+    
+    const { data } = response.data;
+    const { accessToken, user } = data;
+    
+    // Guardar nuevo token en localStorage
+    if (typeof window !== 'undefined' && accessToken) {
+      localStorage.setItem('authToken', accessToken);
+      localStorage.setItem('userData', JSON.stringify(user));
+    }
+    
+    return {
+      success: true,
+      token: accessToken,
+      user: user,
+      message: 'Token refrescado'
+    };
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || 
+                        error.response?.data?.error || 
+                        'Error al refrescar token';
+    
+    return {
+      success: false,
+      error: errorMessage,
+      status: error.response?.status
+    };
+  }
+};
+
+/**
  * Cierra la sesión del usuario
  * @returns {Promise<Object>} Confirmación de logout
  */
 export const logout = async () => {
   try {
-    // Opcional: llamar endpoint de logout en el backend
-    // await apiClient.post('/api/auth/logout');
+    // Llamar endpoint de logout en el backend para revocar refresh token
+    await apiClient.post('/api/auth/logout');
     
     // Limpiar datos locales
     if (typeof window !== 'undefined') {

@@ -117,19 +117,13 @@ export default function DashboardPage() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
 
-  // Debug: ver qué valores tenemos
-  console.log('Dashboard - loading:', loading, 'user:', user);
-
   React.useEffect(() => {
     if (loading) return;
     
     if (!user) {
-      console.log('Dashboard - No user, redirecting to login');
       router.push('/login');
       return;
     }
-    
-    console.log('Dashboard - User authenticated:', user);
   }, [user, loading, router]);
 
   const handleLogout = async () => {
