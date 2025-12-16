@@ -1,55 +1,39 @@
 "use client";
-import React, { useState, useMemo, useCallback, useRef } from "react";
-import styles from "../../styles/estadisticas.module.css";
-import { useAuth } from "@/contexts/AuthContext";
-import global from "../../styles/Global.module.css";
-import { FiHome } from "react-icons/fi";
-import { MdLogout } from "react-icons/md";
+import React, { useState, useMemo, useCallback } from "react";
+import global from "@/styles/Global.module.css";
 
-// Importación de los componentes
-import GlobalFilter from "../ui/estadisticas/GlobalFilter";
-import MetricCards from "../ui/estadisticas/MetricCards";
-import BarChart from "../ui/estadisticas/BarChart";
-import TopLibrosList from "../ui/estadisticas/TopLibrosList";
-import CategoriesChart from "../ui/estadisticas/CategoriesChart";
-import ResumenBiblioteca from "../ui/estadisticas/ResumenBiblioteca";
-import ModalCategoria from "../ui/estadisticas/ModalCategoria";
-import ModalDevoluciones from "../ui/estadisticas/ModalDevoluciones";
-import ModalReservas from "../ui/estadisticas/ModalReservas";
-import AppHeader from "../ui/AppHeader";
-import PageTitle from "../ui/PageTitle";
+// Importación de los componentes UI
+import AppHeader from "@/components/ui/AppHeader";
+import PageTitle from "@/components/ui/PageTitle";
+import GlobalFilter from "@/components/ui/estadisticas/GlobalFilter";
+import MetricCards from "@/components/ui/estadisticas/MetricCards";
+import BarChart from "@/components/ui/estadisticas/BarChart";
+import TopLibrosList from "@/components/ui/estadisticas/TopLibrosList";
+import CategoriesChart from "@/components/ui/estadisticas/CategoriesChart";
+import ResumenBiblioteca from "@/components/ui/estadisticas/ResumenBiblioteca";
+import ModalCategoria from "@/components/ui/estadisticas/ModalCategoria";
+import ModalDevoluciones from "@/components/ui/estadisticas/ModalDevoluciones";
+import ModalReservas from "@/components/ui/estadisticas/ModalReservas";
 
-
-export default function Estadisticas({ volverMenu }) {
- 
-
-   const { logout } = useAuth();
-    // Handlers memoizados
-     const handleLogout = useCallback(async () => {
-       try {
-         await logout();
-       } catch (error) {
-         console.error("Error durante logout:", error);
-       }
-     }, [logout]);
-
-    // Estados principales
+export default function EstadisticasPage() {
+  // Estados principales
   const [vistaLibros, setVistaLibros] = useState("masPrestados");
   const [filtroGlobal, setFiltroGlobal] = useState("hoy");
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
-  const [mostrarDevolucionesAtrasadas, setMostrarDevolucionesAtrasadas] = useState(false);
+  const [mostrarDevolucionesAtrasadas, setMostrarDevolucionesAtrasadas] =
+    useState(false);
   const [mostrarLibrosReservados, setMostrarLibrosReservados] = useState(false);
 
   // === Datos simulados y métricas ===
   const datosEstadisticas = useMemo(() => {
-    const coloresCategorias = [
-      "#dc2626", "#f59e0b", "#000000", "#6b7280", "#059669", "#7c3aed",
-      "#db2777", "#0891b2", "#ca8a04", "#16a34a", "#9333ea", "#e11d48",
-      "#0f766e", "#4338ca", "#b45309", "#be185d", "#0d9488", "#1e40af",
-      "#65a30d", "#dc2626", "#7c2d12", "#1e3a8a", "#831843", "#0f766e",
-      "#3730a3", "#9d174d", "#166534", "#713f12", "#1e40af", "#701a75",
-      "#334155", "#854d0e", "#0f766e", "#1e3a8a", "#831843", "#166534"
-    ];
+     const coloresCategorias = [
+       "#dc2626", "#f59e0b", "#000000", "#6b7280", "#059669", "#7c3aed",
+       "#db2777", "#0891b2", "#ca8a04", "#16a34a", "#9333ea", "#e11d48",
+       "#0f766e", "#4338ca", "#b45309", "#be185d", "#0d9488", "#1e40af",
+       "#65a30d", "#dc2626", "#7c2d12", "#1e3a8a", "#831843", "#0f766e",
+       "#3730a3", "#9d174d", "#166534", "#713f12", "#1e40af", "#701a75",
+       "#334155", "#854d0e", "#0f766e", "#1e3a8a", "#831843", "#166534"
+     ];
 
     const metricas = {
       hoy: {
@@ -99,7 +83,7 @@ export default function Estadisticas({ volverMenu }) {
       ],
     };
 
-    const libros = [
+   const libros = [
       { _id: "101", titulo: "Don Quijote de la Mancha", prestamos: 156, autor: "Miguel de Cervantes", categoria: { _id: "cat1", descripcion: "Literatura Clásica" }, editorial: "Editorial Cervantes", isbn: "978-1234567890", precio: 250, ejemplares: [{ _id: "ej1", estado: "disponible" }, { _id: "ej2", estado: "prestado" }] },
       { _id: "205", titulo: "100 Años de Soledad", prestamos: 134, autor: "Gabriel García Márquez", categoria: { _id: "cat2", descripcion: "Realismo Mágico" }, editorial: "Editorial Sudamericana", isbn: "978-1234567891", precio: 180, ejemplares: [{ _id: "ej3", estado: "disponible" }] },
       { _id: "312", titulo: "El principito", prestamos: 128, autor: "Antoine de Saint-Exupéry", categoria: { _id: "cat3", descripcion: "Literatura Infantil" }, editorial: "Editorial Francesa", isbn: "978-1234567892", precio: 120, ejemplares: [{ _id: "ej4", estado: "disponible" }, { _id: "ej5", estado: "reservado" }] },
@@ -131,7 +115,10 @@ export default function Estadisticas({ volverMenu }) {
     });
 
     const categoriasArray = Array.from(categoriasMap.values());
-    const totalEjemplares = categoriasArray.reduce((sum, c) => sum + c.cantidadEjemplares, 0);
+    const totalEjemplares = categoriasArray.reduce(
+      (sum, c) => sum + c.cantidadEjemplares,
+      0
+    );
     const categorias = categoriasArray
       .map((c, i) => ({
         ...c,
@@ -141,28 +128,77 @@ export default function Estadisticas({ volverMenu }) {
       .sort((a, b) => b.porcentaje - a.porcentaje);
 
     const devolucionesAtrasadas = [
-      { _id: "1", estudiante: "María González", libro: "Don Quijote de la Mancha", diasAtraso: 5, grado: "10° A" },
-      { _id: "2", estudiante: "Carlos Rodríguez", libro: "100 Años de Soledad", diasAtraso: 3, grado: "9° B" },
-      { _id: "3", estudiante: "Ana Martínez", libro: "El principito", diasAtraso: 7, grado: "11° C" },
+      {
+        _id: "1",
+        estudiante: "María González",
+        libro: "Don Quijote de la Mancha",
+        diasAtraso: 5,
+        grado: "10° A",
+      },
+      {
+        _id: "2",
+        estudiante: "Carlos Rodríguez",
+        libro: "100 Años de Soledad",
+        diasAtraso: 3,
+        grado: "9° B",
+      },
+      {
+        _id: "3",
+        estudiante: "Ana Martínez",
+        libro: "El principito",
+        diasAtraso: 7,
+        grado: "11° C",
+      },
     ];
 
     const librosReservados = [
-      { _id: "1", estudiante: "Laura Hernández", libro: "El principito", fechaReserva: "2024-01-15", grado: "12° B" },
-      { _id: "2", estudiante: "Miguel Santos", libro: "Don Quijote de la Mancha", fechaReserva: "2024-01-14", grado: "10° C" },
-      { _id: "3", estudiante: "Sofía Ramírez", libro: "Rayuela", fechaReserva: "2024-01-16", grado: "11° A" },
+      {
+        _id: "1",
+        estudiante: "Laura Hernández",
+        libro: "El principito",
+        fechaReserva: "2024-01-15",
+        grado: "12° B",
+      },
+      {
+        _id: "2",
+        estudiante: "Miguel Santos",
+        libro: "Don Quijote de la Mancha",
+        fechaReserva: "2024-01-14",
+        grado: "10° C",
+      },
+      {
+        _id: "3",
+        estudiante: "Sofía Ramírez",
+        libro: "Rayuela",
+        fechaReserva: "2024-01-16",
+        grado: "11° A",
+      },
     ];
 
-    return { metricas, tendencias, libros, categorias, devolucionesAtrasadas, librosReservados };
+    return {
+      metricas,
+      tendencias,
+      libros,
+      categorias,
+      devolucionesAtrasadas,
+      librosReservados,
+    };
   }, []);
 
   // === Derivados de datos ===
   const librosMasPrestados = useMemo(
-    () => [...datosEstadisticas.libros].sort((a, b) => b.prestamos - a.prestamos).slice(0, 10),
+    () =>
+      [...datosEstadisticas.libros]
+        .sort((a, b) => b.prestamos - a.prestamos)
+        .slice(0, 10),
     [datosEstadisticas.libros]
   );
 
   const librosMenosPrestados = useMemo(
-    () => [...datosEstadisticas.libros].sort((a, b) => a.prestamos - b.prestamos).slice(0, 10),
+    () =>
+      [...datosEstadisticas.libros]
+        .sort((a, b) => a.prestamos - b.prestamos)
+        .slice(0, 10),
     [datosEstadisticas.libros]
   );
 
@@ -184,16 +220,17 @@ export default function Estadisticas({ volverMenu }) {
 
   return (
     <div className={global.backgroundWrapper}>
-      <AppHeader onHomeClick={volverMenu} onLogoutClick={handleLogout} />
+      {/* AppHeader */}
+      <AppHeader />
 
       {/* Título principal de la página */}
-      <PageTitle
-        title="Estadísticas"
-        imageSrc="/images/complemento-1.png"
-      />
+      <PageTitle title="Estadísticas" imageSrc="/images/complemento-1.png" />
 
       {/* Filtros globales */}
-      <GlobalFilter filtroGlobal={filtroGlobal} setFiltroGlobal={setFiltroGlobal} />
+      <GlobalFilter
+        filtroGlobal={filtroGlobal}
+        setFiltroGlobal={setFiltroGlobal}
+      />
 
       {/* Métricas */}
       <MetricCards metricasActuales={metricasActuales} />

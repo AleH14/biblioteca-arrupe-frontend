@@ -8,14 +8,12 @@ export {
   default as authService,
   login,
   logout,
+  refreshToken,
   getCurrentUser,
   isAuthenticated,
   getAuthToken,
   verifySession
 } from './authService';
-
-// Servicio de autenticación para NextAuth
-export { loginForNextAuth } from './authNextAuth';
 
 // Servicio de Google Books (ya existente)
 export { buscarLibroPorISBN } from './googleBooks';

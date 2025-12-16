@@ -1,19 +1,17 @@
 "use client";
 import React, { useState, memo } from "react";
-import styles from "../../styles/Usuarios.module.css";
-import global from "../../styles/Global.module.css";
+import styles from "@/styles/Usuarios.module.css";
+import global from "@/styles/Global.module.css";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 
-import Toast from "../ui/Toast";
-import AppHeader from "../ui/AppHeader";
-import PageTitle from "../ui/PageTitle";
-import FilterPanel from "../ui/usuarios/FilterPanel";
-import SearchSection from "../ui/usuarios/SearchSection";
+import Toast from "@/components/ui/Toast";
+import AppHeader from "@/components/ui/AppHeader";
+import PageTitle from "@/components/ui/PageTitle";
+import FilterPanel from "@/components/ui/usuarios/FilterPanel";
+import SearchSection from "@/components/ui/usuarios/SearchSection";
 
-import UsuarioModal from "../ui/usuarios/UsuarioModal"; 
-import ModalConfirmarEliminar from "../ui/usuarios/ModalConfirmarEliminar";
-
-import { useAuth } from "@/contexts/AuthContext"; 
+import UsuarioModal from "@/components/ui/usuarios/UsuarioModal"; 
+import ModalConfirmarEliminar from "@/components/ui/usuarios/ModalConfirmarEliminar";
 
 const rolColor = {
   "Bibliotecario": { border: "#FF0004" },
@@ -60,8 +58,7 @@ function TarjetaUsuario({ usuario, onEditar, onEliminar }) {
   );
 }
 
-export default function Usuarios({ volverMenu }) {
-  const { logout } = useAuth();
+export default function UsuariosPage() {
   const [usuarios, setUsuarios] = useState(usuariosData);
   const [filtroActivo, setFiltroActivo] = useState("Todos");
   const [terminoBusqueda, setTerminoBusqueda] = useState("");
@@ -88,6 +85,7 @@ export default function Usuarios({ volverMenu }) {
     setUsuarioSeleccionado(usuario);
     setModalAbierto(tipo);
   };
+  
   const cerrarModales = () => {
     setModalAbierto(null);
     setUsuarioSeleccionado(null);
@@ -113,19 +111,13 @@ export default function Usuarios({ volverMenu }) {
     cerrarModales();
   };
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error("Error al cerrar sesión:", error);
-      mostrarToast("No se pudo cerrar sesión", "warning");
-    }
-  };
-
   return (
     <div className={global.backgroundWrapper}>
       <Toast show={toast.show} message={toast.message} type={toast.type} onClose={cerrarToast} />
-      <AppHeader onHomeClick={volverMenu} onLogoutClick={handleLogout} />
+      
+      {/* AppHeader sin props - maneja navegación internamente */}
+      <AppHeader />
+      
       <PageTitle title="USUARIOS" imgSrc="/images/complemento-1.png" />
 
       <div className="container-fluid">

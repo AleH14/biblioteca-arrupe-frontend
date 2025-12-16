@@ -1,22 +1,20 @@
 "use client";
-import React, { useState, useMemo, useCallback, useRef } from "react";
-import styles from "../../styles/catalogo.module.css";
-import global from "../../styles/Global.module.css";
-import { useAuth } from "@/contexts/AuthContext";
-import EditarLibro from "./EditarLibro";
-import AgregarLibro from "./AgregarLibro";
+import React, { useState, useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import styles from "@/styles/catalogo.module.css";
+import global from "@/styles/Global.module.css";
+import { useDebounce } from "@/hooks/useDebounce";
 
 // Importar componentes UI
-import AppHeader from "../ui/AppHeader";
-import PageTitle from "../ui/PageTitle";
-import CatalogoBarra from "../ui/catalogo/CatalogoBarra";
-import CatalogoFilters from "../ui/catalogo/CatalogoFilters";
-import CatalogoBookCard from "../ui/catalogo/CatalogoBookCard";
-import CatalogoEmptyState from "../ui/catalogo/CatalogoEmptyState";
-import CatalogoEliminarModal from "../ui/catalogo/CatalogoEliminarModal";
-import { useDebounce } from "../../hooks/useDebounce";
+import AppHeader from "@/components/ui/AppHeader";
+import PageTitle from "@/components/ui/PageTitle";
+import CatalogoBarra from "@/components/ui/catalogo/CatalogoBarra";
+import CatalogoFilters from "@/components/ui/catalogo/CatalogoFilters";
+import CatalogoBookCard from "@/components/ui/catalogo/CatalogoBookCard";
+import CatalogoEmptyState from "@/components/ui/catalogo/CatalogoEmptyState";
+import CatalogoEliminarModal from "@/components/ui/catalogo/CatalogoEliminarModal";
 
-// Datos estáticos
+// Datos estáticos 
 const categorias = [
   { _id: "1", descripcion: "Literatura" },
   { _id: "2", descripcion: "Ciencia" },
@@ -314,16 +312,14 @@ const libros = [
   },
 ];
 
-export default function Catalogo({ volverMenu }) {
-  const { logout } = useAuth();
+
+export default function CatalogoPage() {
+  const router = useRouter();
 
   // Estados principales
   const [Libros, setLibros] = useState(libros);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [libroAEliminar, setLibroAEliminar] = useState(null);
-  const [mostrarEditarLibro, setMostrarEditarLibro] = useState(false);
-  const [libroAEditar, setLibroAEditar] = useState(null);
-  const [mostrarAgregarLibro, setMostrarAgregarLibro] = useState(false);
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
   // Estados separados para búsqueda con debouncing
@@ -351,32 +347,24 @@ export default function Catalogo({ volverMenu }) {
 
   // Función para contar total de ejemplares
   const contarTotalEjemplares = useCallback((ejemplares) => {
-    return ejemplares.length;
+    return ejemplares ? ejemplares.length : 0;
   }, []);
 
-  // Handlers memoizados
-  const handleLogout = useCallback(async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error("Error durante logout:", error);
-    }
-  }, [logout]);
-
+  // Handler para editar usando router.push
   const handleEditar = useCallback((libro) => {
-    setLibroAEditar(libro);
-    setMostrarEditarLibro(true);
-  }, []);
+    console.log('Editando libro ID:', libro.id);
+    if (libro && libro.id) {
+      router.push(`/dashboard/catalogo/editar/${libro.id}`);
+    } else {
+      console.error('Libro o ID no válido:', libro);
+    }
+  }, [router]);
 
-  const handleVolverCatalogo = useCallback(() => {
-    setMostrarEditarLibro(false);
-    setLibroAEditar(null);
-    setMostrarAgregarLibro(false);
-  }, []);
-
+  // Handler para agregar usando router.push
   const handleAgregarLibro = useCallback(() => {
-    setMostrarAgregarLibro(true);
-  }, []);
+    console.log('Navegando a agregar libro');
+    router.push('/dashboard/catalogo/agregar');
+  }, [router]);
 
   // Handler optimizado para búsqueda
   const handleBusquedaChange = useCallback((valor) => {
@@ -479,8 +467,11 @@ export default function Catalogo({ volverMenu }) {
       }
 
       if (filtros.tipo) {
-        const esDonado = filtros.tipo === "donado";
-        if (libro.donado !== esDonado) {
+        const esDonado = libro.ejemplares?.some(ej => ej.donado === true) || false;
+        if (filtros.tipo === "donado" && !esDonado) {
+          return false;
+        }
+        if (filtros.tipo === "comprado" && esDonado) {
           return false;
         }
       }
@@ -505,17 +496,9 @@ export default function Catalogo({ volverMenu }) {
     });
   }, [Libros, filtros, contarTotalEjemplares]);
 
-  // Renderizado condicional
-  if (mostrarAgregarLibro)
-    return <AgregarLibro volverCatalogo={handleVolverCatalogo} />;
-  if (mostrarEditarLibro && libroAEditar)
-    return (
-      <EditarLibro volverCatalogo={handleVolverCatalogo} libro={libroAEditar} />
-    );
-
   return (
     <div className={global.backgroundWrapper}>
-      <AppHeader onHomeClick={volverMenu} onLogoutClick={handleLogout} />
+      <AppHeader />
 
       <PageTitle title="Catálogo" />
 
@@ -557,8 +540,8 @@ export default function Catalogo({ volverMenu }) {
                 key={libro.id}
                 libro={libro}
                 categoria={categoria}
-                onEdit={handleEditar}
-                onDelete={handleEliminarLibro}
+                onEdit={() => handleEditar(libro)}
+                onDelete={() => handleEliminarLibro(libro)}
                 contarTotalEjemplares={contarTotalEjemplares}
               />
             );
