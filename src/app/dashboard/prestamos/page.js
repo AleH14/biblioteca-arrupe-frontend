@@ -2,23 +2,28 @@
 import React, { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+
+// Estilos
 import styles from "@/styles/PrestamoVista.module.css";
 import global from "@/styles/Global.module.css";
 
-// Importar componentes UI
+// Componentes UI generales
 import Toast from "@/components/ui/Toast";
 import AppHeader from "@/components/ui/AppHeader";
 import PageTitle from "@/components/ui/PageTitle";
-import FilterPanel from "@/components/ui/prestamos/FilterPanel";
-import SearchSection from "@/components/ui/prestamos/SearchSection";
-import PrestamoCard from "@/components/ui/prestamos/PrestamoCard";
-import NuevoPrestamoModal from "@/components/ui/prestamos/NuevoPrestamoModal";
-import RenovarPrestamoModal from "@/components/ui/prestamos/RenovarPrestamoModal";
-import ConfirmarDevolucionModal from "@/components/ui/prestamos/ConfirmarDevolucionModal";
-import DetallesPrestamoModal from "@/components/ui/prestamos/DetallesPrestamoModal";
-import ConfirmarPrestamoModal from "@/components/ui/prestamos/ConfirmarPrestamoModal";
+
+// Componentes de préstamos
+import {
+  FilterPanel,
+  SearchSection,
+  PrestamoCard,
+  NuevoPrestamoModal,
+  RenovarPrestamoModal,
+  ConfirmarDevolucionModal,
+  DetallesPrestamoModal,
+  ConfirmarPrestamoModal,
+} from "@/components/ui/prestamos";
 
 export default function PrestamosPage() {
   const router = useRouter();
