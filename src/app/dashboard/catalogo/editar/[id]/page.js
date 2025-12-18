@@ -1,23 +1,18 @@
 "use client";
-import React, {
-  useState,
-  useCallback,
-  useMemo,
-  useRef,
-  useEffect,
-} from "react";
-import styles from "../../styles/librosForm.module.css";
-import global from "../../styles/Global.module.css";
-import { useDebounce } from "../../hooks/useDebounce";
-import { buscarLibroPorISBN } from "../../services/googleBooks";
+import React, {useState,useCallback,useMemo,useRef,useEffect} from "react";
+import { useRouter } from "next/navigation";
+import styles from "../../../../../styles/librosForm.module.css";
+import global from "../../../../../styles/Global.module.css";
+import { useDebounce } from "../../../../../hooks/useDebounce";
+import { buscarLibroPorISBN } from "../../../../../services/googleBooks";
 
 // Componentes
-import PageTitle from "../ui/PageTitle";
-import ToastError from "../ui/ToastError";
-import AppHeaderLibro from "../ui/agregar_editar_libro/AppHeaderLibro";
-import LibroFormBase from "../ui/agregar_editar_libro/LibroFormBase";
-import EjemplaresManager from "../ui/agregar_editar_libro/EjemplaresManager";
-import ConfirmModal from "../ui/agregar_editar_libro/ConfirmModal";
+import PageTitle from "../../../../../components/ui/PageTitle";
+import ToastError from "../../../../../components/ui/ToastError";
+import AppHeaderLibro from "../../../../../components/ui/agregar_editar_libro/AppHeaderLibro";
+import LibroFormBase from "../../../../../components/ui/agregar_editar_libro/LibroFormBase";
+import EjemplaresManager from "../../../../../components/ui/agregar_editar_libro/EjemplaresManager";
+import ConfirmModal from "../../../../../components/ui/agregar_editar_libro/ConfirmModal";
 
 // Componente memoizado para el botón de confirmación
 const ConfirmarEdicionButton = React.memo(({ onConfirm }) => {
@@ -32,15 +27,20 @@ const ConfirmarEdicionButton = React.memo(({ onConfirm }) => {
 
 ConfirmarEdicionButton.displayName = "ConfirmarEdicionButton";
 
-export default function EditarLibro({ volverCatalogo, libro: libroProp }) {
-  const [libro, setLibro] = useState(() => ({
-    titulo: libroProp?.titulo || "",
-    autor: libroProp?.autor || "",
-    editorial: libroProp?.editorial || "",
-    isbn: libroProp?.isbn || "",
-    portada: libroProp?.portada || "/images/libro-placeholder.png",
-    categoriaId: libroProp?.categoriaId || "",
-  }));
+export default function EditarLibro({libro: libroProp }) {
+  const router = useRouter();
+
+  const [libro, setLibro] = useState(() => {
+    // Inicializar con los datos que vienen del prop
+    return {
+      titulo: libroProp?.titulo || "",
+      autor: libroProp?.autor || "",
+      editorial: libroProp?.editorial || "",
+      isbn: libroProp?.isbn || "",
+      portada: libroProp?.portada || "/images/libro-placeholder.png",
+      categoriaId: libroProp?.categoriaId || "",
+    };
+  });
 
   const [ejemplares, setEjemplares] = useState(() => {
     if (libroProp?.ejemplares && Array.isArray(libroProp.ejemplares)) {
@@ -81,6 +81,35 @@ export default function EditarLibro({ volverCatalogo, libro: libroProp }) {
   const lastISBNRef = useRef(libroProp?.isbn || "");
   const libroRef = useRef(libro);
   const ejemplaresRef = useRef(ejemplares);
+
+  // Sincronizar refs con estado cuando cambia libroProp
+  useEffect(() => {
+    if (libroProp) {
+      setLibro({
+        titulo: libroProp.titulo || "",
+        autor: libroProp.autor || "",
+        editorial: libroProp.editorial || "",
+        isbn: libroProp.isbn || "",
+        portada: libroProp.portada || "/images/libro-placeholder.png",
+        categoriaId: libroProp.categoriaId || "",
+      });
+      
+      if (libroProp.ejemplares && Array.isArray(libroProp.ejemplares)) {
+        setEjemplares(
+          libroProp.ejemplares.map((ej) => ({
+            id: ej.id || Date.now() + Math.random(),
+            codigo: ej.codigo || "",
+            ubicacion: ej.ubicacion || "",
+            estado: ej.estado || "Disponible",
+            edificio: ej.edificio || "",
+            donado: ej.donado ?? null,
+            origen: ej.origen || "",
+            precio: ej.precio || "",
+          }))
+        );
+      }
+    }
+  }, [libroProp]);
 
   // Sincronizar refs con estado
   useEffect(() => {
@@ -288,8 +317,8 @@ export default function EditarLibro({ volverCatalogo, libro: libroProp }) {
 
   const handleGuardarConfirmado = useCallback(() => {
     setShowConfirmModal(false);
-    volverCatalogo();
-  }, [volverCatalogo]);
+     router.push("/dashboard/catalogo");
+  }, [router]);
 
   const handleCloseValidationError = useCallback(() => {
     setShowValidationError(false);
@@ -322,7 +351,7 @@ export default function EditarLibro({ volverCatalogo, libro: libroProp }) {
   // Componentes memoizados
   const memoizedHeader = useMemo(
     () => (
-      <AppHeaderLibro onVolver={volverCatalogo}>
+      <AppHeaderLibro>
         <ToastError
           show={showValidationError}
           message={validationMessage}
@@ -331,7 +360,6 @@ export default function EditarLibro({ volverCatalogo, libro: libroProp }) {
       </AppHeaderLibro>
     ),
     [
-      volverCatalogo,
       showValidationError,
       validationMessage,
       handleCloseValidationError,

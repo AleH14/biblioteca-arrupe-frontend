@@ -1,25 +1,20 @@
 "use client";
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  useMemo,
-} from "react";
-import styles from "../../styles/librosForm.module.css";
-import global from "../../styles/Global.module.css";
-import { useDebounce } from "../../hooks/useDebounce";
-import { buscarLibroPorISBN } from "../../services/googleBooks";
+import React, {useState, useEffect, useCallback, useRef, useMemo} from "react";
+import { useRouter } from "next/navigation";
+import styles from "@/styles/librosForm.module.css";
+import global from "@/styles/Global.module.css";
+import { useDebounce } from "@/hooks/useDebounce";
+import { buscarLibroPorISBN } from "@/services/googleBooks";
 
-// Componentes
-import PageTitle from "../ui/PageTitle";
-import Toast from "../ui/Toast";
-import ToastError from "../ui/ToastError";
-import AppHeaderLibro from "../ui/agregar_editar_libro/AppHeaderLibro";
-import LibroFormBase from "../ui/agregar_editar_libro/LibroFormBase";
-import EjemplaresManager from "../ui/agregar_editar_libro/EjemplaresManager";
-import ConfirmModal from "../ui/agregar_editar_libro/ConfirmModal";
-import GestionCategorias from "../ui/agregar_editar_libro/GestionCategorias";
+// Componentes - NOTA las rutas
+import PageTitle from "@/components/ui/PageTitle";
+import Toast from "@/components/ui/Toast";
+import ToastError from "@/components/ui/ToastError";
+import AppHeaderLibro from "@/components/ui/agregar_editar_libro/AppHeaderLibro";
+import LibroFormBase from "@/components/ui/agregar_editar_libro/LibroFormBase";
+import EjemplaresManager from "@/components/ui/agregar_editar_libro/EjemplaresManager";
+import ConfirmModal from "@/components/ui/agregar_editar_libro/ConfirmModal";
+import GestionCategorias from "@/components/ui/agregar_editar_libro/GestionCategorias";
 
 // Componentes memoizados para evitar re-renders
 const MemoizedAppHeaderLibro = React.memo(AppHeaderLibro);
@@ -31,8 +26,10 @@ const MemoizedEjemplaresManager = React.memo(EjemplaresManager);
 const MemoizedConfirmModal = React.memo(ConfirmModal);
 const MemoizedGestionCategorias = React.memo(GestionCategorias);
 
-export default function AgregarLibro({ volverCatalogo }) {
-  // Estado del libro - SEPARADO del estado de ejemplares
+export default function AgregarLibroPage() {
+  const router = useRouter();
+
+  // Estado del libro
   const [libro, setLibro] = useState({
     titulo: "",
     autor: "",
@@ -42,7 +39,7 @@ export default function AgregarLibro({ volverCatalogo }) {
     categoriaId: "",
   });
 
-  // Estado de ejemplares - SEPARADO
+  // Estado de ejemplares
   const [ejemplares, setEjemplares] = useState([
     {
       id: 1,
@@ -65,16 +62,8 @@ export default function AgregarLibro({ volverCatalogo }) {
   const [validationMessage, setValidationMessage] = useState("");
   const [showSuccessToast, setShowSuccessToast] = useState(false);
 
-  // Refs para optimización - ESTABLES
+  // Refs para optimización 
   const searchAbortControllerRef = useRef(null);
-
-  // Refs para handlers estables
-  const volverCatalogoRef = useRef(volverCatalogo);
-
-  // Actualizar refs cuando cambien las funciones
-  useEffect(() => {
-    volverCatalogoRef.current = volverCatalogo;
-  }, [volverCatalogo]);
 
   // Efecto para cerrar automáticamente el ToastError después de 5 segundos
   useEffect(() => {
@@ -168,7 +157,7 @@ export default function AgregarLibro({ volverCatalogo }) {
     ]);
   }, []);
 
-  // Handlers para libro - MEMOIZADOS y ESTABLES
+  // Handlers para libro 
   const handleLibroChange = useCallback((name, value) => {
     setLibro((prev) =>
       prev[name] === value ? prev : { ...prev, [name]: value }
@@ -179,7 +168,7 @@ export default function AgregarLibro({ volverCatalogo }) {
     setLibro((prev) => (prev.isbn === value ? prev : { ...prev, isbn: value }));
   }, []);
 
-  // Handlers para ejemplares - MEMOIZADOS y SEPARADOS
+  // Handlers para ejemplares 
   const handleEjemplarChange = useCallback((index, field, value) => {
     setEjemplares((prev) => {
       if (prev[index]?.[field] === value) return prev;
@@ -321,7 +310,7 @@ export default function AgregarLibro({ volverCatalogo }) {
     setShowSuccessToast(true);
     setTimeout(() => {
       setShowSuccessToast(false);
-      volverCatalogoRef.current();
+        router.push("/dashboard/catalogo");
     }, 3000);
   }, []);
 
@@ -329,12 +318,11 @@ export default function AgregarLibro({ volverCatalogo }) {
     return categorias.find((cat) => cat._id === libro.categoriaId);
   }, [categorias, libro.categoriaId]);
 
-  // Componentes memoizados para evitar re-renders
-  const header = useMemo(
-    () => <MemoizedAppHeaderLibro onVolver={volverCatalogo} />,
-    [volverCatalogo]
+ const header = useMemo(
+    () => <AppHeaderLibro />, 
+    []
   );
-
+  
   const pageTitle = useMemo(
     () => <MemoizedPageTitle title="AGREGAR NUEVO LIBRO" />,
     []
@@ -398,7 +386,7 @@ export default function AgregarLibro({ volverCatalogo }) {
       {header}
       {pageTitle}
 
-      {/* ToastError separado - no dentro del header */}
+      {/* ToastError */}
       <MemoizedToastError
         show={showValidationError}
         message={validationMessage}

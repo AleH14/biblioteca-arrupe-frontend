@@ -11,7 +11,6 @@ export default function DashboardExample() {
   const handleLogout = async () => {
     const result = await logout();
     if (result.success) {
-      // Redirigir se maneja automáticamente por next-auth
       window.location.href = '/';
     }
   };
