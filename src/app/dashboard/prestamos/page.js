@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import "react-datepicker/dist/react-datepicker.css";
@@ -25,93 +25,16 @@ import {
   ConfirmarPrestamoModal,
 } from "@/components/ui/prestamos";
 
+import { PrestamoService } from "@/services";
+
 export default function PrestamosPage() {
   const router = useRouter();
   const { logout } = useAuth();
 
-  // Datos de ejemplo actualizados
-  const prestamos = useMemo(
-    () => [
-      {
-        _id: "5a934e000102030405000000",
-        ejemplarId: "64fae76d2f8f5c3a3c1b5678",
-        estado: "activo",
-        fechaDevolucionEstimada: "2025-09-20",
-        fechaDevolucionReal: null,
-        fechaPrestamo: "2025-08-20",
-        notificaciones: [
-          {
-            _id: "64fae76d2f8f5c3a3c1b9999",
-            asunto: "Recordatorio devolución",
-            fechaEnvio: "2025-09-15",
-            mensaje: "Tu libro debe devolverse antes del 20/09",
-          },
-        ],
-        usuarioId: "64fae76d2f8f5c3a3c1b0001",
-        usuario: "Maria Elizabeth Gonzalez Hernández",
-        libro: "Cien Años de Soledad",
-        portada:
-          "http://books.google.com/books/content?id=WV_pAAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
-      },
-      {
-        _id: "5a934e000102030405000001",
-        ejemplarId: "64fae76d2f8f5c3a3c1b5679",
-        estado: "retrasado",
-        fechaDevolucionEstimada: "2025-09-05",
-        fechaDevolucionReal: null,
-        fechaPrestamo: "2025-08-05",
-        notificaciones: [],
-        usuarioId: "64fae76d2f8f5c3a3c1b0002",
-        usuario: "Carlos Rodriguez",
-        libro: "El Quijote",
-        portada:
-          "http://books.google.com/books/content?id=aHM5PwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
-      },
-      {
-        _id: "5a934e000102030405000002",
-        ejemplarId: "64fae76d2f8f5c3a3c1b5680",
-        estado: "cerrado",
-        fechaDevolucionEstimada: "2025-09-03",
-        fechaDevolucionReal: "2025-09-02",
-        fechaPrestamo: "2025-08-03",
-        notificaciones: [],
-        usuarioId: "64fae76d2f8f5c3a3c1b0003",
-        usuario: "Ana Martinez",
-        libro: "Rayuela",
-        portada:
-          "http://books.google.com/books/content?id=Zf2APwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
-      },
-      {
-        _id: "5a934e000102030405000003",
-        ejemplarId: "64fae76d2f8f5c3a3c1b5681",
-        estado: "cerrado",
-        fechaDevolucionEstimada: "2025-09-10",
-        fechaDevolucionReal: "2025-09-08",
-        fechaPrestamo: "2025-08-10",
-        notificaciones: [],
-        usuarioId: "64fae76d2f8f5c3a3c1b0004",
-        usuario: "Pedro Lopez",
-        libro: "El Principito",
-        portada:
-          "http://books.google.com/books/content?id=Zf2APwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
-      },
-      {
-        _id: "5a934e000102030405000004",
-        ejemplarId: "64fae76d2f8f5c3a3c1b5682",
-        estado: "reservado",
-        fechaDevolucionEstimada: null,
-        fechaDevolucionReal: null,
-        fechaPrestamo: null,
-        notificaciones: [],
-        usuarioId: "64fae76d2f8f5c3a3c1b0005",
-        usuario: "Laura García",
-        libro: "1984",
-        portada:
-          "http://books.google.com/books/content?id=Zf2APwAACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
-      },
-    ],
-    []
-  );
+  // Estados de datos
+  const [prestamos, setPrestamos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Estados principales
   const [showModal, setShowModal] = useState(false);
@@ -139,6 +62,61 @@ export default function PrestamosPage() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
+  // Cargar préstamos desde la API
+  const cargarPrestamos = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await PrestamoService.obtenerTodosLosPrestamos();
+      
+      if (response.success) {
+        // Normalizar datos para que coincidan con lo que esperan los componentes
+        const prestamosNormalizados = (response.data || []).map(prestamo => ({
+          // Mantener ID del préstamo
+          _id: prestamo.id || prestamo._id,
+          
+          // Normalizar usuario - el backend devuelve 'alumno'
+          usuario: prestamo.alumno?.nombre || prestamo.usuario || "Usuario desconocido",
+          usuarioId: prestamo.alumno, // Mantener referencia al objeto completo
+          
+          // Normalizar libro - el backend devuelve 'libro' como objeto
+          libro: prestamo.libro?.titulo || "Libro desconocido",
+          libroId: prestamo.libro, // Mantener referencia al objeto completo
+          
+          // Normalizar ejemplar - el backend devuelve 'ejemplar'
+          ejemplarId: prestamo.ejemplar?.id || prestamo.ejemplar,
+          ejemplar: prestamo.ejemplar, // Mantener referencia al objeto completo
+          
+          // Normalizar fechas - el backend usa nombres diferentes
+          fechaPrestamo: prestamo.fechaPrestamo,
+          fechaDevolucionEstimada: prestamo.fechaVencimiento || prestamo.fechaDevolucionEstimada,
+          fechaDevolucionReal: prestamo.fechaDevolucionReal,
+          
+          // Estado y otros campos
+          estado: prestamo.estado,
+          reserva: prestamo.reserva,
+          diasRetraso: prestamo.diasRetraso,
+          
+          // Notificaciones (si existen)
+          notificaciones: prestamo.notificaciones || [],
+        }));
+        
+        setPrestamos(prestamosNormalizados);
+      } else {
+        setError(response.message || "Error al cargar préstamos");
+      }
+    } catch (err) {
+      console.error("Error al cargar préstamos:", err);
+      setError("Error al cargar los préstamos. Por favor, intente nuevamente.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    cargarPrestamos();
+  }, [cargarPrestamos]);
+
   const handleClose = useCallback(() => {
     setShowModal(false);
     setShowModalDevolver(false);
@@ -146,7 +124,7 @@ export default function PrestamosPage() {
     setShowModalRenovar(false);
     setShowModalConfirmarPrestamo(false);
     setErrores({});
-    setFormData({ usuarioId: "", correo: "" });
+    setFormData({ usuarioId: "", correo: "", tipoPrestamo: "" });
     setEjemplaresSeleccionados([""]);
     setFechaPrestamo(new Date());
     setFechaDevolucion(null);
@@ -250,13 +228,14 @@ export default function PrestamosPage() {
     setTimeout(() => {
       setGuardando(false);
       handleClose();
+      cargarPrestamos(); // Recargar préstamos después de agregar uno nuevo
       setToastMessage(
         `Préstamo de ${formData.usuarioId} agregado correctamente`
       );
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     }, 1000);
-  }, [validarFormulario, formData.usuarioId, handleClose]);
+  }, [validarFormulario, formData.usuarioId, handleClose, cargarPrestamos]);
 
   const handleDevolverPrestamo = useCallback((prestamo) => {
     setPrestamoSeleccionado(prestamo);
@@ -273,13 +252,14 @@ export default function PrestamosPage() {
   const confirmarDevolucion = useCallback(() => {
     setTimeout(() => {
       handleClose();
+      cargarPrestamos(); // Recargar préstamos después de devolver
       setToastMessage(
-        `Libro "${prestamoSeleccionado?.libro}" devuelto correctamente`
+        `Libro "${prestamoSeleccionado?.libro || prestamoSeleccionado?.libroId?.titulo}" devuelto correctamente`
       );
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     }, 500);
-  }, [prestamoSeleccionado, handleClose]);
+  }, [prestamoSeleccionado, handleClose, cargarPrestamos]);
 
   const handlePrestarReserva = useCallback((prestamo) => {
     setPrestamoSeleccionado(prestamo);
@@ -302,30 +282,32 @@ export default function PrestamosPage() {
     setErrorRenovacion("");
     setTimeout(() => {
       handleClose();
+      cargarPrestamos(); // Recargar préstamos después de renovar
       setToastMessage(
-        `Préstamo de "${prestamoSeleccionado?.libro}" renovado hasta ${
+        `Préstamo de "${prestamoSeleccionado?.libro || prestamoSeleccionado?.libroId?.titulo}" renovado hasta ${
           nuevaFechaDevolucion.toISOString().split("T")[0]
         }`
       );
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
     }, 500);
-  }, [nuevaFechaDevolucion, prestamoSeleccionado, handleClose]);
+  }, [nuevaFechaDevolucion, prestamoSeleccionado, handleClose, cargarPrestamos]);
 
   const confirmarPrestamo = useCallback(
     (fechaDevolucionEstimada) => {
       setTimeout(() => {
         handleClose();
+        cargarPrestamos(); // Recargar préstamos después de confirmar reserva
         setToastMessage(
-          `Préstamo de "${prestamoSeleccionado?.libro}" confirmado para ${
-            prestamoSeleccionado?.usuario
+          `Préstamo de "${prestamoSeleccionado?.libro || prestamoSeleccionado?.libroId?.titulo}" confirmado para ${
+            prestamoSeleccionado?.usuario || prestamoSeleccionado?.usuarioId?.nombre
           }. Devolución: ${fechaDevolucionEstimada.toLocaleDateString("es-ES")}`
         );
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
       }, 500);
     },
-    [prestamoSeleccionado, handleClose]
+    [prestamoSeleccionado, handleClose, cargarPrestamos]
   );
 
   const verDetalles = useCallback((prestamo) => {
@@ -348,8 +330,10 @@ export default function PrestamosPage() {
     switch (prestamo.estado) {
       case "activo":
         return "Activo";
+      case "vencido":
       case "retrasado":
         return "Entrega Retrasada";
+      case "devuelto":
       case "cerrado":
         return "Devuelto";
       case "reservado":
@@ -364,8 +348,10 @@ export default function PrestamosPage() {
       switch (prestamo.estado) {
         case "activo":
           return styles.estadoActivo;
+        case "vencido":
         case "retrasado":
           return styles.estadoRetrasado;
+        case "devuelto":
         case "cerrado":
           return styles.estadoCerrado;
         case "reservado":
@@ -380,15 +366,20 @@ export default function PrestamosPage() {
   const prestamosFiltrados = useMemo(() => {
     const searchLower = searchValue.toLowerCase();
     return prestamos.filter((p) => {
+      // Adaptar nombres de campos del backend
+      const nombreUsuario = p.usuarioId?.nombre || p.usuario || "";
+      const nombreLibro = p.libroId?.titulo || p.libro || "";
+      
       const cumpleFiltroTexto =
         !searchValue ||
-        p.usuario.toLowerCase().includes(searchLower) ||
-        p.libro.toLowerCase().includes(searchLower);
+        nombreUsuario.toLowerCase().includes(searchLower) ||
+        nombreLibro.toLowerCase().includes(searchLower);
+      
       const cumpleFiltroEstado =
         filtro === "Todos" ||
         (filtro === "Activos" && p.estado === "activo") ||
-        (filtro === "Atrasados" && p.estado === "retrasado") ||
-        (filtro === "Devueltos" && p.estado === "cerrado") ||
+        (filtro === "Atrasados" && (p.estado === "retrasado" || p.estado === "vencido")) ||
+        (filtro === "Devueltos" && (p.estado === "cerrado" || p.estado === "devuelto")) ||
         (filtro === "Reservados" && p.estado === "reservado");
       return cumpleFiltroTexto && cumpleFiltroEstado;
     });
@@ -426,24 +417,53 @@ export default function PrestamosPage() {
                 onNewItem={() => setShowModal(true)}
               />
 
-              <div className={styles.loansListContainer}>
-                <div className={styles.loansList}>
-                  {prestamosFiltrados.map((p) => (
-                    <PrestamoCard
-                      key={p._id}
-                      prestamo={p}
-                      onRenovar={handleRenovarPrestamoLista}
-                      onDevolver={handleDevolverPrestamo}
-                      onVerDetalles={verDetalles}
-                      onNotificaciones={() => abrirNotificaciones(p)}
-                      onPrestarReserva={handlePrestarReserva}
-                      formatearFecha={formatearFecha}
-                      obtenerEstadoVisual={obtenerEstadoVisual}
-                      obtenerClaseEstado={obtenerClaseEstado}
-                    />
-                  ))}
+              {loading && (
+                <div className="text-center my-5">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Cargando...</span>
+                  </div>
+                  <p className="mt-2">Cargando préstamos...</p>
                 </div>
-              </div>
+              )}
+
+              {error && (
+                <div className="alert alert-danger m-3" role="alert">
+                  {error}
+                  <button 
+                    className="btn btn-link" 
+                    onClick={cargarPrestamos}
+                  >
+                    Reintentar
+                  </button>
+                </div>
+              )}
+
+              {!loading && !error && prestamosFiltrados.length === 0 && (
+                <div className="alert alert-info m-3" role="alert">
+                  No se encontraron préstamos.
+                </div>
+              )}
+
+              {!loading && !error && prestamosFiltrados.length > 0 && (
+                <div className={styles.loansListContainer}>
+                  <div className={styles.loansList}>
+                    {prestamosFiltrados.map((p) => (
+                      <PrestamoCard
+                        key={p._id}
+                        prestamo={p}
+                        onRenovar={handleRenovarPrestamoLista}
+                        onDevolver={handleDevolverPrestamo}
+                        onVerDetalles={verDetalles}
+                        onNotificaciones={() => abrirNotificaciones(p)}
+                        onPrestarReserva={handlePrestarReserva}
+                        formatearFecha={formatearFecha}
+                        obtenerEstadoVisual={obtenerEstadoVisual}
+                        obtenerClaseEstado={obtenerClaseEstado}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

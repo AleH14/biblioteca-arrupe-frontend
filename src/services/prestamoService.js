@@ -1,7 +1,7 @@
 import axios from "axios";
 import apiClient from "./api";
 
-const PRESTAMO_API_URL = "/prestamos";
+const PRESTAMO_API_URL = "/api/prestamos";
 
 //Obtener pretamos por nombre de usuario 
 export const getPrestamosByUsername = async (username) => {

@@ -17,3 +17,6 @@ export {
 
 // Servicio de Google Books (ya existente)
 export { buscarLibroPorISBN } from './googleBooks';
+
+export * as AuthService from "./authService";
+export * as PrestamoService from "./prestamoService";
