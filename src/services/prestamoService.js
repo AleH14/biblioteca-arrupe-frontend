@@ -21,7 +21,7 @@ export const getPrestamosByUsername = async (username) => {
 export const buscarLibrosParaPrestamo = async (query) => {
     try {
         const response = await apiClient.get(`${PRESTAMO_API_URL}/buscar-libros`, {
-            params: { query },
+            params: { nombre: query },
         });
         return response.data;
     } catch (error) {
@@ -35,7 +35,7 @@ export const buscarLibrosParaPrestamo = async (query) => {
 export const buscarUsuariosParaPrestamo = async (query) => {
     try {
         const response = await apiClient.get(`${PRESTAMO_API_URL}/buscar-usuarios`, {
-            params: { query },
+            params: { nombre: query },
         });
         return response.data;
     } catch (error) {
@@ -87,10 +87,11 @@ export const cerrarPrestamo = async (id) => {
 
 
 //POST /api/prestamos/crear — crearPrestamoConBusqueda
-export const crearPrestamoConBusqueda = async (libroId,usuarioId,fechaPrestamo,fechaDevolucionEstimada,tipoPrestamo) => {
+export const crearPrestamoConBusqueda = async (libroId, ejemplarId, usuarioId, fechaPrestamo, fechaDevolucionEstimada, tipoPrestamo) => {
     try {
         const prestamoData = {
             libroId,
+            ejemplarId,
             usuarioId,
             fechaPrestamo,
             fechaDevolucionEstimada,
@@ -125,14 +126,27 @@ export const crearPrestamo = async (libroId,usuarioId,fechaDevolucionEstimada,ti
 
 
 //POST /api/prestamos/renovar/:id — renovarPrestamo
-export const renovarPrestamo = async (id) => {
+export const renovarPrestamo = async (id, nuevaFechaDevolucionEstimada) => {
     try {
-        const response = await apiClient.post(`${PRESTAMO_API_URL}/renovar/${id}`);
+        const response = await apiClient.post(`${PRESTAMO_API_URL}/renovar/${id}`, {
+            nuevaFechaDevolucionEstimada
+        });
         return response.data;
     } catch (error) {
         console.error("Error al renovar el préstamo:", error);
         throw error;
     }   
+};
+
+//POST /api/prestamos/:id/activar-reserva — activarReserva
+export const activarReserva = async (id) => {
+    try {
+        const response = await apiClient.post(`${PRESTAMO_API_URL}/${id}/activar-reserva`);
+        return response.data;
+    } catch (error) {
+        console.error("Error al activar la reserva:", error);
+        throw error;
+    }
 };
 
 

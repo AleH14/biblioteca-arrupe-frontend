@@ -191,6 +191,7 @@ export const verifySession = async () => {
 // Exportación por defecto del objeto con todos los métodos
 const authService = {
   login,
+  refreshToken,
   logout,
   getCurrentUser,
   isAuthenticated,

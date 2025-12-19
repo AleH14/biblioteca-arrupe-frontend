@@ -1,5 +1,6 @@
 import React, { useState, useCallback, memo } from "react";
 import DatePicker from "react-datepicker";
+import BusquedaLibroInput from "./BusquedaLibroInput";
 import styles from "../../../styles/PrestamoVista.module.css";
 import global from "../../../styles/Global.module.css";
 
@@ -25,34 +26,6 @@ const TipoPrestamoRadio = memo(
 
 TipoPrestamoRadio.displayName = "TipoPrestamoRadio";
 
-const EjemplarInput = memo(
-  ({ value, index, onChange, onRemove, showRemove, hasError }) => (
-    <div className="mb-3 d-flex">
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(index, e.target.value)}
-        className={`${styles.inputForm} form-control me-2 ${
-          hasError ? styles.inputError : ""
-        }`}
-        placeholder="Ingrese el ejemplar"
-        required
-      />
-      {showRemove && (
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={() => onRemove(index)}
-        >
-          &times;
-        </button>
-      )}
-    </div>
-  )
-);
-
-EjemplarInput.displayName = "EjemplarInput";
-
 const NuevoPrestamoModal = memo(
   ({
     show,
@@ -60,10 +33,8 @@ const NuevoPrestamoModal = memo(
     formData,
     onInputChange,
     errores,
-    ejemplaresSeleccionados,
-    onEjemplarChange,
-    onAddEjemplar,
-    onRemoveEjemplar,
+    buscarLibros,
+    buscarUsuarios,
     fechaPrestamo,
     onFechaPrestamoChange,
     fechaDevolucion,
@@ -71,26 +42,25 @@ const NuevoPrestamoModal = memo(
     onGuardar,
     guardando,
   }) => {
-    // Estado local para manejar cambios sin afectar el padre inmediatamente
+    // Estado local para manejar la selección de libro y ejemplar
     const [localFormData, setLocalFormData] = useState(formData);
-    const [localEjemplares, setLocalEjemplares] = useState(
-      ejemplaresSeleccionados
-    );
+    const [libroSeleccionado, setLibroSeleccionado] = useState(null);
+    const [ejemplarSeleccionado, setEjemplarSeleccionado] = useState(null);
 
     //  Sincronizar cuando cambian las props externas (solo cuando show cambia)
     React.useEffect(() => {
       if (show) {
         setLocalFormData(formData);
-        setLocalEjemplares(ejemplaresSeleccionados);
+        setLibroSeleccionado(null);
+        setEjemplarSeleccionado(null);
       }
-    }, [show, formData.usuarioId, ejemplaresSeleccionados.length]); // Solo dependencias críticas
+    }, [show]);
 
     //  Handlers locales memoizados
     const handleTipoPrestamoChange = useCallback(
       (e) => {
         const newValue = e.target.value;
         setLocalFormData((prev) => ({ ...prev, tipoPrestamo: newValue }));
-        // Notificar al padre solo cuando sea necesario
         onInputChange({
           target: {
             name: "tipoPrestamo",
@@ -110,30 +80,14 @@ const NuevoPrestamoModal = memo(
       [onInputChange]
     );
 
-    const handleLocalEjemplarChange = useCallback(
-      (index, value) => {
-        setLocalEjemplares((prev) => {
-          const newEjemplares = [...prev];
-          newEjemplares[index] = value;
-          return newEjemplares;
-        });
-        onEjemplarChange(index, value);
-      },
-      [onEjemplarChange]
-    );
+    const handleLibroSeleccionado = useCallback((libro) => {
+      setLibroSeleccionado(libro);
+      setEjemplarSeleccionado(null); // Limpiar ejemplar cuando cambia el libro
+    }, []);
 
-    const handleLocalAddEjemplar = useCallback(() => {
-      setLocalEjemplares((prev) => [...prev, ""]);
-      onAddEjemplar();
-    }, [onAddEjemplar]);
-
-    const handleLocalRemoveEjemplar = useCallback(
-      (index) => {
-        setLocalEjemplares((prev) => prev.filter((_, i) => i !== index));
-        onRemoveEjemplar(index);
-      },
-      [onRemoveEjemplar]
-    );
+    const handleEjemplarSeleccionado = useCallback((ejemplar) => {
+      setEjemplarSeleccionado(ejemplar);
+    }, []);
 
     const handleFechaPrestamoChange = useCallback(
       (date) => {
@@ -150,8 +104,13 @@ const NuevoPrestamoModal = memo(
     );
 
     const handleGuardar = useCallback(() => {
-      onGuardar();
-    }, [onGuardar]);
+      // Enviar datos al padre incluyendo libro y ejemplar seleccionados
+      onGuardar({
+        ...localFormData,
+        libroSeleccionado,
+        ejemplarSeleccionado,
+      });
+    }, [onGuardar, localFormData, libroSeleccionado, ejemplarSeleccionado]);
 
     if (!show) return null;
 
@@ -207,7 +166,7 @@ const NuevoPrestamoModal = memo(
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label">Nombre</label>
+                  <label className="form-label">Nombre del Usuario</label>
                   <input
                     type="text"
                     name="usuarioId"
@@ -226,31 +185,22 @@ const NuevoPrestamoModal = memo(
                   )}
                 </div>
 
-                <label className="form-label">Ejemplar</label>
-                {errores.ejemplares && (
-                  <div className={styles.errorMessage}>
-                    {errores.ejemplares}
-                  </div>
-                )}
-                <br />
-                {localEjemplares.map((ej, index) => (
-                  <EjemplarInput
-                    key={index}
-                    value={ej}
-                    index={index}
-                    onChange={handleLocalEjemplarChange}
-                    onRemove={handleLocalRemoveEjemplar}
-                    showRemove={localEjemplares.length > 1}
-                    hasError={!!errores.ejemplares}
+                <div className="mb-3">
+                  <label className="form-label">
+                    Buscar Libro <span className="text-danger">*</span>
+                  </label>
+                  <BusquedaLibroInput
+                    onLibroSeleccionado={handleLibroSeleccionado}
+                    onEjemplarSeleccionado={handleEjemplarSeleccionado}
+                    buscarLibros={buscarLibros}
+                    hasError={!!errores.libro}
                   />
-                ))}
-                <button
-                  type="button"
-                  className="btn btn-secondary mb-3"
-                  onClick={handleLocalAddEjemplar}
-                >
-                  + Añadir otro Ejemplar
-                </button>
+                  {errores.libro && (
+                    <div className={styles.errorMessage}>
+                      {errores.libro}
+                    </div>
+                  )}
+                </div>
 
                 <div className="mb-3">
                   <label className="form-label">Fecha de Préstamo</label>

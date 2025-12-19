@@ -43,7 +43,6 @@ export default function PrestamosPage() {
   const [showModalRenovar, setShowModalRenovar] = useState(false);
   const [showModalConfirmarPrestamo, setShowModalConfirmarPrestamo] =
     useState(false);
-  const [ejemplaresSeleccionados, setEjemplaresSeleccionados] = useState([""]);
   const [filtro, setFiltro] = useState("Todos");
   const [fechaPrestamo, setFechaPrestamo] = useState(new Date());
   const [fechaDevolucion, setFechaDevolucion] = useState(null);
@@ -54,8 +53,9 @@ export default function PrestamosPage() {
 
   const [formData, setFormData] = useState({
     usuarioId: "",
-    correo: "",
-    tipoPrestamo: ""
+    tipoPrestamo: "",
+    libroSeleccionado: null,
+    ejemplarSeleccionado: null
   });
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
@@ -124,8 +124,7 @@ export default function PrestamosPage() {
     setShowModalRenovar(false);
     setShowModalConfirmarPrestamo(false);
     setErrores({});
-    setFormData({ usuarioId: "", correo: "", tipoPrestamo: "" });
-    setEjemplaresSeleccionados([""]);
+    setFormData({ usuarioId: "", tipoPrestamo: "", libroSeleccionado: null, ejemplarSeleccionado: null });
     setFechaPrestamo(new Date());
     setFechaDevolucion(null);
     setPrestamoSeleccionado(null);
@@ -154,45 +153,32 @@ export default function PrestamosPage() {
     [errores]
   );
 
-  const handleEjemplarChange = useCallback(
-    (index, value) => {
-      const newEjemplares = [...ejemplaresSeleccionados];
-      newEjemplares[index] = value;
-      setEjemplaresSeleccionados(newEjemplares);
-      if (errores.ejemplares) {
-        setErrores((prev) => ({
-          ...prev,
-          ejemplares: "",
-        }));
-      }
-    },
-    [ejemplaresSeleccionados, errores.ejemplares]
-  );
+  // Funciones de búsqueda para el modal
+  const buscarLibros = useCallback(async (query) => {
+    return await PrestamoService.buscarLibrosParaPrestamo(query);
+  }, []);
 
-  const addEjemplar = useCallback(
-    () => setEjemplaresSeleccionados((prev) => [...prev, ""]),
-    []
-  );
+  const buscarUsuarios = useCallback(async (query) => {
+    return await PrestamoService.buscarUsuariosParaPrestamo(query);
+  }, []);
 
-  const removeEjemplar = useCallback(
-    (index) =>
-      setEjemplaresSeleccionados((prev) => prev.filter((_, i) => i !== index)),
-    []
-  );
-
-  const validarFormulario = useCallback(() => {
+  const validarFormulario = useCallback((datosFormulario) => {
     const nuevosErrores = {};
-    if (!formData.tipoPrestamo) {
+    
+    if (!datosFormulario.tipoPrestamo) {
       nuevosErrores.tipoPrestamo = "Seleccione el tipo de préstamo";
     }
 
-    if (!formData.usuarioId.trim()) {
+    if (!datosFormulario.usuarioId.trim()) {
       nuevosErrores.usuarioId = "El nombre del usuario es requerido";
     }
 
-    const ejemplaresVacios = ejemplaresSeleccionados.some((ej) => !ej.trim());
-    if (ejemplaresVacios) {
-      nuevosErrores.ejemplares = "Ingresar ejemplar";
+    if (!datosFormulario.libroSeleccionado) {
+      nuevosErrores.libro = "Debe seleccionar un libro";
+    }
+
+    if (!datosFormulario.ejemplarSeleccionado) {
+      nuevosErrores.libro = "Debe seleccionar un ejemplar (CDU)";
     }
 
     if (!fechaPrestamo) {
@@ -200,8 +186,7 @@ export default function PrestamosPage() {
     }
 
     if (!fechaDevolucion) {
-      nuevosErrores.fechaDevolucion =
-        "La fecha de devolución estimada es requerida";
+      nuevosErrores.fechaDevolucion = "La fecha de devolución estimada es requerida";
     } else if (fechaPrestamo) {
       const fechaPrestamoStr = fechaPrestamo.toISOString().split("T")[0];
       const fechaDevolucionStr = fechaDevolucion.toISOString().split("T")[0];
@@ -213,29 +198,55 @@ export default function PrestamosPage() {
 
     setErrores(nuevosErrores);
     return Object.keys(nuevosErrores).length === 0;
-  }, [
-    formData.tipoPrestamo,
-    formData.usuarioId,
-    ejemplaresSeleccionados,
-    fechaPrestamo,
-    fechaDevolucion,
-  ]);
+  }, [fechaPrestamo, fechaDevolucion]);
 
-  const handleGuardarPrestamo = useCallback(() => {
-    if (!validarFormulario()) return;
+  const handleGuardarPrestamo = useCallback(async (datosCompletos) => {
+    if (!validarFormulario(datosCompletos)) return;
 
     setGuardando(true);
-    setTimeout(() => {
-      setGuardando(false);
-      handleClose();
-      cargarPrestamos(); // Recargar préstamos después de agregar uno nuevo
-      setToastMessage(
-        `Préstamo de ${formData.usuarioId} agregado correctamente`
+    try {
+      const { libroSeleccionado, ejemplarSeleccionado, usuarioId, tipoPrestamo } = datosCompletos;
+      
+      // Buscar el usuario por nombre
+      const usuariosResponse = await PrestamoService.buscarUsuariosParaPrestamo(usuarioId);
+      
+      if (!usuariosResponse.success || !usuariosResponse.data || usuariosResponse.data.length === 0) {
+        setErrores({ usuarioId: "No se encontró un usuario con ese nombre" });
+        setGuardando(false);
+        return;
+      }
+
+      const usuario = usuariosResponse.data[0];
+      
+      // Crear el préstamo directamente con los datos seleccionados
+      // El backend devuelve "id" en lugar de "_id" para libros y ejemplares
+      const response = await PrestamoService.crearPrestamoConBusqueda(
+        libroSeleccionado.id || libroSeleccionado._id,
+        ejemplarSeleccionado.id || ejemplarSeleccionado._id,
+        usuario.id || usuario._id,
+        fechaPrestamo.toISOString(),
+        fechaDevolucion.toISOString(),
+        tipoPrestamo
       );
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000);
-    }, 1000);
-  }, [validarFormulario, formData.usuarioId, handleClose, cargarPrestamos]);
+
+      if (response.success) {
+        handleClose();
+        await cargarPrestamos();
+        setToastMessage(`Préstamo creado correctamente para ${usuario.nombre}`);
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      } else {
+        setErrores({ general: response.message || "Error al crear el préstamo" });
+      }
+    } catch (error) {
+      console.error("Error al guardar préstamo:", error);
+      setErrores({ 
+        general: error.response?.data?.message || "Error al crear el préstamo. Intente nuevamente." 
+      });
+    } finally {
+      setGuardando(false);
+    }
+  }, [validarFormulario, fechaPrestamo, fechaDevolucion, handleClose, cargarPrestamos]);
 
   const handleDevolverPrestamo = useCallback((prestamo) => {
     setPrestamoSeleccionado(prestamo);
@@ -249,16 +260,31 @@ export default function PrestamosPage() {
     setShowModalRenovar(true);
   }, []);
 
-  const confirmarDevolucion = useCallback(() => {
-    setTimeout(() => {
-      handleClose();
-      cargarPrestamos(); // Recargar préstamos después de devolver
+  const confirmarDevolucion = useCallback(async () => {
+    try {
+      const response = await PrestamoService.cerrarPrestamo(prestamoSeleccionado._id);
+      
+      if (response.success) {
+        handleClose();
+        await cargarPrestamos();
+        setToastMessage(
+          `Libro "${prestamoSeleccionado?.libro || prestamoSeleccionado?.libroId?.titulo}" devuelto correctamente`
+        );
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      } else {
+        setToastMessage(response.message || "Error al registrar la devolución");
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      }
+    } catch (error) {
+      console.error("Error al confirmar devolución:", error);
       setToastMessage(
-        `Libro "${prestamoSeleccionado?.libro || prestamoSeleccionado?.libroId?.titulo}" devuelto correctamente`
+        error.response?.data?.message || "Error al registrar la devolución. Intente nuevamente."
       );
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
-    }, 500);
+    }
   }, [prestamoSeleccionado, handleClose, cargarPrestamos]);
 
   const handlePrestarReserva = useCallback((prestamo) => {
@@ -274,38 +300,76 @@ export default function PrestamosPage() {
     [errorRenovacion]
   );
 
-  const handleRenovarPrestamo = useCallback(() => {
+  const handleRenovarPrestamo = useCallback(async () => {
     if (!nuevaFechaDevolucion) {
       setErrorRenovacion("Debe seleccionar una nueva fecha de devolución");
       return;
     }
+    
+    // Validar que la nueva fecha sea posterior a la fecha actual de devolución
+    const fechaActual = new Date(prestamoSeleccionado.fechaDevolucionEstimada);
+    if (nuevaFechaDevolucion <= fechaActual) {
+      setErrorRenovacion("La nueva fecha debe ser posterior a la fecha de devolución actual");
+      return;
+    }
+    
     setErrorRenovacion("");
-    setTimeout(() => {
-      handleClose();
-      cargarPrestamos(); // Recargar préstamos después de renovar
-      setToastMessage(
-        `Préstamo de "${prestamoSeleccionado?.libro || prestamoSeleccionado?.libroId?.titulo}" renovado hasta ${
-          nuevaFechaDevolucion.toISOString().split("T")[0]
-        }`
+    
+    try {
+      const response = await PrestamoService.renovarPrestamo(
+        prestamoSeleccionado._id,
+        nuevaFechaDevolucion.toISOString()
       );
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000);
-    }, 500);
-  }, [nuevaFechaDevolucion, prestamoSeleccionado, handleClose, cargarPrestamos]);
-
-  const confirmarPrestamo = useCallback(
-    (fechaDevolucionEstimada) => {
-      setTimeout(() => {
+      
+      if (response.success) {
         handleClose();
-        cargarPrestamos(); // Recargar préstamos después de confirmar reserva
+        await cargarPrestamos();
         setToastMessage(
-          `Préstamo de "${prestamoSeleccionado?.libro || prestamoSeleccionado?.libroId?.titulo}" confirmado para ${
-            prestamoSeleccionado?.usuario || prestamoSeleccionado?.usuarioId?.nombre
-          }. Devolución: ${fechaDevolucionEstimada.toLocaleDateString("es-ES")}`
+          `Préstamo de "${prestamoSeleccionado?.libro || prestamoSeleccionado?.libroId?.titulo}" renovado hasta ${
+            nuevaFechaDevolucion.toLocaleDateString("es-ES")
+          }`
         );
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
-      }, 500);
+      } else {
+        setErrorRenovacion(response.message || "Error al renovar el préstamo");
+      }
+    } catch (error) {
+      console.error("Error al renovar préstamo:", error);
+      setErrorRenovacion(
+        error.response?.data?.message || "Error al renovar el préstamo. Intente nuevamente."
+      );
+    }
+  }, [nuevaFechaDevolucion, prestamoSeleccionado, handleClose, cargarPrestamos]);
+
+  const confirmarPrestamo = useCallback(
+    async (fechaDevolucionEstimada) => {
+      try {
+        const response = await PrestamoService.activarReserva(prestamoSeleccionado._id);
+        
+        if (response.success) {
+          handleClose();
+          await cargarPrestamos();
+          setToastMessage(
+            `Préstamo de "${prestamoSeleccionado?.libro || prestamoSeleccionado?.libroId?.titulo}" confirmado para ${
+              prestamoSeleccionado?.usuario || prestamoSeleccionado?.usuarioId?.nombre
+            }`
+          );
+          setShowToast(true);
+          setTimeout(() => setShowToast(false), 3000);
+        } else {
+          setToastMessage(response.message || "Error al activar la reserva");
+          setShowToast(true);
+          setTimeout(() => setShowToast(false), 3000);
+        }
+      } catch (error) {
+        console.error("Error al confirmar préstamo:", error);
+        setToastMessage(
+          error.response?.data?.message || "Error al activar la reserva. Intente nuevamente."
+        );
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      }
     },
     [prestamoSeleccionado, handleClose, cargarPrestamos]
   );
@@ -475,10 +539,8 @@ export default function PrestamosPage() {
         formData={formData}
         onInputChange={handleInputChange}
         errores={errores}
-        ejemplaresSeleccionados={ejemplaresSeleccionados}
-        onEjemplarChange={handleEjemplarChange}
-        onAddEjemplar={addEjemplar}
-        onRemoveEjemplar={removeEjemplar}
+        buscarLibros={buscarLibros}
+        buscarUsuarios={buscarUsuarios}
         fechaPrestamo={fechaPrestamo}
         onFechaPrestamoChange={setFechaPrestamo}
         fechaDevolucion={fechaDevolucion}
@@ -486,6 +548,14 @@ export default function PrestamosPage() {
         onGuardar={handleGuardarPrestamo}
         guardando={guardando}
       />
+
+      {errores.general && (
+        <Toast 
+          show={!!errores.general} 
+          message={errores.general}
+          type="error"
+        />
+      )}
 
       <RenovarPrestamoModal
         show={showModalRenovar}
@@ -525,3 +595,4 @@ export default function PrestamosPage() {
     </div>
   );
 }
+  
