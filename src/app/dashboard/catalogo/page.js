@@ -1,18 +1,17 @@
 "use client";
 import React, { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useDebounce } from "@/hooks/useDebounce";
 import styles from "@/styles/catalogo.module.css";
 import global from "@/styles/Global.module.css";
-import { useDebounce } from "@/hooks/useDebounce";
-
-// Importar componentes UI
-import AppHeader from "@/components/ui/AppHeader";
-import PageTitle from "@/components/ui/PageTitle";
-import CatalogoBarra from "@/components/ui/catalogo/CatalogoBarra";
-import CatalogoFilters from "@/components/ui/catalogo/CatalogoFilters";
-import CatalogoBookCard from "@/components/ui/catalogo/CatalogoBookCard";
-import CatalogoEmptyState from "@/components/ui/catalogo/CatalogoEmptyState";
-import CatalogoEliminarModal from "@/components/ui/catalogo/CatalogoEliminarModal";
+import { AppHeader, PageTitle } from "@/components/ui";
+import {
+  CatalogoBarra,
+  CatalogoFilters,
+  CatalogoBookCard,
+  CatalogoEmptyState,
+  CatalogoEliminarModal,
+} from "@/components/ui/catalogo";
 
 // Datos estáticos 
 const categorias = [
