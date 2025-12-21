@@ -20,3 +20,4 @@ export { buscarLibroPorISBN } from './googleBooks';
 
 export * as AuthService from "./authService";
 export * as PrestamoService from "./prestamoService";
+export * as LibrosService from "./librosService";
