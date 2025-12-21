@@ -185,9 +185,9 @@ export default function PrestamosPage() {
     } else if (fechaPrestamo) {
       const fechaPrestamoStr = fechaPrestamo.toISOString().split("T")[0];
       const fechaDevolucionStr = fechaDevolucion.toISOString().split("T")[0];
-      if (fechaDevolucionStr < fechaPrestamoStr) {
+      if (fechaDevolucionStr <= fechaPrestamoStr) {
         nuevosErrores.fechaDevolucion =
-          "La fecha de devolución debe ser mayor o igual a la fecha de préstamo";
+          "La fecha de devolución debe ser posterior (al menos un día después) a la fecha de préstamo";
       }
     }
 
