@@ -21,20 +21,22 @@ export const getLibros = async (filtros = {}) => {
     }   
 };
 
+//GET /api/libros/:id — getLibroById
+export const getLibroById = async (id) => {
+    try {
+        const response = await apiClient.get(`${PRESTAMO_API_URL}/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error al obtener el libro:", error);
+        throw error;
+    }
+};
+
 //POST /api/libros — createLibro
 
-  export const createLibro = async (titulo,autor,isbn, categoria, editorial, fechaPublicacion,ejemplares) =>  {
+  export const createLibro = async (libroData) =>  {
     try {
-        const body = {
-            titulo,
-            autor,
-            isbn,   
-            categoria,
-            editorial,
-            fechaPublicacion,
-            ejemplares
-        };
-        const response = await apiClient.post(`${PRESTAMO_API_URL}`, body);
+        const response = await apiClient.post(`${PRESTAMO_API_URL}`, libroData);
         return response.data;
     } catch (error) {
         console.error("Error al crear el libro:", error);
@@ -88,7 +90,8 @@ Si se elimina, responder 204.
     export const deleteLibro = async (id) =>  {  
     try {
         const response = await apiClient.delete(`${PRESTAMO_API_URL}/${id}`);   
-        return response.data;
+        // El backend responde 204 No Content, así que creamos una respuesta exitosa
+        return { success: true, message: "Libro eliminado correctamente" };
     } catch (error) {
         console.error("Error al eliminar el libro:", error);
         throw error;
