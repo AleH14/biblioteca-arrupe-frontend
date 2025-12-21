@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLoginForm } from '@/hooks/useAuth';
 import styles from "@/styles/LoginForm.module.css";
@@ -12,14 +12,26 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const expired = searchParams?.get('expired');
+  
   const { loading, login, user, isAuthenticated } = useAuth();
   
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('error');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showExpiredMessage, setShowExpiredMessage] = useState(expired === 'true');
 
   const { formData, errors, isSubmitting, handleChange, handleSubmit } = useLoginForm();
+
+  // Ocultar mensaje de sesión expirada después de 5 segundos
+  useEffect(() => {
+    if (showExpiredMessage) {
+      const timer = setTimeout(() => setShowExpiredMessage(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showExpiredMessage]);
 
   // Redirigir si ya está autenticado
   useEffect(() => {
@@ -123,6 +135,13 @@ export default function LoginForm() {
             <h1 className={styles.title}>Biblioteca Arrupe</h1>
             <h2 className={styles.subtitle}>El poder de gestionar el conocimiento</h2>
           </div>
+
+          {/* Mensaje de sesión expirada */}
+          {showExpiredMessage && (
+            <div className="alert alert-warning mx-auto mb-3" style={{ maxWidth: '400px' }} role="alert">
+              <strong>Sesión expirada.</strong> Por favor, inicie sesión nuevamente.
+            </div>
+          )}
 
           <LoginContent {...loginContentProps} />
         </div>

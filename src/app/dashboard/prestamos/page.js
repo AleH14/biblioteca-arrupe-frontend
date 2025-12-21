@@ -54,8 +54,7 @@ export default function PrestamosPage() {
   const [formData, setFormData] = useState({
     usuarioId: "",
     tipoPrestamo: "",
-    libroSeleccionado: null,
-    ejemplarSeleccionado: null
+    ejemplaresAgregados: []
   });
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
@@ -124,7 +123,7 @@ export default function PrestamosPage() {
     setShowModalRenovar(false);
     setShowModalConfirmarPrestamo(false);
     setErrores({});
-    setFormData({ usuarioId: "", tipoPrestamo: "", libroSeleccionado: null, ejemplarSeleccionado: null });
+    setFormData({ usuarioId: "", tipoPrestamo: "", ejemplaresAgregados: [] });
     setFechaPrestamo(new Date());
     setFechaDevolucion(null);
     setPrestamoSeleccionado(null);
@@ -173,12 +172,8 @@ export default function PrestamosPage() {
       nuevosErrores.usuarioId = "El nombre del usuario es requerido";
     }
 
-    if (!datosFormulario.libroSeleccionado) {
-      nuevosErrores.libro = "Debe seleccionar un libro";
-    }
-
-    if (!datosFormulario.ejemplarSeleccionado) {
-      nuevosErrores.libro = "Debe seleccionar un ejemplar (CDU)";
+    if (!datosFormulario.ejemplaresAgregados || datosFormulario.ejemplaresAgregados.length === 0) {
+      nuevosErrores.libro = "Debe agregar al menos un ejemplar";
     }
 
     if (!fechaPrestamo) {
@@ -205,7 +200,7 @@ export default function PrestamosPage() {
 
     setGuardando(true);
     try {
-      const { libroSeleccionado, ejemplarSeleccionado, usuarioId, tipoPrestamo } = datosCompletos;
+      const { ejemplaresAgregados, usuarioId, tipoPrestamo } = datosCompletos;
       
       // Buscar el usuario por nombre
       const usuariosResponse = await PrestamoService.buscarUsuariosParaPrestamo(usuarioId);
@@ -218,30 +213,48 @@ export default function PrestamosPage() {
 
       const usuario = usuariosResponse.data[0];
       
-      // Crear el préstamo directamente con los datos seleccionados
-      // El backend devuelve "id" en lugar de "_id" para libros y ejemplares
-      const response = await PrestamoService.crearPrestamoConBusqueda(
-        libroSeleccionado.id || libroSeleccionado._id,
-        ejemplarSeleccionado.id || ejemplarSeleccionado._id,
-        usuario.id || usuario._id,
-        fechaPrestamo.toISOString(),
-        fechaDevolucion.toISOString(),
-        tipoPrestamo
-      );
+      // Crear múltiples préstamos (uno por cada ejemplar)
+      const promesas = ejemplaresAgregados.map(item => {
+        const libroId = item.libro.id || item.libro._id;
+        const ejemplarId = item.ejemplar.id || item.ejemplar._id;
+        const usuarioIdFinal = usuario.id || usuario._id;
+        
+        return PrestamoService.crearPrestamoConBusqueda(
+          libroId,
+          ejemplarId,
+          usuarioIdFinal,
+          fechaPrestamo.toISOString(),
+          fechaDevolucion.toISOString(),
+          tipoPrestamo
+        );
+      });
 
-      if (response.success) {
+      // Ejecutar todos los préstamos en paralelo
+      const resultados = await Promise.allSettled(promesas);
+      
+      // Verificar resultados
+      const exitosos = resultados.filter(r => r.status === 'fulfilled' && r.value.success);
+      const fallidos = resultados.filter(r => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.success));
+      
+      if (exitosos.length > 0) {
         handleClose();
         await cargarPrestamos();
-        setToastMessage(`Préstamo creado correctamente para ${usuario.nombre}`);
+        
+        if (fallidos.length === 0) {
+          setToastMessage(`${exitosos.length} préstamo(s) creado(s) correctamente para ${usuario.nombre}`);
+        } else {
+          setToastMessage(`${exitosos.length} préstamo(s) creado(s). ${fallidos.length} fallaron.`);
+        }
+        
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
       } else {
-        setErrores({ general: response.message || "Error al crear el préstamo" });
+        setErrores({ general: "No se pudo crear ningún préstamo. Verifique los datos e intente nuevamente." });
       }
     } catch (error) {
-      console.error("Error al guardar préstamo:", error);
+      console.error("Error al guardar préstamos:", error);
       setErrores({ 
-        general: error.response?.data?.message || "Error al crear el préstamo. Intente nuevamente." 
+        general: error.response?.data?.message || "Error al crear los préstamos. Intente nuevamente." 
       });
     } finally {
       setGuardando(false);

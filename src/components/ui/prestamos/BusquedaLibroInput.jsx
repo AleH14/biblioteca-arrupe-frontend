@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import React, { useState, useCallback, useEffect, useRef, useImperativeHandle, forwardRef } from "react";
 import styles from "../../../styles/PrestamoVista.module.css";
 
-const BusquedaLibroInput = ({ onLibroSeleccionado, onEjemplarSeleccionado, buscarLibros, hasError }) => {
+const BusquedaLibroInput = forwardRef(({ onLibroSeleccionado, onEjemplarSeleccionado, buscarLibros, hasError }, ref) => {
   const [query, setQuery] = useState("");
   const [resultados, setResultados] = useState([]);
   const [cargando, setCargando] = useState(false);
@@ -10,6 +10,11 @@ const BusquedaLibroInput = ({ onLibroSeleccionado, onEjemplarSeleccionado, busca
   const [ejemplarSeleccionado, setEjemplarSeleccionado] = useState("");
   const inputRef = useRef(null);
   const resultadosRef = useRef(null);
+
+  // Exponer método para limpiar desde el componente padre
+  useImperativeHandle(ref, () => ({
+    limpiar: limpiarSeleccion
+  }));
 
   // Cerrar resultados al hacer clic fuera
   useEffect(() => {
@@ -67,6 +72,7 @@ const BusquedaLibroInput = ({ onLibroSeleccionado, onEjemplarSeleccionado, busca
   }, [libroSeleccionado, onLibroSeleccionado, onEjemplarSeleccionado]);
 
   const handleSeleccionarLibro = useCallback((libro) => {
+    console.log('BusquedaLibroInput - Libro seleccionado:', libro);
     setLibroSeleccionado(libro);
     setQuery(libro.titulo);
     setMostrarResultados(false);
@@ -74,6 +80,7 @@ const BusquedaLibroInput = ({ onLibroSeleccionado, onEjemplarSeleccionado, busca
     
     // El backend ya devuelve solo los ejemplares disponibles en "ejemplaresDisponibles"
     const ejemplaresDisponibles = libro.ejemplaresDisponibles || [];
+    console.log('BusquedaLibroInput - Ejemplares disponibles:', ejemplaresDisponibles.length);
     if (ejemplaresDisponibles.length === 1) {
       const ejemplar = ejemplaresDisponibles[0];
       setEjemplarSeleccionado(ejemplar.cdu);
@@ -83,19 +90,23 @@ const BusquedaLibroInput = ({ onLibroSeleccionado, onEjemplarSeleccionado, busca
 
   const handleSeleccionarEjemplar = useCallback((e) => {
     const cdu = e.target.value;
+    console.log('BusquedaLibroInput - Ejemplar seleccionado CDU:', cdu);
     setEjemplarSeleccionado(cdu);
     
     if (libroSeleccionado && cdu) {
       // Buscar en ejemplaresDisponibles que es lo que devuelve el backend
       const ejemplaresDisponibles = libroSeleccionado.ejemplaresDisponibles || [];
       const ejemplar = ejemplaresDisponibles.find((ej) => ej.cdu === cdu);
+      console.log('BusquedaLibroInput - Ejemplar encontrado:', ejemplar);
       onEjemplarSeleccionado(ejemplar);
     } else {
+      console.log('BusquedaLibroInput - Limpiar ejemplar');
       onEjemplarSeleccionado(null);
     }
   }, [libroSeleccionado, onEjemplarSeleccionado]);
 
   const limpiarSeleccion = useCallback(() => {
+    console.log('BusquedaLibroInput - Limpiando selección');
     setQuery("");
     setLibroSeleccionado(null);
     setEjemplarSeleccionado("");
@@ -199,6 +210,8 @@ const BusquedaLibroInput = ({ onLibroSeleccionado, onEjemplarSeleccionado, busca
       )}
     </div>
   );
-};
+});
+
+BusquedaLibroInput.displayName = "BusquedaLibroInput";
 
 export default BusquedaLibroInput;
