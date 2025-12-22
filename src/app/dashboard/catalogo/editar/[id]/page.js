@@ -544,16 +544,6 @@ export default function EditarLibro() {
           <br />
           <small className={styles.libroDetalle}>ISBN: {libro.isbn}</small>
           <br />
-          <small className={styles.libroDetalle}>Precio: ${libro.precio}</small>
-          {libro.donado && libro.origen && (
-            <>
-              <br />
-              <small className={styles.libroDetalle}>
-                Origen: {libro.origen}
-              </small>
-            </>
-          )}
-          <br />
           <small className={styles.libroDetalle}>
             Ejemplares: {ejemplares.length}
           </small>

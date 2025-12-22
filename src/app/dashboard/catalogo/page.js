@@ -11,6 +11,7 @@ import CatalogoFilters from "@/components/ui/catalogo/CatalogoFilters";
 import CatalogoBookCard from "@/components/ui/catalogo/CatalogoBookCard";
 import CatalogoEmptyState from "@/components/ui/catalogo/CatalogoEmptyState";
 import CatalogoEliminarModal from "@/components/ui/catalogo/CatalogoEliminarModal";
+import Toast from "@/components/ui/Toast";
 import { LibrosService } from '@/services';
 
 export default function CatalogoPage() {
@@ -24,6 +25,9 @@ export default function CatalogoPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [libroAEliminar, setLibroAEliminar] = useState(null);
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
+  const [showDeleteToast, setShowDeleteToast] = useState(false);
+  const [deleteToastMessage, setDeleteToastMessage] = useState("");
+
 
   // Estados separados para búsqueda con debouncing
   const [busquedaInmediata, setBusquedaInmediata] = useState("");
@@ -152,8 +156,17 @@ export default function CatalogoPage() {
   }, []);
 
   const confirmarEliminar = useCallback(async () => {
+    const tituloEliminado = libroAEliminar?.titulo;
     try {
       await LibrosService.deleteLibro(libroAEliminar.id);
+
+      // Mostrar toast de éxito
+     setDeleteToastMessage(`"${tituloEliminado}" eliminado correctamente`);
+     setShowDeleteToast(true);
+
+    setTimeout(() => {
+      setShowDeleteToast(false);
+    }, 3000);
       
       // Cerrar modal y limpiar estado
       setShowDeleteModal(false);
@@ -365,6 +378,12 @@ export default function CatalogoPage() {
         onConfirm={confirmarEliminar}
         contarTotalEjemplares={contarTotalEjemplares}
       />
+
+       {/* toast de eliminar*/}
+    <Toast
+      show={showDeleteToast}
+      message={deleteToastMessage}
+    />
     </div>
   );
 }

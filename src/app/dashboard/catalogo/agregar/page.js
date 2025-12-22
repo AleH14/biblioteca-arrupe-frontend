@@ -511,8 +511,6 @@ export default function AgregarLibroPage() {
           <br />
           <small className={styles.libroDetalle}>ISBN: {libro.isbn}</small>
           <br />
-          <small className={styles.libroDetalle}>Precio: ${libro.precio}</small>
-          <br />
           <small className={styles.libroDetalle}>
             Ejemplares: {ejemplares.length}
           </small>
