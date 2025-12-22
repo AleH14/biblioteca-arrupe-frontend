@@ -126,55 +126,6 @@ export default function EditarLibro() {
     ejemplaresRef.current = ejemplares;
   }, [libro, ejemplares]);
 
-  // Cargar categorías
-  useEffect(() => {
-    setCategorias([
-      { _id: "1", descripcion: "Literatura" },
-      { _id: "2", descripcion: "Ciencia" },
-      { _id: "3", descripcion: "Tecnología" },
-      { _id: "4", descripcion: "Historia" },
-      { _id: "5", descripcion: "Filosofía" },
-    ]);
-  }, []);
-
-  // OPTIMIZACIÓN: Debounce para ISBN con validación de cambio
-  const debouncedISBN = useDebounce(libro.isbn, 800);
-
-  // BÚSQUEDA POR ISBN OPTIMIZADA - solo si realmente cambió
-  useEffect(() => {
-    const buscarPorISBN = async () => {
-      // Validación: solo buscar si el ISBN cambió y no está vacío
-      if (!debouncedISBN.trim() || debouncedISBN === lastISBNRef.current) {
-        return;
-      }
-
-      // Validación: solo buscar si el ISBN tiene formato válido (mínimo 10 caracteres)
-      if (debouncedISBN.trim().length < 10) {
-        return;
-      }
-
-      try {
-        lastISBNRef.current = debouncedISBN;
-
-        const datosLibro = await buscarLibroPorISBN(debouncedISBN.trim());
-
-        if (datosLibro) {
-          setLibro((prev) => ({
-            ...prev,
-            titulo: datosLibro.titulo || prev.titulo,
-            autor: datosLibro.autor || prev.autor,
-            editorial: datosLibro.editorial || prev.editorial,
-            portada: datosLibro.portada || prev.portada,
-          }));
-        }
-      } catch (error) {
-        // No mostrar error al usuario para no interrumpir la experiencia
-      }
-    };
-
-    buscarPorISBN();
-  }, [debouncedISBN]);
-
   // OPTIMIZACIÓN: Handlers memoizados con dependencias mínimas
   const handleLibroChange = useCallback((name, value) => {
     setLibro((prev) => ({
