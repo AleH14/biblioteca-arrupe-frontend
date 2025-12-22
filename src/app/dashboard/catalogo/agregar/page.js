@@ -339,7 +339,6 @@ export default function AgregarLibroPage() {
       };
 
       const response = await LibrosService.createLibro(libroData);
-
       if (response.success) {
         setShowSuccessToast(true);
         setTimeout(() => {

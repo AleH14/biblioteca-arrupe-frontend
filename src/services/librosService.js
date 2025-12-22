@@ -226,9 +226,10 @@ Path params:
 export const deleteCategoria = async (id) => {
     try {
         const response = await apiClient.delete(`${PRESTAMO_API_URL}/categorias/${id}`);
-        return response.data;
+        // El backend responde 204 No Content, así que creamos una respuesta exitosa
+        return { success: true, message: "Categoría eliminada correctamente" };
     } catch (error) {
-        console.error("Error al eliminar la categoría:", error);
+        // No mostrar errores en consola - serán manejados por el componente
         throw error;
     }
 };
