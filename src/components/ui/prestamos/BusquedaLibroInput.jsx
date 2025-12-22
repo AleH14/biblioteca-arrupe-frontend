@@ -128,7 +128,7 @@ const BusquedaLibroInput = forwardRef(({ onLibroSeleccionado, onEjemplarSeleccio
           value={query}
           onChange={handleQueryChange}
           className={`form-control ${hasError ? "is-invalid" : ""}`}
-          placeholder="Buscar libro por nombre, autor o CDU..."
+          placeholder="Buscar libro por título o CDU..."
           disabled={libroSeleccionado !== null}
         />
         {libroSeleccionado && (
