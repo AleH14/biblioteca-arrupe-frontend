@@ -350,10 +350,24 @@ export default function AgregarLibroPage() {
         setShowValidationError(true);
       }
     } catch (error) {
-      console.error("Error al agregar libro:", error);
-      setValidationMessage(
-        error.response?.data?.message || "Error al agregar el libro. Intente nuevamente."
-      );
+      let mensajeError = "Error al agregar el libro. Intente nuevamente.";
+      
+      // Manejar error de ISBN duplicado
+      if (error.response?.status === 500 || error.response?.status === 400) {
+        const errorMsg = error.response?.data?.message || "";
+        
+        if (errorMsg.includes("E11000") && errorMsg.includes("isbn")) {
+          mensajeError = `El ISBN "${libro.isbn}" ya está registrado en otro libro. Por favor, verifique el ISBN.`;
+        } else if (errorMsg.includes("duplicate") && errorMsg.includes("isbn")) {
+          mensajeError = `El ISBN "${libro.isbn}" ya está registrado en otro libro. Por favor, verifique el ISBN.`;
+        } else if (errorMsg) {
+          mensajeError = errorMsg;
+        }
+      } else if (error.response?.data?.message) {
+        mensajeError = error.response.data.message;
+      }
+      
+      setValidationMessage(mensajeError);
       setShowValidationError(true);
     } finally {
       setLoading(false);

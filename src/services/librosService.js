@@ -39,7 +39,6 @@ export const getLibroById = async (id) => {
         const response = await apiClient.post(`${PRESTAMO_API_URL}`, libroData);
         return response.data;
     } catch (error) {
-        console.error("Error al crear el libro:", error);
         throw error;
     }
   };
