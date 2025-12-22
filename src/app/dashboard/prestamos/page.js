@@ -213,6 +213,13 @@ export default function PrestamosPage() {
 
       const usuario = usuariosResponse.data[0];
       
+      // Ajustar fechas al inicio del día local para evitar problemas de zona horaria
+      const fechaPrestamoAjustada = new Date(fechaPrestamo);
+      fechaPrestamoAjustada.setHours(12, 0, 0, 0); // Medio día para evitar problemas con UTC
+      
+      const fechaDevolucionAjustada = new Date(fechaDevolucion);
+      fechaDevolucionAjustada.setHours(12, 0, 0, 0); // Medio día para evitar problemas con UTC
+      
       // Crear múltiples préstamos (uno por cada ejemplar)
       const promesas = ejemplaresAgregados.map(item => {
         const libroId = item.libro.id || item.libro._id;
@@ -223,8 +230,8 @@ export default function PrestamosPage() {
           libroId,
           ejemplarId,
           usuarioIdFinal,
-          fechaPrestamo.toISOString(),
-          fechaDevolucion.toISOString(),
+          fechaPrestamoAjustada.toISOString(),
+          fechaDevolucionAjustada.toISOString(),
           tipoPrestamo
         );
       });
