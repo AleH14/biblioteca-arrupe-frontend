@@ -86,17 +86,23 @@ export default function EditarLibro() {
             categoriaId: libroData.categoria?._id || libroData.categoria || "",
           });
 
-          const ejemplaresNormalizados = (libroData.ejemplares || []).map(ej => ({
-            id: ej._id,
-            codigo: ej.cdu || "",
-            ubicacion: ej.ubicacionFisica || "",
-            estado: ej.estado || "disponible",
-            edificio: ej.edificio || "",
-            donado: ej.origen === "Donado",
-            origen: ej.donado_por || "",
-            precio: ej.precio || "",
-            esNuevo: false
-          }));
+          const ejemplaresNormalizados = (libroData.ejemplares || []).map(ej => {
+            // Capitalizar el estado (primera letra en mayúscula)
+            const estado = ej.estado || "disponible";
+            const estadoCapitalizado = estado.charAt(0).toUpperCase() + estado.slice(1).toLowerCase();
+            
+            return {
+              id: ej._id,
+              codigo: ej.cdu || "",
+              ubicacion: ej.ubicacionFisica || "",
+              estado: estadoCapitalizado,
+              edificio: ej.edificio || "",
+              donado: ej.origen === "Donado",
+              origen: ej.donado_por || "",
+              precio: ej.precio || "",
+              esNuevo: false
+            };
+          });
 
           setEjemplares(ejemplaresNormalizados);
           setEjemplaresOriginales(JSON.parse(JSON.stringify(ejemplaresNormalizados)));
