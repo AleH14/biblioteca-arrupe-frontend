@@ -93,6 +93,19 @@ const EjemplaresManager = React.memo(
                     />
                   </td>
 
+                  {/* Ubicación */}
+                  <td>
+                    <input
+                      type="text"
+                      value={ejemplar.ubicacion}
+                      onChange={(e) =>
+                        handleEjemplarChange(index, "ubicacion", e.target.value)
+                      }
+                      className={styles.tablaInput}
+                      placeholder="Ubicación del ejemplar"
+                    />
+                  </td>
+
                   {/* Edificio */}
                   <td>
                     <select
@@ -107,19 +120,6 @@ const EjemplaresManager = React.memo(
                       <option value="2">2</option>
                       <option value="3">3</option>
                     </select>
-                  </td>
-
-                  {/* Ubicación */}
-                  <td>
-                    <input
-                      type="text"
-                      value={ejemplar.ubicacion}
-                      onChange={(e) =>
-                        handleEjemplarChange(index, "ubicacion", e.target.value)
-                      }
-                      className={styles.tablaInput}
-                      placeholder="Ubicación del ejemplar"
-                    />
                   </td>
 
                   {/* Estado */}
