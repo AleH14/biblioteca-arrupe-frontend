@@ -29,22 +29,34 @@ export const AuthProvider = ({ children }) => {
     // Programar refresh 1 minuto antes de que expire (14 minutos si expira en 15)
     const refreshTime = 14 * 60 * 1000; // 14 minutos en milisegundos
     
+    console.log(`AuthContext - Refresh programado para ${refreshTime / 60000} minutos`);
+    
     refreshTimerRef.current = setTimeout(async () => {
-      console.log('AuthContext - Refreshing token automatically...');
+      console.log('AuthContext - Ejecutando refresh automático del token...');
       try {
         const result = await authService.refreshToken();
         if (result.success && result.user) {
-          console.log('AuthContext - Token refreshed automatically');
+          console.log('AuthContext - Token refrescado exitosamente');
           setUser(result.user);
           // Programar el siguiente refresh
           scheduleTokenRefresh();
         } else {
-          console.error('AuthContext - Failed to refresh token');
+          console.warn('AuthContext - Refresh falló:', result.error || 'Sin mensaje de error');
+          console.warn('AuthContext - La sesión expiró. Por favor, inicie sesión nuevamente.');
           handleLogout();
+          // Redirigir al login si no estamos ya ahí
+          if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+            window.location.href = '/login?expired=true';
+          }
         }
       } catch (error) {
-        console.error('AuthContext - Error refreshing token:', error);
+        console.error('AuthContext - Error al refrescar token:', error.message);
+        console.warn('AuthContext - Sesión expirada o cookie no válida');
         handleLogout();
+        // Redirigir al login si no estamos ya ahí
+        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+          window.location.href = '/login?expired=true';
+        }
       }
     }, refreshTime);
   };
@@ -74,8 +86,22 @@ export const AuthProvider = ({ children }) => {
           const parsedUser = JSON.parse(userData);
           console.log('AuthContext - Setting user from localStorage:', parsedUser);
           setUser(parsedUser);
-          // Programar refresh automático
-          scheduleTokenRefresh();
+          
+          // Intentar validar que el refresh token todavía es válido
+          try {
+            const result = await authService.refreshToken();
+            if (result.success) {
+              console.log('AuthContext - Refresh token validado al iniciar');
+              setUser(result.user);
+              scheduleTokenRefresh();
+            } else {
+              console.warn('AuthContext - Refresh token no válido al iniciar, limpiando sesión');
+              handleLogout();
+            }
+          } catch (error) {
+            console.warn('AuthContext - Error validando refresh token al iniciar:', error.message);
+            handleLogout();
+          }
         }
       } catch (error) {
         console.error('Error initializing auth:', error);

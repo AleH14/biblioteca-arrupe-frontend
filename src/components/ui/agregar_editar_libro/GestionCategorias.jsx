@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import styles from "../../../styles/librosForm.module.css";
 import global from "../../../styles/Global.module.css";
 import { FiX, FiEdit2, FiTrash2 } from "react-icons/fi";
+import { LibrosService } from "../../../services";
 
 const GestionCategorias = React.memo(
   ({ show, onClose, categorias, setCategorias, libro, onLibroChange }) => {
@@ -10,14 +11,16 @@ const GestionCategorias = React.memo(
     const [categoriaEditando, setCategoriaEditando] = useState(null);
     const [modoEdicion, setModoEdicion] = useState(false);
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const mostrarError = (mensaje) => {
       setError(mensaje);
       setTimeout(() => setError(""), 3000);
     };
 
-    const handleAgregarCategoria = () => {
+    const handleAgregarCategoria = async () => {
       if (nuevaCategoria.trim()) {
+        setLoading(true);
         try {
           // Verificar si ya existe una categoría con el mismo nombre
           const categoriaExistente = categorias.find(
@@ -28,35 +31,45 @@ const GestionCategorias = React.memo(
 
           if (categoriaExistente) {
             mostrarError("Ya existe una categoría con ese nombre");
+            setLoading(false);
             return;
           }
 
-          const nuevaCat = {
-            _id: Date.now().toString(),
-            descripcion: nuevaCategoria.trim(),
-          };
+          // Llamar al backend para crear la categoría
+          const response = await LibrosService.createCategoria(nuevaCategoria.trim());
 
-          setCategorias((prev) => [...prev, nuevaCat]);
-          setNuevaCategoria("");
+          if (response.success && response.data) {
+            // Agregar la nueva categoría al estado local
+            setCategorias((prev) => [...prev, response.data]);
+            setNuevaCategoria("");
 
-          // Seleccionar automáticamente la nueva categoría
-          onLibroChange("categoriaId", nuevaCat._id);
+            // Seleccionar automáticamente la nueva categoría
+            onLibroChange("categoriaId", response.data._id);
 
-          // Si estamos en modo edición, salir del modo edición
-          if (modoEdicion) {
-            setModoEdicion(false);
-            setCategoriaEditando(null);
+            // Si estamos en modo edición, salir del modo edición
+            if (modoEdicion) {
+              setModoEdicion(false);
+              setCategoriaEditando(null);
+            }
+          } else {
+            mostrarError(response.message || "Error al agregar la categoría");
           }
         } catch (error) {
-          mostrarError("Error al agregar la categoría");
+          console.error("Error al agregar categoría:", error);
+          mostrarError(
+            error.response?.data?.message || "Error al agregar la categoría"
+          );
+        } finally {
+          setLoading(false);
         }
       } else {
         mostrarError("Ingrese un nombre para la categoría");
       }
     };
 
-    const handleEditarCategoria = () => {
+    const handleEditarCategoria = async () => {
       if (nuevaCategoria.trim() && categoriaEditando) {
+        setLoading(true);
         try {
           // Verificar si ya existe otra categoría con el mismo nombre (excluyendo la que se está editando)
           const categoriaExistente = categorias.find(
@@ -68,34 +81,72 @@ const GestionCategorias = React.memo(
 
           if (categoriaExistente) {
             mostrarError("Ya existe una categoría con ese nombre");
+            setLoading(false);
             return;
           }
 
-          const categoriasActualizadas = categorias.map((cat) =>
-            cat._id === categoriaEditando._id
-              ? { ...cat, descripcion: nuevaCategoria.trim() }
-              : cat
+          // Llamar al backend para actualizar la categoría
+          const response = await LibrosService.updateCategoria(
+            categoriaEditando._id,
+            nuevaCategoria.trim()
           );
 
-          setCategorias(categoriasActualizadas);
-          setNuevaCategoria("");
-          setModoEdicion(false);
-          setCategoriaEditando(null);
+          if (response.success && response.data) {
+            // Actualizar la categoría en el estado local
+            const categoriasActualizadas = categorias.map((cat) =>
+              cat._id === categoriaEditando._id ? response.data : cat
+            );
+
+            setCategorias(categoriasActualizadas);
+            setNuevaCategoria("");
+            setModoEdicion(false);
+            setCategoriaEditando(null);
+          } else {
+            mostrarError(response.message || "Error al editar la categoría");
+          }
         } catch (error) {
-          mostrarError("Error al editar la categoría");
+          console.error("Error al editar categoría:", error);
+          mostrarError(
+            error.response?.data?.message || "Error al editar la categoría"
+          );
+        } finally {
+          setLoading(false);
         }
       } else {
         mostrarError("Ingrese un nombre para la categoría");
       }
     };
 
-    const handleEliminarCategoria = (categoria) => {
+    const handleEliminarCategoria = async (categoria) => {
+      setLoading(true);
       try {
         if (categorias.length <= 1) {
           mostrarError("Debe haber al menos una categoría");
+          setLoading(false);
           return;
         }
 
+        // Verificar si la categoría tiene un ID válido de MongoDB (24 caracteres hexadecimales)
+        const esIdValido = /^[a-f\d]{24}$/i.test(categoria._id);
+        
+        if (!esIdValido) {
+          // Si es un ID temporal (recién creada pero no guardada), solo eliminar del estado local
+          const categoriasActualizadas = categorias.filter(
+            (cat) => cat._id !== categoria._id
+          );
+          setCategorias(categoriasActualizadas);
+
+          if (libro.categoriaId === categoria._id) {
+            onLibroChange("categoriaId", "");
+          }
+          setLoading(false);
+          return;
+        }
+
+        // Llamar al backend para eliminar la categoría
+        await LibrosService.deleteCategoria(categoria._id);
+        
+        // Eliminar la categoría del estado local
         const categoriasActualizadas = categorias.filter(
           (cat) => cat._id !== categoria._id
         );
@@ -106,7 +157,29 @@ const GestionCategorias = React.memo(
           onLibroChange("categoriaId", "");
         }
       } catch (error) {
-        mostrarError("Error al eliminar la categoría");
+        if (error.response?.status === 404) {
+          // No mostrar error, simplemente eliminar del estado local
+          const categoriasActualizadas = categorias.filter(
+            (cat) => cat._id !== categoria._id
+          );
+          setCategorias(categoriasActualizadas);
+          if (libro.categoriaId === categoria._id) {
+            onLibroChange("categoriaId", "");
+          }
+        } else if (error.response?.status === 400) {
+          // Error 400 - probablemente tiene libros asociados
+          const errorMsg = error.response?.data?.message;
+          mostrarError(
+            errorMsg || "No se puede eliminar la categoría porque tiene libros asociados."
+          );
+        } else {
+          const errorMsg = error.response?.data?.message;
+          mostrarError(
+            errorMsg || "Error al eliminar la categoría."
+          );
+        }
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -183,9 +256,9 @@ const GestionCategorias = React.memo(
                   onClick={
                     modoEdicion ? handleEditarCategoria : handleAgregarCategoria
                   }
-                  disabled={!nuevaCategoria.trim()}
+                  disabled={!nuevaCategoria.trim() || loading}
                 >
-                  {modoEdicion ? "Actualizar" : "Agregar"}
+                  {loading ? "Guardando..." : modoEdicion ? "Actualizar" : "Agregar"}
                 </button>
                 {modoEdicion && (
                   <button
@@ -224,7 +297,7 @@ const GestionCategorias = React.memo(
                           className={styles.btnEliminar}
                           onClick={() => handleEliminarCategoria(categoria)}
                           title="Eliminar categoría"
-                          disabled={categorias.length <= 1}
+                          disabled={categorias.length <= 1 || loading}
                         >
                           <FiTrash2 />
                         </button>

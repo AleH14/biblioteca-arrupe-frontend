@@ -51,15 +51,25 @@ export const login = async (credentials) => {
  */
 export const refreshToken = async () => {
   try {
+    console.log('authService - Intentando refrescar token...');
     const response = await apiClient.post('/api/auth/refreshToken', {});
     
     const { data } = response.data;
     const { accessToken, user } = data;
     
+    if (!accessToken || !user) {
+      console.error('authService - Respuesta inválida del servidor:', { hasToken: !!accessToken, hasUser: !!user });
+      return {
+        success: false,
+        error: 'Respuesta inválida del servidor'
+      };
+    }
+    
     // Guardar nuevo token en localStorage
     if (typeof window !== 'undefined' && accessToken) {
       localStorage.setItem('authToken', accessToken);
       localStorage.setItem('userData', JSON.stringify(user));
+      console.log('authService - Token actualizado en localStorage');
     }
     
     return {
@@ -73,10 +83,23 @@ export const refreshToken = async () => {
                         error.response?.data?.error || 
                         'Error al refrescar token';
     
+    const errorStatus = error.response?.status;
+    
+    console.error('authService - Error al refrescar token:', {
+      message: errorMessage,
+      status: errorStatus,
+      hasRefreshCookie: document.cookie.includes('refreshToken')
+    });
+    
+    // Si es error 401, significa que el refresh token expiró o no es válido
+    if (errorStatus === 401) {
+      console.warn('authService - Refresh token expirado o inválido. Se requiere login.');
+    }
+    
     return {
       success: false,
       error: errorMessage,
-      status: error.response?.status
+      status: errorStatus
     };
   }
 };
@@ -191,6 +214,7 @@ export const verifySession = async () => {
 // Exportación por defecto del objeto con todos los métodos
 const authService = {
   login,
+  refreshToken,
   logout,
   getCurrentUser,
   isAuthenticated,

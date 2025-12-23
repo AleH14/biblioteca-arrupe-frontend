@@ -115,6 +115,11 @@ apiClient.interceptors.response.use(
     }
     
     // Manejar otros errores
+    // Suprimir logs para errores esperados (400 en categorías)
+    if (error.config?.url?.includes('/categorias/') && error.response?.status === 400) {
+      // Error esperado cuando categoría tiene libros asociados
+      // No hacer nada adicional, solo rechazar silenciosamente
+    }
     
     return Promise.reject(error);
   }

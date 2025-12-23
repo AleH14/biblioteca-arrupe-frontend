@@ -1,12 +1,11 @@
 "use client";
-import React, {useState, useEffect, useCallback, useRef, useMemo} from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useDebounce } from "@/hooks/useDebounce";
 import styles from "@/styles/librosForm.module.css";
 import global from "@/styles/Global.module.css";
-import { useDebounce } from "@/hooks/useDebounce";
 import { buscarLibroPorISBN } from "@/services/googleBooks";
-
-// Componentes - NOTA las rutas
+import { LibrosService } from "@/services";
 import PageTitle from "@/components/ui/PageTitle";
 import Toast from "@/components/ui/Toast";
 import ToastError from "@/components/ui/ToastError";
@@ -54,6 +53,7 @@ export default function AgregarLibroPage() {
   ]);
 
   const [categorias, setCategorias] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [showGestionCategorias, setShowGestionCategorias] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showDeleteEjemplarModal, setShowDeleteEjemplarModal] = useState(false);
@@ -146,15 +146,21 @@ export default function AgregarLibroPage() {
     };
   }, [debouncedISBN]);
 
-  // Cargar categorías - solo una vez
+  // Cargar categorías desde el backend
   useEffect(() => {
-    setCategorias([
-      { _id: "1", descripcion: "Literatura" },
-      { _id: "2", descripcion: "Ciencia" },
-      { _id: "3", descripcion: "Tecnología" },
-      { _id: "4", descripcion: "Historia" },
-      { _id: "5", descripcion: "Filosofía" },
-    ]);
+    const cargarCategorias = async () => {
+      try {
+        const response = await LibrosService.getAllCategorias();
+        if (response.success) {
+          setCategorias(response.data || []);
+        }
+      } catch (error) {
+        console.error("Error al cargar categorías:", error);
+        setValidationMessage("Error al cargar categorías");
+        setShowValidationError(true);
+      }
+    };
+    cargarCategorias();
   }, []);
 
   // Handlers para libro 
@@ -305,14 +311,68 @@ export default function AgregarLibroPage() {
     setShowConfirmModal(true);
   }, [validarFormulario]);
 
-  const handleAgregarConfirmado = useCallback(() => {
+  const handleAgregarConfirmado = useCallback(async () => {
     setShowConfirmModal(false);
-    setShowSuccessToast(true);
-    setTimeout(() => {
-      setShowSuccessToast(false);
-        router.push("/dashboard/catalogo");
-    }, 3000);
-  }, []);
+    setLoading(true);
+
+    try {
+      // Preparar ejemplares para el backend
+      const ejemplaresFormateados = ejemplares.map(ej => ({
+        cdu: ej.codigo,
+        estado: ej.estado.toLowerCase(),
+        ubicacionFisica: ej.ubicacion,
+        edificio: ej.edificio,
+        origen: ej.donado ? "Donado" : "Comprado",
+        precio: ej.donado ? null : Number(ej.precio),
+        donado_por: ej.donado ? ej.origen : null
+      }));
+
+      // Crear libro con ejemplares
+      const libroData = {
+        titulo: libro.titulo,
+        autor: libro.autor,
+        isbn: libro.isbn,
+        categoria: libro.categoriaId,
+        editorial: libro.editorial,
+        imagenURL: libro.portada !== "/images/libro-placeholder.jpg" ? libro.portada : null,
+        ejemplares: ejemplaresFormateados
+      };
+
+      const response = await LibrosService.createLibro(libroData);
+      if (response.success) {
+        setShowSuccessToast(true);
+        setTimeout(() => {
+          setShowSuccessToast(false);
+          router.push("/dashboard/catalogo");
+        }, 2000);
+      } else {
+        setValidationMessage(response.message || "Error al agregar el libro");
+        setShowValidationError(true);
+      }
+    } catch (error) {
+      let mensajeError = "Error al agregar el libro. Intente nuevamente.";
+      
+      // Manejar error de ISBN duplicado
+      if (error.response?.status === 500 || error.response?.status === 400) {
+        const errorMsg = error.response?.data?.message || "";
+        
+        if (errorMsg.includes("E11000") && errorMsg.includes("isbn")) {
+          mensajeError = `El ISBN "${libro.isbn}" ya está registrado en otro libro. Por favor, verifique el ISBN.`;
+        } else if (errorMsg.includes("duplicate") && errorMsg.includes("isbn")) {
+          mensajeError = `El ISBN "${libro.isbn}" ya está registrado en otro libro. Por favor, verifique el ISBN.`;
+        } else if (errorMsg) {
+          mensajeError = errorMsg;
+        }
+      } else if (error.response?.data?.message) {
+        mensajeError = error.response.data.message;
+      }
+      
+      setValidationMessage(mensajeError);
+      setShowValidationError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [libro, ejemplares, router]);
 
   const getCategoriaSeleccionada = useCallback(() => {
     return categorias.find((cat) => cat._id === libro.categoriaId);
@@ -373,12 +433,13 @@ export default function AgregarLibroPage() {
           type="button"
           className={global.btnWarning}
           onClick={handleConfirmarAgregado}
+          disabled={loading}
         >
-          Confirmar Agregado
+          {loading ? "Guardando..." : "Confirmar Agregado"}
         </button>
       </div>
     ),
-    [handleConfirmarAgregado]
+    [handleConfirmarAgregado, loading]
   );
 
   return (
@@ -449,8 +510,6 @@ export default function AgregarLibroPage() {
           </small>
           <br />
           <small className={styles.libroDetalle}>ISBN: {libro.isbn}</small>
-          <br />
-          <small className={styles.libroDetalle}>Precio: ${libro.precio}</small>
           <br />
           <small className={styles.libroDetalle}>
             Ejemplares: {ejemplares.length}

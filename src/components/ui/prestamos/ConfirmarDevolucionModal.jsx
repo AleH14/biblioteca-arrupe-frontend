@@ -29,7 +29,11 @@ const ConfirmarDevolucionModal = React.memo(({
               <div className={styles.confirmacionInfo}>
                 <p><strong>Libro:</strong> {prestamo.libro}</p>
                 <p><strong>Usuario:</strong> {prestamo.usuario}</p>
-                <p><strong>Ubicación:</strong> Edificio X</p>
+                <p>
+                  <strong>Ubicación:</strong>{' '}
+                  {prestamo.ejemplar?.ubicacionFisica || 'No especificada'}
+                  {prestamo.ejemplar?.edificio && ` - Edificio ${prestamo.ejemplar.edificio}`}
+                </p>
                 <p><strong>Fecha préstamo:</strong> {formatearFecha(prestamo.fechaPrestamo)}</p>
                 <p><strong>Vencía:</strong> {formatearFecha(prestamo.fechaDevolucionEstimada)}</p>
               </div>

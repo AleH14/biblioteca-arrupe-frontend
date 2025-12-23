@@ -1,18 +1,19 @@
 "use client";
-import React, {useState,useCallback,useMemo,useRef,useEffect} from "react";
-import { useRouter } from "next/navigation";
-import styles from "../../../../../styles/librosForm.module.css";
-import global from "../../../../../styles/Global.module.css";
-import { useDebounce } from "../../../../../hooks/useDebounce";
-import { buscarLibroPorISBN } from "../../../../../services/googleBooks";
-
-// Componentes
-import PageTitle from "../../../../../components/ui/PageTitle";
-import ToastError from "../../../../../components/ui/ToastError";
-import AppHeaderLibro from "../../../../../components/ui/agregar_editar_libro/AppHeaderLibro";
-import LibroFormBase from "../../../../../components/ui/agregar_editar_libro/LibroFormBase";
-import EjemplaresManager from "../../../../../components/ui/agregar_editar_libro/EjemplaresManager";
-import ConfirmModal from "../../../../../components/ui/agregar_editar_libro/ConfirmModal";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { useDebounce } from "@/hooks/useDebounce";
+import styles from "@/styles/librosForm.module.css";
+import global from "@/styles/Global.module.css";
+import { buscarLibroPorISBN } from "@/services/googleBooks";
+import { LibrosService } from "@/services";
+import PageTitle from "@/components/ui/PageTitle";
+import Toast from "@/components/ui/Toast";
+import ToastError from "@/components/ui/ToastError";
+import AppHeaderLibro from "@/components/ui/agregar_editar_libro/AppHeaderLibro";
+import LibroFormBase from "@/components/ui/agregar_editar_libro/LibroFormBase";
+import EjemplaresManager from "@/components/ui/agregar_editar_libro/EjemplaresManager";
+import ConfirmModal from "@/components/ui/agregar_editar_libro/ConfirmModal";
+import GestionCategorias from "@/components/ui/agregar_editar_libro/GestionCategorias";
 
 // Componente memoizado para el botón de confirmación
 const ConfirmarEdicionButton = React.memo(({ onConfirm }) => {
@@ -27,144 +28,109 @@ const ConfirmarEdicionButton = React.memo(({ onConfirm }) => {
 
 ConfirmarEdicionButton.displayName = "ConfirmarEdicionButton";
 
-export default function EditarLibro({libro: libroProp }) {
+export default function EditarLibro() {
   const router = useRouter();
+  const params = useParams();
+  const libroId = params.id;
 
-  const [libro, setLibro] = useState(() => {
-    // Inicializar con los datos que vienen del prop
-    return {
-      titulo: libroProp?.titulo || "",
-      autor: libroProp?.autor || "",
-      editorial: libroProp?.editorial || "",
-      isbn: libroProp?.isbn || "",
-      portada: libroProp?.portada || "/images/libro-placeholder.png",
-      categoriaId: libroProp?.categoriaId || "",
-    };
+  const [libro, setLibro] = useState({
+    titulo: "",
+    autor: "",
+    editorial: "",
+    isbn: "",
+    portada: "/images/libro-placeholder.jpg",
+    categoriaId: "",
   });
 
-  const [ejemplares, setEjemplares] = useState(() => {
-    if (libroProp?.ejemplares && Array.isArray(libroProp.ejemplares)) {
-      return libroProp.ejemplares.map((ej) => ({
-        id: ej.id || Date.now() + Math.random(),
-        codigo: ej.codigo || "",
-        ubicacion: ej.ubicacion || "",
-        estado: ej.estado || "Disponible",
-        edificio: ej.edificio || "",
-        donado: ej.donado ?? null,
-        origen: ej.origen || "",
-        precio: ej.precio || "",
-      }));
-    }
-    return [
-      {
-        id: 1,
-        codigo: "",
-        ubicacion: "",
-        estado: "Disponible",
-        edificio: "",
-        donado: null,
-        origen: "",
-        precio: "",
-      },
-    ];
-  });
-
+  const [ejemplares, setEjemplares] = useState([]);
+  const [ejemplaresOriginales, setEjemplaresOriginales] = useState([]);
   const [categorias, setCategorias] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showDeleteEjemplarModal, setShowDeleteEjemplarModal] = useState(false);
   const [ejemplarAEliminar, setEjemplarAEliminar] = useState(null);
   const [showValidationError, setShowValidationError] = useState(false);
   const [validationMessage, setValidationMessage] = useState("");
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showGestionCategorias, setShowGestionCategorias] = useState(false);
 
   // OPTIMIZACIÓN: Usar useRef para valores que no necesitan trigger re-renders
   const validationTimeoutRef = useRef(null);
-  const lastISBNRef = useRef(libroProp?.isbn || "");
+  const lastISBNRef = useRef("");
   const libroRef = useRef(libro);
   const ejemplaresRef = useRef(ejemplares);
 
-  // Sincronizar refs con estado cuando cambia libroProp
+  // Cargar datos del libro desde el backend
   useEffect(() => {
-    if (libroProp) {
-      setLibro({
-        titulo: libroProp.titulo || "",
-        autor: libroProp.autor || "",
-        editorial: libroProp.editorial || "",
-        isbn: libroProp.isbn || "",
-        portada: libroProp.portada || "/images/libro-placeholder.png",
-        categoriaId: libroProp.categoriaId || "",
-      });
-      
-      if (libroProp.ejemplares && Array.isArray(libroProp.ejemplares)) {
-        setEjemplares(
-          libroProp.ejemplares.map((ej) => ({
-            id: ej.id || Date.now() + Math.random(),
-            codigo: ej.codigo || "",
-            ubicacion: ej.ubicacion || "",
-            estado: ej.estado || "Disponible",
-            edificio: ej.edificio || "",
-            donado: ej.donado ?? null,
-            origen: ej.origen || "",
-            precio: ej.precio || "",
-          }))
-        );
+    const cargarDatos = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const [libroResponse, categoriasResponse] = await Promise.all([
+          LibrosService.getLibroById(libroId),
+          LibrosService.getAllCategorias()
+        ]);
+
+        if (libroResponse.success && libroResponse.data) {
+          const libroData = libroResponse.data;
+          
+          setLibro({
+            titulo: libroData.titulo || "",
+            autor: libroData.autor || "",
+            editorial: libroData.editorial || "",
+            isbn: libroData.isbn || "",
+            portada: libroData.imagenURL || "/images/libro-placeholder.jpg",
+            categoriaId: libroData.categoria?._id || libroData.categoria || "",
+          });
+
+          const ejemplaresNormalizados = (libroData.ejemplares || []).map(ej => {
+            // Capitalizar el estado (primera letra en mayúscula)
+            const estado = ej.estado || "disponible";
+            const estadoCapitalizado = estado.charAt(0).toUpperCase() + estado.slice(1).toLowerCase();
+            
+            return {
+              id: ej._id,
+              codigo: ej.cdu || "",
+              ubicacion: ej.ubicacionFisica || "",
+              estado: estadoCapitalizado,
+              edificio: ej.edificio || "",
+              donado: ej.origen === "Donado",
+              origen: ej.donado_por || "",
+              precio: ej.precio || "",
+              esNuevo: false
+            };
+          });
+
+          setEjemplares(ejemplaresNormalizados);
+          setEjemplaresOriginales(JSON.parse(JSON.stringify(ejemplaresNormalizados)));
+        } else {
+          setError("Libro no encontrado");
+        }
+
+        if (categoriasResponse.success) {
+          setCategorias(categoriasResponse.data || []);
+        }
+      } catch (err) {
+        console.error("Error al cargar datos:", err);
+        setError("Error al cargar los datos del libro");
+      } finally {
+        setLoading(false);
       }
+    };
+
+    if (libroId) {
+      cargarDatos();
     }
-  }, [libroProp]);
+  }, [libroId]);
 
   // Sincronizar refs con estado
   useEffect(() => {
     libroRef.current = libro;
     ejemplaresRef.current = ejemplares;
   }, [libro, ejemplares]);
-
-  // Cargar categorías
-  useEffect(() => {
-    setCategorias([
-      { _id: "1", descripcion: "Literatura" },
-      { _id: "2", descripcion: "Ciencia" },
-      { _id: "3", descripcion: "Tecnología" },
-      { _id: "4", descripcion: "Historia" },
-      { _id: "5", descripcion: "Filosofía" },
-    ]);
-  }, []);
-
-  // OPTIMIZACIÓN: Debounce para ISBN con validación de cambio
-  const debouncedISBN = useDebounce(libro.isbn, 800);
-
-  // BÚSQUEDA POR ISBN OPTIMIZADA - solo si realmente cambió
-  useEffect(() => {
-    const buscarPorISBN = async () => {
-      // Validación: solo buscar si el ISBN cambió y no está vacío
-      if (!debouncedISBN.trim() || debouncedISBN === lastISBNRef.current) {
-        return;
-      }
-
-      // Validación: solo buscar si el ISBN tiene formato válido (mínimo 10 caracteres)
-      if (debouncedISBN.trim().length < 10) {
-        return;
-      }
-
-      try {
-        lastISBNRef.current = debouncedISBN;
-
-        const datosLibro = await buscarLibroPorISBN(debouncedISBN.trim());
-
-        if (datosLibro) {
-          setLibro((prev) => ({
-            ...prev,
-            titulo: datosLibro.titulo || prev.titulo,
-            autor: datosLibro.autor || prev.autor,
-            editorial: datosLibro.editorial || prev.editorial,
-            portada: datosLibro.portada || prev.portada,
-          }));
-        }
-      } catch (error) {
-        // No mostrar error al usuario para no interrumpir la experiencia
-      }
-    };
-
-    buscarPorISBN();
-  }, [debouncedISBN]);
 
   // OPTIMIZACIÓN: Handlers memoizados con dependencias mínimas
   const handleLibroChange = useCallback((name, value) => {
@@ -193,22 +159,22 @@ export default function EditarLibro({libro: libroProp }) {
   }, []);
 
   const agregarEjemplar = useCallback(() => {
-    const nuevoId =
-      ejemplares.length > 0 ? Math.max(...ejemplares.map((e) => e.id)) + 1 : 1;
+    const nuevoId = `nuevo_${Date.now()}`;
     setEjemplares((prev) => [
       ...prev,
       {
         id: nuevoId,
         codigo: "",
         ubicacion: "",
-        estado: "Disponible",
+        estado: "disponible",
         edificio: "",
         donado: null,
         origen: "",
         precio: "",
+        esNuevo: true
       },
     ]);
-  }, [ejemplares.length]);
+  }, []);
 
   const confirmarEliminarEjemplar = useCallback((ejemplar) => {
     setEjemplarAEliminar(ejemplar);
@@ -225,36 +191,29 @@ export default function EditarLibro({libro: libroProp }) {
     }
   }, [ejemplarAEliminar]);
 
-  // OPTIMIZACIÓN: Validación más eficiente usando refs
+  // OPTIMIZACIÓN: Validación más eficiente
   const validarFormulario = useCallback(() => {
     // Clear previous timeout
     if (validationTimeoutRef.current) {
       clearTimeout(validationTimeoutRef.current);
     }
 
-    const currentLibro = libroRef.current;
-    const currentEjemplares = ejemplaresRef.current;
-
     let mensajeLibro = "";
 
     // Validación más rápida sin trim innecesarios
     if (
-      !currentLibro.titulo?.trim() ||
-      !currentLibro.autor?.trim() ||
-      !currentLibro.editorial?.trim() ||
-      !currentLibro.isbn?.trim() ||
-      !currentLibro.categoriaId?.trim()
+      !libro.titulo?.trim() ||
+      !libro.autor?.trim() ||
+      !libro.editorial?.trim() ||
+      !libro.isbn?.trim() ||
+      !libro.categoriaId?.trim()
     ) {
       mensajeLibro +=
         "Complete todos los campos obligatorios del libro (Título, Autor, Editorial, ISBN, Categoría).";
     }
 
-    // Validación de URL de imagen
-    if (
-      !libro.portada?.trim() ||
-      libro.portada === "/images/libro-placeholder.jpg"
-    ) {
-      setValidationMessage("Agregue url de imagen");
+    if (mensajeLibro) {
+      setValidationMessage(mensajeLibro);
       return false;
     }
 
@@ -265,7 +224,7 @@ export default function EditarLibro({libro: libroProp }) {
     }
 
     // Validar que todos los ejemplares tengan los campos completos
-    const ejemplaresCompletos = currentEjemplares.every((ej) => {
+    const ejemplaresCompletos = ejemplares.every((ej) => {
       const camposBase =
         ej.codigo?.trim() &&
         ej.ubicacion?.trim() &&
@@ -299,7 +258,7 @@ export default function EditarLibro({libro: libroProp }) {
 
     setValidationMessage("");
     return true;
-  }, []);
+  }, [libro, ejemplares]);
 
   const handleConfirmarEdicion = useCallback(() => {
     if (!validarFormulario()) {
@@ -315,10 +274,82 @@ export default function EditarLibro({libro: libroProp }) {
     setShowValidationError(false);
   }, [validarFormulario]);
 
-  const handleGuardarConfirmado = useCallback(() => {
+  const handleGuardarConfirmado = useCallback(async () => {
     setShowConfirmModal(false);
-     router.push("/dashboard/catalogo");
-  }, [router]);
+    setGuardando(true);
+
+    try {
+      // 1. Actualizar datos básicos del libro
+      const libroData = {
+        titulo: libro.titulo,
+        autor: libro.autor,
+        isbn: libro.isbn,
+        categoria: libro.categoriaId,
+        editorial: libro.editorial,
+        imagenURL: libro.portada !== "/images/libro-placeholder.jpg" ? libro.portada : null
+      };
+
+      const updateResponse = await LibrosService.updateLibro(libroId, libroData);
+
+      if (!updateResponse.success) {
+        throw new Error(updateResponse.message || "Error al actualizar el libro");
+      }
+
+      // 2. Gestionar ejemplares
+      const ejemplaresOriginalesIds = ejemplaresOriginales.map(ej => ej.id);
+      const ejemplaresActualesIds = ejemplares.map(ej => ej.id);
+
+      // Eliminar ejemplares que ya no están
+      const ejemplaresAEliminar = ejemplaresOriginales.filter(
+        ej => !ejemplaresActualesIds.includes(ej.id)
+      );
+
+      for (const ej of ejemplaresAEliminar) {
+        try {
+          await LibrosService.removeEjemplar(libroId, ej.id);
+        } catch (err) {
+          console.error(`Error al eliminar ejemplar ${ej.id}:`, err);
+        }
+      }
+
+      // Agregar nuevos ejemplares
+      const ejemplaresNuevos = ejemplares.filter(
+        ej => !ejemplaresOriginalesIds.includes(ej.id) || ej.esNuevo
+      );
+
+      for (const ej of ejemplaresNuevos) {
+        const ejemplarData = {
+          cdu: ej.codigo,
+          estado: ej.estado.toLowerCase(),
+          ubicacionFisica: ej.ubicacion,
+          edificio: ej.edificio,
+          origen: ej.donado ? "Donado" : "Comprado",
+          precio: ej.donado ? null : Number(ej.precio),
+          donado_por: ej.donado ? ej.origen : null
+        };
+
+        try {
+          await LibrosService.addEjemplar(libroId, ejemplarData);
+        } catch (err) {
+          console.error("Error al agregar ejemplar:", err);
+        }
+      }
+
+      setShowSuccessToast(true);
+      setTimeout(() => {
+        setShowSuccessToast(false);
+        router.push("/dashboard/catalogo");
+      }, 2000);
+    } catch (error) {
+      console.error("Error al guardar cambios:", error);
+      setValidationMessage(
+        error.response?.data?.message || "Error al guardar los cambios. Intente nuevamente."
+      );
+      setShowValidationError(true);
+    } finally {
+      setGuardando(false);
+    }
+  }, [libro, ejemplares, ejemplaresOriginales, libroId, router]);
 
   const handleCloseValidationError = useCallback(() => {
     setShowValidationError(false);
@@ -333,6 +364,14 @@ export default function EditarLibro({libro: libroProp }) {
 
   const handleCloseDeleteModal = useCallback(() => {
     setShowDeleteEjemplarModal(false);
+  }, []);
+
+  const handleShowGestionCategorias = useCallback(() => {
+    setShowGestionCategorias(true);
+  }, []);
+
+  const handleCloseGestionCategorias = useCallback(() => {
+    setShowGestionCategorias(false);
   }, []);
 
   // Cleanup effect para timeouts
@@ -351,18 +390,25 @@ export default function EditarLibro({libro: libroProp }) {
   // Componentes memoizados
   const memoizedHeader = useMemo(
     () => (
-      <AppHeaderLibro>
+      <>
+        <AppHeaderLibro />
         <ToastError
           show={showValidationError}
           message={validationMessage}
           onClose={handleCloseValidationError}
         />
-      </AppHeaderLibro>
+        <Toast
+          show={showSuccessToast}
+          message={`"${libro.titulo}" actualizado correctamente`}
+        />
+      </>
     ),
     [
       showValidationError,
       validationMessage,
       handleCloseValidationError,
+      showSuccessToast,
+      libro.titulo
     ]
   );
 
@@ -380,10 +426,11 @@ export default function EditarLibro({libro: libroProp }) {
         categorias={categorias}
         onLibroChange={handleLibroChange}
         onISBNChange={handleISBNChange}
+        onShowGestionCategorias={handleShowGestionCategorias}
         modoEdicion={true}
       />
     ),
-    [libro, categorias, handleLibroChange, handleISBNChange]
+    [libro, categorias, handleLibroChange, handleISBNChange, handleShowGestionCategorias]
   );
 
   const memoizedEjemplaresManager = useMemo(
@@ -405,8 +452,19 @@ export default function EditarLibro({libro: libroProp }) {
   );
 
   const memoizedConfirmButton = useMemo(
-    () => <ConfirmarEdicionButton onConfirm={handleConfirmarEdicion} />,
-    [handleConfirmarEdicion]
+    () => (
+      <div className={styles.botonesContainer}>
+        <button 
+          type="button" 
+          className={global.btnWarning} 
+          onClick={handleConfirmarEdicion}
+          disabled={guardando || loading}
+        >
+          {guardando ? "Guardando..." : "Confirmar Edición"}
+        </button>
+      </div>
+    ),
+    [handleConfirmarEdicion, guardando, loading]
   );
 
   return (
@@ -414,23 +472,52 @@ export default function EditarLibro({libro: libroProp }) {
       {memoizedHeader}
       {memoizedPageTitle}
 
-      <div className="container">
-        <div className="row justify-content-center">
-          <div className="col-12 col-lg-11">
-            <div className={styles.formContainer}>
-              {memoizedLibroFormBase}
+      {loading && (
+        <div className="text-center my-5">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Cargando...</span>
+          </div>
+          <p className="mt-2">Cargando datos del libro...</p>
+        </div>
+      )}
 
-              <hr className={styles.separador} />
+      {error && (
+        <div className="alert alert-danger m-3" role="alert">
+          {error}
+          <button className="btn btn-link" onClick={() => router.push("/dashboard/catalogo")}>
+            Volver al catálogo
+          </button>
+        </div>
+      )}
 
-              {memoizedEjemplaresManager}
+      {!loading && !error && (
+        <div className="container">
+          <div className="row justify-content-center">
+            <div className="col-12 col-lg-11">
+              <div className={styles.formContainer}>
+                {memoizedLibroFormBase}
 
-              <hr className={styles.separador} />
+                <GestionCategorias
+                  show={showGestionCategorias}
+                  onClose={handleCloseGestionCategorias}
+                  categorias={categorias}
+                  setCategorias={setCategorias}
+                  libro={libro}
+                  onLibroChange={handleLibroChange}
+                />
 
-              {memoizedConfirmButton}
+                <hr className={styles.separador} />
+
+                {memoizedEjemplaresManager}
+
+                <hr className={styles.separador} />
+
+                {memoizedConfirmButton}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Modales */}
       <ConfirmModal
@@ -456,16 +543,6 @@ export default function EditarLibro({libro: libroProp }) {
           </small>
           <br />
           <small className={styles.libroDetalle}>ISBN: {libro.isbn}</small>
-          <br />
-          <small className={styles.libroDetalle}>Precio: ${libro.precio}</small>
-          {libro.donado && libro.origen && (
-            <>
-              <br />
-              <small className={styles.libroDetalle}>
-                Origen: {libro.origen}
-              </small>
-            </>
-          )}
           <br />
           <small className={styles.libroDetalle}>
             Ejemplares: {ejemplares.length}

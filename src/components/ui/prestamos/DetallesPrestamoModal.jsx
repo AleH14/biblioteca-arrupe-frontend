@@ -45,7 +45,10 @@ const DetallesPrestamoModal = React.memo(({
                 <FiMapPin className={styles.detalleIcon} />
                 <div>
                   <strong>Ubicación:</strong>
-                  <span>Edificio X</span>
+                  <span>
+                    {prestamo.ejemplar?.ubicacionFisica || 'No especificada'}
+                    {prestamo.ejemplar?.edificio && ` - Edificio ${prestamo.ejemplar.edificio}`}
+                  </span>
                 </div>
               </div>
 
