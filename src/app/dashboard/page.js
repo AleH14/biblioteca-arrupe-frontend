@@ -20,6 +20,7 @@ import {
 import styles from '../../styles/MenuForm.module.css';
 import global from '../../styles/Global.module.css';
 
+
 // Componente memoizado para el header
 const Header = React.memo(({ onLogout }) => (
   <header

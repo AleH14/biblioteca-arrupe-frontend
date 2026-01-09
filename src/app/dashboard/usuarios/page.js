@@ -68,9 +68,10 @@ export default function UsuariosPage() {
 
       // Llamada al backend
       const response = await UsuarioService.getUsers();
+      console.log('Response from backend:', response); // Debug log
 
-      // Aseguramos que sea un array
-      const usuariosArray = response.usuarios || []; 
+      // La respuesta del backend tiene estructura: { success: true, data: [...] }
+      const usuariosArray = response.data || []; 
 
       // Formateamos los usuarios para la UI
       const usuariosFormateados = usuariosArray.map(u => ({
@@ -82,6 +83,7 @@ export default function UsuariosPage() {
         fecha: u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "N/A",
       }));
 
+      console.log('Usuarios formateados:', usuariosFormateados); // Debug log
       setUsuarios(usuariosFormateados);
     } catch (error) {
       console.error("Error al cargar usuarios:", error);
