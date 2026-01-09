@@ -10,11 +10,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import ButtonIcon from '@/components/ui/ButtonIcon';
 import {
-  NoteIcon,
+  Ayuda,
   CatalogoIcon,
   ChartIcon,
-  UserIcon,
-  Ayuda
+  NoteIcon,
+  UserIcon
 } from '@/components/svg';
 
 import styles from '../../styles/MenuForm.module.css';
