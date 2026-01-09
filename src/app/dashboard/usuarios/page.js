@@ -1,5 +1,7 @@
 "use client";
-import React, { useState, memo } from "react";
+
+import { UsuarioService } from "@/services";
+import React, { useState, useEffect, memo } from "react";
 import styles from "@/styles/Usuarios.module.css";
 import global from "@/styles/Global.module.css";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
@@ -19,13 +21,6 @@ const rolColor = {
   "Colaborador": { border: "#0F52BA" },
   "Estudiante": { border: "#9370db" }
 };
-
-const usuariosData = [
-  { id: 1, nombre: "René Abarca", rol: "Bibliotecario", email: "rene@fundacionpadrearrupe.org", telefono: "7788-6625", fecha: "12/10/2024", password: "Ra123456#" },
-  { id: 2, nombre: "Luis Rivas", rol: "Administrativo", email: "lrivas@fundacionpadrearrupe.org", telefono: "7688-6625", fecha: "12/10/2024", password: "Admin2024#" },
-  { id: 3, nombre: "Carla Méndez", rol: "Colaborador", email: "carla@fundacionpadrearrupe.org", telefono: "7777-1234", fecha: "15/10/2024", password: "Carla123#" },
-  { id: 4, nombre: "Jorge López", rol: "Estudiante", email: "jorge@fundacionpadrearrupe.org", telefono: "7666-4321", fecha: "20/10/2024", password: "Jorgepass12#" },
-];
 
 const roles = ["Todos", "Bibliotecario", "Administrativo", "Colaborador", "Estudiante"];
 
@@ -59,11 +54,47 @@ function TarjetaUsuario({ usuario, onEditar, onEliminar }) {
 }
 
 export default function UsuariosPage() {
-  const [usuarios, setUsuarios] = useState(usuariosData);
+  const [usuarios, setUsuarios] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [filtroActivo, setFiltroActivo] = useState("Todos");
   const [terminoBusqueda, setTerminoBusqueda] = useState("");
   const [modalAbierto, setModalAbierto] = useState(null);
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
+
+  useEffect(() => {
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+
+      // Llamada al backend
+      const response = await UsuarioService.getUsers();
+
+      // Aseguramos que sea un array
+      const usuariosArray = response.usuarios || []; 
+
+      // Formateamos los usuarios para la UI
+      const usuariosFormateados = usuariosArray.map(u => ({
+        id: u._id,
+        nombre: u.nombre || u.name,
+        email: u.email,
+        telefono: u.telefono || "N/A",
+        rol: u.rol || "Estudiante",
+        fecha: u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "N/A",
+      }));
+
+      setUsuarios(usuariosFormateados);
+    } catch (error) {
+      console.error("Error al cargar usuarios:", error);
+      mostrarToast("Error al cargar usuarios", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchUsers();
+}, []);
+
+
 
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
   const mostrarToast = (message, type = "success") => {
@@ -99,17 +130,45 @@ export default function UsuariosPage() {
     cerrarModales();
   };
 
-  const guardarUsuarioEditado = (datos) => {
-    setUsuarios(prev => prev.map(u => u.id === usuarioSeleccionado.id ? { ...u, ...datos } : u));
+ const guardarUsuarioEditado = async (datos) => {
+  try {
+    const actualizado = await UsuarioService.updateUser(
+      usuarioSeleccionado.id,
+      datos
+    );
+
+    setUsuarios(prev =>
+      prev.map(u =>
+        u.id === usuarioSeleccionado.id
+          ? { ...u, ...actualizado }
+          : u
+      )
+    );
+
     mostrarToast("Usuario actualizado correctamente");
     cerrarModales();
-  };
+  } catch (error) {
+    mostrarToast("Error al actualizar usuario", "error");
+    console.error(error);
+  }
+};
 
-  const eliminarUsuario = () => {
-    setUsuarios(prev => prev.filter(u => u.id !== usuarioSeleccionado.id));
+
+  const eliminarUsuario = async () => {
+  try {
+    await UsuarioService.deleteUser(usuarioSeleccionado.id);
+
+    setUsuarios(prev =>
+      prev.filter(u => u.id !== usuarioSeleccionado.id)
+    );
+
     mostrarToast("Usuario eliminado correctamente", "warning");
     cerrarModales();
-  };
+  } catch (error) {
+    mostrarToast("Error al eliminar usuario", "error");
+    console.error(error);
+  }
+};
 
   return (
     <div className={global.backgroundWrapper}>
