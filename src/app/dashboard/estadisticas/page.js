@@ -35,8 +35,13 @@ export default function EstadisticasPage() {
   const [categorias, setCategorias] = useState([]);
   const [libros, setLibros] = useState([]);
 
-  const [devolucionesAtrasadas, setDevolucionesAtrasadas] = useState([]);
-  const [librosReservados, setLibrosReservados] = useState([]);
+  // Estado para resumen de biblioteca
+  const [resumenBiblioteca, setResumenBiblioteca] = useState({
+    devolucionesAtrasadas: [],
+    librosReservados: [],
+    costoTotalLibros: 0,
+    totalEjemplares: 0
+  });
 
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(null);
   const [mostrarDevolucionesAtrasadas, setMostrarDevolucionesAtrasadas] =
@@ -70,10 +75,12 @@ export default function EstadisticasPage() {
           metricasData,
           tendenciasData,
           categoriasData,
+          resumenData,
         ] = await Promise.all([
           EstadisticasService.getMetricas({ periodo: filtroGlobal }),
           EstadisticasService.getTendencias({ periodo: filtroGlobal }),
           EstadisticasService.getCategorias(),
+          EstadisticasService.getResumenBiblioteca(),
         ]);
 
         // ⚠️ ENDPOINT INESTABLE (NO ROMPE LA VISTA)
@@ -95,9 +102,13 @@ export default function EstadisticasPage() {
         setCategorias(Array.isArray(categoriasData) ? categoriasData : []);
         setLibros(Array.isArray(topLibrosData) ? topLibrosData : []);
 
-        // Endpoints aún no disponibles
-        setDevolucionesAtrasadas([]);
-        setLibrosReservados([]);
+        // ✅ MAPEO RESUMEN BIBLIOTECA
+        setResumenBiblioteca({
+          devolucionesAtrasadas: resumenData?.devolucionesAtrasadas ?? [],
+          librosReservados: resumenData?.librosReservados ?? [],
+          costoTotalLibros: resumenData?.costoTotalLibros ?? 0,
+          totalEjemplares: resumenData?.totalEjemplares ?? 0
+        });
       } catch (error) {
         console.error("Error crítico cargando estadísticas:", error);
       }
@@ -121,24 +132,6 @@ export default function EstadisticasPage() {
     return [...libros]
       .sort((a, b) => (a.prestamos ?? 0) - (b.prestamos ?? 0))
       .slice(0, 10);
-  }, [libros]);
-
-  const costoTotalLibros = useMemo(() => {
-    if (!Array.isArray(libros)) return 0;
-    return libros.reduce(
-      (total, libro) =>
-        total +
-        (libro.precio ?? 0) * (libro.ejemplares?.length ?? 0),
-      0
-    );
-  }, [libros]);
-
-  const totalEjemplares = useMemo(() => {
-    if (!Array.isArray(libros)) return 0;
-    return libros.reduce(
-      (total, libro) => total + (libro.ejemplares?.length ?? 0),
-      0
-    );
   }, [libros]);
 
  const getLibrosPorCategoria = (categoriaId) => {
@@ -197,17 +190,13 @@ export default function EstadisticasPage() {
 
           <div className="col-12 col-lg-6">
             <ResumenBiblioteca
-              datosEstadisticas={{
-                libros,
-                devolucionesAtrasadas,
-                librosReservados,
-              }}
+              datosEstadisticas={resumenBiblioteca}
               setMostrarDevolucionesAtrasadas={
                 setMostrarDevolucionesAtrasadas
               }
               setMostrarLibrosReservados={setMostrarLibrosReservados}
-              costoTotalLibros={costoTotalLibros}
-              totalEjemplares={totalEjemplares}
+              costoTotalLibros={resumenBiblioteca.costoTotalLibros}
+              totalEjemplares={resumenBiblioteca.totalEjemplares}
             />
           </div>
         </div>
@@ -223,7 +212,7 @@ export default function EstadisticasPage() {
 
       {mostrarDevolucionesAtrasadas && (
         <ModalDevoluciones
-          datos={devolucionesAtrasadas}
+          datos={resumenBiblioteca.devolucionesAtrasadas}
           setMostrarDevolucionesAtrasadas={
             setMostrarDevolucionesAtrasadas
           }
@@ -232,7 +221,7 @@ export default function EstadisticasPage() {
 
       {mostrarLibrosReservados && (
         <ModalReservas
-          datos={librosReservados}
+          datos={resumenBiblioteca.librosReservados}
           setMostrarLibrosReservados={setMostrarLibrosReservados}
         />
       )}

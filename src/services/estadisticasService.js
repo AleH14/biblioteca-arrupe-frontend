@@ -57,3 +57,11 @@ export const getEstadisticasLibro = async (libroId) => {
 
   return response.data.data;
 };
+
+export const getResumenBiblioteca = async () => {
+  const response = await apiClient.get(
+    `${ESTADISTICAS_API_URL}/resumen`
+  );
+
+  return response.data.data;
+};
