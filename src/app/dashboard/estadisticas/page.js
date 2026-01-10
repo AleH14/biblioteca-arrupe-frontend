@@ -2,18 +2,19 @@
 import React, { useEffect, useState, useMemo } from "react";
 import global from "@/styles/Global.module.css";
 
-// UI
-import AppHeader from "@/components/ui/AppHeader";
-import PageTitle from "@/components/ui/PageTitle";
-import GlobalFilter from "@/components/ui/estadisticas/GlobalFilter";
-import MetricCards from "@/components/ui/estadisticas/MetricCards";
-import BarChart from "@/components/ui/estadisticas/BarChart";
-import TopLibrosList from "@/components/ui/estadisticas/TopLibrosList";
-import CategoriesChart from "@/components/ui/estadisticas/CategoriesChart";
-import ResumenBiblioteca from "@/components/ui/estadisticas/ResumenBiblioteca";
-import ModalCategoria from "@/components/ui/estadisticas/ModalCategoria";
-import ModalDevoluciones from "@/components/ui/estadisticas/ModalDevoluciones";
-import ModalReservas from "@/components/ui/estadisticas/ModalReservas";
+// UI Components
+import { AppHeader, PageTitle } from "@/components/ui";
+import {
+  GlobalFilter,
+  MetricCards,
+  BarChart,
+  TopLibrosList,
+  CategoriesChart,
+  ResumenBiblioteca,
+  ModalCategoria,
+  ModalDevoluciones,
+  ModalReservas,
+} from "@/components/ui/estadisticas";
 
 // Services
 import { EstadisticasService } from "@/services";
