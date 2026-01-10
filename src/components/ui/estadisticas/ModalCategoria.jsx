@@ -7,13 +7,16 @@ export default function ModalCategoria({
   setCategoriaSeleccionada,
   getLibrosPorCategoria,
 }) {
-  const libros = getLibrosPorCategoria(categoriaSeleccionada._id);
+  if (!categoriaSeleccionada) return null;
+
+  const libros = getLibrosPorCategoria(categoriaSeleccionada.categoriaId);
 
   return (
     <div className={styles.modalBackdrop}>
       <div className={styles.modalContent}>
         <div className={styles.modalHeader}>
-          <h3>Libros de: {categoriaSeleccionada.nombre}</h3>
+          <h3>Libros de: {categoriaSeleccionada.categoria}</h3>
+
           <button
             className={styles.modalClose}
             onClick={() => setCategoriaSeleccionada(null)}
@@ -21,28 +24,50 @@ export default function ModalCategoria({
             <FiX />
           </button>
         </div>
-        <div className={styles.modalBody}>
-          <div className={styles.modalStats}>
-            <span>Total de libros: {categoriaSeleccionada.cantidadLibros}</span>
-            <span>Ejemplares: {categoriaSeleccionada.cantidadEjemplares}</span>
-            <span>Préstamos totales: {categoriaSeleccionada.totalPrestamos}</span>
-          </div>
-          <div className={styles.modalList}>
-            {libros.map((libro) => (
+
+        <div className={styles.modalList}>
+          {libros.length === 0 && (
+            <p style={{ color: "#6b7280" }}>
+              No hay libros en esta categoría
+            </p>
+          )}
+
+          {libros.map((libro) => {
+            const ejemplares = libro.ejemplares ?? [];
+
+            const disponibles = ejemplares.filter(
+              (e) => e.estado === "disponible"
+            ).length;
+
+            const estaDisponible = disponibles > 0;
+console.log(libros);
+
+            return (
               <div key={libro._id} className={styles.modalListItem}>
                 <div className={styles.modalBookInfo}>
                   <h5>{libro.titulo}</h5>
                   <p>{libro.autor}</p>
+
                   <small>
-                    Ejemplares: {libro.ejemplares.length} | Precio: ${libro.precio}
+                    Ejemplares: {ejemplares.length}
+                    {" | "}
+                    Disponibles: {disponibles}
                   </small>
                 </div>
+
                 <div className={styles.modalBookStats}>
-                  <span>{libro.prestamos} préstamos</span>
+                  <span
+                    style={{
+                      color: estaDisponible ? "#22c55e" : "#ef4444",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {estaDisponible ? "Disponible" : "No disponible"}
+                  </span>
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </div>
     </div>
