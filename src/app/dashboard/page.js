@@ -1,20 +1,25 @@
 'use client';
 
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { MdLogout } from 'react-icons/md';
+
+import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import ButtonIcon from '@/components/ui/ButtonIcon';
+import {
+  Ayuda,
+  CatalogoIcon,
+  ChartIcon,
+  NoteIcon,
+  UserIcon
+} from '@/components/svg';
+
 import styles from '../../styles/MenuForm.module.css';
 import global from '../../styles/Global.module.css';
-import { MdLogout } from 'react-icons/md';
-import ButtonIcon from '@/components/ui/ButtonIcon';
-import NoteIcon from '@/components/svg/note.jsx';
-import CatalogoIcon from '@/components/svg/catalogo.jsx';
-import ChartIcon from '@/components/svg/Chart.jsx';
-import UserIcon from '@/components/svg/User.jsx';
-import Ayuda from '@/components/svg/Ayuda.jsx';
+
 
 // Componente memoizado para el header
 const Header = React.memo(({ onLogout }) => (
