@@ -237,11 +237,10 @@ const UsuarioModal = ({ isOpen, onClose, onGuardar, usuario, title, submitText }
               className={errors.rol ? styles.inputError : styles.lightInput}
             >
               <option value="">Seleccionar rol</option>
-              <option value="Bibliotecario">Bibliotecario</option>
-              <option value="Administrativo">Administrativo</option>
-              <option value="Colaborador">Colaborador</option>
-              <option value="Profesor">Profesor</option>
-              <option value="Estudiante">Estudiante</option>
+              <option value="estudiante">Estudiante</option>
+              <option value="docente">Docente</option>
+              <option value="consultor">Consultor</option>
+              <option value="admin">Admin</option>
             </select>
             {errors.rol && <span className={styles.errorText}>{errors.rol}</span>}
           </div>

@@ -16,14 +16,13 @@ import UsuarioModal from "@/components/ui/usuarios/UsuarioModal";
 import ModalConfirmarEliminar from "@/components/ui/usuarios/ModalConfirmarEliminar";
 
 const rolColor = {
-  "Bibliotecario": { border: "#FF0004" },
-  "Administrativo": { border: "#00C8FF" },
-  "Colaborador": { border: "#0F52BA" },
-  "Profesor": { border: "#228B22" },
-  "Estudiante": { border: "#9370db" }
+  "estudiante": { border: "#9370db" },
+  "docente": { border: "#FF0004" },
+  "consultor": { border: "#0F52BA" },
+  "admin": { border: "#00C8FF" }
 };
 
-const roles = ["Todos", "Bibliotecario", "Administrativo", "Colaborador", "Profesor", "Estudiante"];
+const roles = ["Todos", "estudiante", "docente", "consultor", "admin"];
 
 // Memoizamos los iconos
 const AccionesUsuario = memo(({ onEditar, onEliminar }) => (
@@ -80,7 +79,7 @@ export default function UsuariosPage() {
         nombre: u.nombre || u.name,
         email: u.email,
         telefono: u.telefono || "N/A",
-        rol: u.rol || "Estudiante",
+        rol: u.rol || "estudiante",
         fecha: u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "N/A",
       }));
 

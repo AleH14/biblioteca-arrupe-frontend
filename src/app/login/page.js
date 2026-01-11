@@ -41,7 +41,7 @@ export default function LoginForm() {
         // Redirigir según el rol
         if (user.rol === 'estudiante') {
           router.push('/estudiante');
-        } else if (user.rol === 'admin' || user.rol === 'bibliotecario') {
+        } else if (user.rol === 'admin' || user.rol === 'docente' || user.rol === 'consultor') {
           router.push('/dashboard');
         } else {
           // Rol por defecto
