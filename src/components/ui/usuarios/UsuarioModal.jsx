@@ -240,6 +240,7 @@ const UsuarioModal = ({ isOpen, onClose, onGuardar, usuario, title, submitText }
               <option value="Bibliotecario">Bibliotecario</option>
               <option value="Administrativo">Administrativo</option>
               <option value="Colaborador">Colaborador</option>
+              <option value="Profesor">Profesor</option>
               <option value="Estudiante">Estudiante</option>
             </select>
             {errors.rol && <span className={styles.errorText}>{errors.rol}</span>}

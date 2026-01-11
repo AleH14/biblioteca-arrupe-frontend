@@ -19,10 +19,11 @@ const rolColor = {
   "Bibliotecario": { border: "#FF0004" },
   "Administrativo": { border: "#00C8FF" },
   "Colaborador": { border: "#0F52BA" },
+  "Profesor": { border: "#228B22" },
   "Estudiante": { border: "#9370db" }
 };
 
-const roles = ["Todos", "Bibliotecario", "Administrativo", "Colaborador", "Estudiante"];
+const roles = ["Todos", "Bibliotecario", "Administrativo", "Colaborador", "Profesor", "Estudiante"];
 
 // Memoizamos los iconos
 const AccionesUsuario = memo(({ onEditar, onEliminar }) => (
