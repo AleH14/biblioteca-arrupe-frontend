@@ -22,7 +22,20 @@ const rolColor = {
   "admin": { border: "#00C8FF" }
 };
 
-const roles = ["Todos", "estudiante", "docente", "consultor", "admin"];
+const rolLabel = {
+  estudiante: "Estudiante",
+  docente: "Docente",
+  consultor: "Consultor",
+  admin: "Administrador",
+};
+
+const roles = [
+  { value: "Todos", label: "Todos" },
+  { value: "estudiante", label: "Estudiantes" },
+  { value: "docente", label: "Docentes" },
+  { value: "consultor", label: "Consultores" },
+  { value: "admin", label: "Administradores" }
+];
 
 // Memoizamos los iconos
 const AccionesUsuario = memo(({ onEditar, onEliminar }) => (
@@ -37,7 +50,7 @@ function TarjetaUsuario({ usuario, onEditar, onEliminar }) {
   return (
     <div className={styles.card} style={{ borderTop: `5px solid ${color.border}`, position: 'relative' }}>
       <div className={styles.rolBadge} style={{ backgroundColor: color.border }}>
-        {usuario?.rol}
+        {rolLabel[usuario?.rol] || usuario?.rol}
       </div>
       <div className={styles.loanInfo}>
         <strong>{usuario?.nombre}</strong><br/>
@@ -61,19 +74,13 @@ export default function UsuariosPage() {
   const [modalAbierto, setModalAbierto] = useState(null);
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
 
-  useEffect(() => {
+  // Función para obtener usuarios del backend 
   const fetchUsers = async () => {
     try {
       setLoading(true);
-
-      // Llamada al backend
       const response = await UsuarioService.getUsers();
-      console.log('Response from backend:', response); // Debug log
+      const usuariosArray = response.data || [];
 
-      // La respuesta del backend tiene estructura: { success: true, data: [...] }
-      const usuariosArray = response.data || []; 
-
-      // Formateamos los usuarios para la UI
       const usuariosFormateados = usuariosArray.map(u => ({
         id: u._id,
         nombre: u.nombre || u.name,
@@ -83,7 +90,6 @@ export default function UsuariosPage() {
         fecha: u.createdAt ? new Date(u.createdAt).toLocaleDateString() : "N/A",
       }));
 
-      console.log('Usuarios formateados:', usuariosFormateados); // Debug log
       setUsuarios(usuariosFormateados);
     } catch (error) {
       console.error("Error al cargar usuarios:", error);
@@ -93,10 +99,9 @@ export default function UsuariosPage() {
     }
   };
 
-  fetchUsers();
-}, []);
-
-
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
   const mostrarToast = (message, type = "success") => {
@@ -125,58 +130,62 @@ export default function UsuariosPage() {
   };
 
   // CRUD
-  const agregarUsuario = (nuevoUsuario) => {
-    const nuevoId = usuarios.length ? Math.max(...usuarios.map(u => u.id)) + 1 : 1;
-    setUsuarios(prev => [...prev, { ...nuevoUsuario, id: nuevoId }]);
+  const agregarUsuario = async (nuevoUsuario) => {
+  try {
+    const response = await UsuarioService.createUser(nuevoUsuario);
+    const usuarioCreado = response.data; // <--- importante
+
+    setUsuarios(prev => [...prev, {
+      id: usuarioCreado._id,
+      nombre: usuarioCreado.nombre,
+      email: usuarioCreado.email,
+      telefono: usuarioCreado.telefono || "N/A",
+      rol: usuarioCreado.rol || "estudiante",
+      fecha: usuarioCreado.createdAt ? new Date(usuarioCreado.createdAt).toLocaleDateString() : "N/A",
+    }]);
     mostrarToast("Usuario agregado correctamente");
     cerrarModales();
+  } catch (error) {
+    console.error("Error al agregar usuario:", error);
+    mostrarToast("Error al agregar usuario", "error");
+  }
+};
+
+  const guardarUsuarioEditado = async (datos) => {
+    try {
+      await UsuarioService.updateUser(usuarioSeleccionado.id, datos);
+
+      //Refresca la lista después de editar
+      await fetchUsers();
+
+      mostrarToast("Usuario actualizado correctamente");
+      cerrarModales();
+    } catch (error) {
+      mostrarToast("Error al actualizar usuario", "error");
+      console.error(error);
+    }
   };
 
- const guardarUsuarioEditado = async (datos) => {
-  try {
-    const actualizado = await UsuarioService.updateUser(
-      usuarioSeleccionado.id,
-      datos
-    );
-
-    setUsuarios(prev =>
-      prev.map(u =>
-        u.id === usuarioSeleccionado.id
-          ? { ...u, ...actualizado }
-          : u
-      )
-    );
-
-    mostrarToast("Usuario actualizado correctamente");
-    cerrarModales();
-  } catch (error) {
-    mostrarToast("Error al actualizar usuario", "error");
-    console.error(error);
-  }
-};
-
-
   const eliminarUsuario = async () => {
-  try {
-    await UsuarioService.deleteUser(usuarioSeleccionado.id);
+    try {
+      await UsuarioService.deleteUser(usuarioSeleccionado.id);
 
-    setUsuarios(prev =>
-      prev.filter(u => u.id !== usuarioSeleccionado.id)
-    );
+      setUsuarios(prev =>
+        prev.filter(u => u.id !== usuarioSeleccionado.id)
+      );
 
-    mostrarToast("Usuario eliminado correctamente", "warning");
-    cerrarModales();
-  } catch (error) {
-    mostrarToast("Error al eliminar usuario", "error");
-    console.error(error);
-  }
-};
+      mostrarToast("Usuario eliminado correctamente", "warning");
+      cerrarModales();
+    } catch (error) {
+      mostrarToast("Error al eliminar usuario", "error");
+      console.error(error);
+    }
+  };
 
   return (
     <div className={global.backgroundWrapper}>
       <Toast show={toast.show} message={toast.message} type={toast.type} onClose={cerrarToast} />
       
-      {/* AppHeader sin props - maneja navegación internamente */}
       <AppHeader />
       
       <PageTitle title="USUARIOS" imgSrc="/images/complemento-1.png" />

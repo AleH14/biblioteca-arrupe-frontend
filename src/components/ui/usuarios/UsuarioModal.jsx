@@ -46,16 +46,15 @@ const UsuarioModal = ({ isOpen, onClose, onGuardar, usuario, title, submitText }
         email: usuario.email || "",
         telefono: usuario.telefono || "",
         rol: usuario.rol || "",
-        password: usuario.password || "",
+        password: "", // dejamos vacío al editar
       });
       setTempNombre(usuario.nombre || "");
       setTempEmail(usuario.email || "");
       setTempTelefono(usuario.telefono || "");
-      setTempPassword(usuario.password || "");
+      setTempPassword(""); // contraseña vacía al editar
       setShowPassword(false);
       setErrors({});
     } else {
-      // Si es agregar, resetear todo
       setFormData({
         nombre: "",
         rol: "",
@@ -86,8 +85,13 @@ const UsuarioModal = ({ isOpen, onClose, onGuardar, usuario, title, submitText }
 
     if (!formData.rol) nuevosErrores.rol = "El rol es requerido";
 
+    // Validación de contraseña
+    const esEditar = !!usuario;
     if (!formData.password.trim()) {
-      nuevosErrores.password = "La contraseña es obligatoria";
+      if (!esEditar) {
+        // Solo obligatorio si es agregar
+        nuevosErrores.password = "La contraseña es obligatoria";
+      }
     } else {
       const password = formData.password;
       const minLength = 8;
@@ -148,8 +152,15 @@ const UsuarioModal = ({ isOpen, onClose, onGuardar, usuario, title, submitText }
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     if (validarFormulario()) {
-      onGuardar({ ...formData, id: usuario?.id });
+      // Si es editar y la contraseña está vacía, no enviarla al backend
+      const datosAEnviar = { ...formData };
+      if (usuario && !datosAEnviar.password.trim()) {
+        delete datosAEnviar.password;
+      }
+
+      onGuardar({ ...datosAEnviar, id: usuario?.id });
       handleCerrar();
     }
   };
@@ -217,7 +228,7 @@ const UsuarioModal = ({ isOpen, onClose, onGuardar, usuario, title, submitText }
                 name="password"
                 value={tempPassword}
                 onChange={(e) => handleChange("password", e.target.value)}
-                placeholder="Ingrese contraseña"
+                placeholder={usuario ? "Dejar en blanco para mantener la misma" : "Ingrese contraseña"}
                 className={errors.password ? styles.inputError : styles.lightInput}
               />
               <button type="button" className={styles.togglePassword}>

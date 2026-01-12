@@ -29,6 +29,20 @@ export const getUserById = async (id) => {
 };
 
 /**
+ * Crear usuario
+ */
+export const createUser = async (data) => {
+  try {
+    const response = await apiClient.post("/api/usuarios/crear-usuario", data);
+    return response.data;
+  } catch (error) {
+    console.error("Error al crear usuario:", error);
+    throw error;
+  }
+};
+
+
+/**
  * Actualizar usuario
  */
 export const updateUser = async (id, data) => {
