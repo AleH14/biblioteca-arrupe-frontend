@@ -84,13 +84,7 @@ export const refreshToken = async () => {
                         'Error al refrescar token';
     
     const errorStatus = error.response?.status;
-    
-    console.error('authService - Error al refrescar token:', {
-      message: errorMessage,
-      status: errorStatus,
-      hasRefreshCookie: document.cookie.includes('refreshToken')
-    });
-    
+  
     // Si es error 401, significa que el refresh token expiró o no es válido
     if (errorStatus === 401) {
       console.warn('authService - Refresh token expirado o inválido. Se requiere login.');

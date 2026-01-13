@@ -11,7 +11,7 @@ const IconoMostrar = memo(({ mostrar, onClick }) =>
   mostrar ? <FiEyeOff onClick={onClick} /> : <FiEye onClick={onClick} />
 );
 
-const UsuarioModal = ({ isOpen, onClose, onGuardar, usuario, title, submitText }) => {
+const UsuarioModal = ({ isOpen, onClose, onGuardar, usuario, title, submitText, currentUser }) => {
   const [formData, setFormData] = useState({
     nombre: "",
     rol: "",
@@ -32,6 +32,9 @@ const UsuarioModal = ({ isOpen, onClose, onGuardar, usuario, title, submitText }
   const debouncedTelefono = useDebounce(tempTelefono, 300);
   const debouncedPassword = useDebounce(tempPassword, 300);
 
+  const esUsuarioActual =
+  currentUser?.id && usuario?.id && currentUser.id === usuario.id;
+
   // Sincroniza valores debounced con formData
   useEffect(() => setFormData(prev => ({ ...prev, nombre: debouncedNombre })), [debouncedNombre]);
   useEffect(() => setFormData(prev => ({ ...prev, email: debouncedEmail })), [debouncedEmail]);
@@ -46,16 +49,15 @@ const UsuarioModal = ({ isOpen, onClose, onGuardar, usuario, title, submitText }
         email: usuario.email || "",
         telefono: usuario.telefono || "",
         rol: usuario.rol || "",
-        password: usuario.password || "",
+        password: "", // dejamos vacío al editar
       });
       setTempNombre(usuario.nombre || "");
       setTempEmail(usuario.email || "");
       setTempTelefono(usuario.telefono || "");
-      setTempPassword(usuario.password || "");
+      setTempPassword(""); // contraseña vacía al editar
       setShowPassword(false);
       setErrors({});
     } else {
-      // Si es agregar, resetear todo
       setFormData({
         nombre: "",
         rol: "",
@@ -86,8 +88,13 @@ const UsuarioModal = ({ isOpen, onClose, onGuardar, usuario, title, submitText }
 
     if (!formData.rol) nuevosErrores.rol = "El rol es requerido";
 
+    // Validación de contraseña
+    const esEditar = !!usuario;
     if (!formData.password.trim()) {
-      nuevosErrores.password = "La contraseña es obligatoria";
+      if (!esEditar) {
+        // Solo obligatorio si es agregar
+        nuevosErrores.password = "La contraseña es obligatoria";
+      }
     } else {
       const password = formData.password;
       const minLength = 8;
@@ -148,8 +155,15 @@ const UsuarioModal = ({ isOpen, onClose, onGuardar, usuario, title, submitText }
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     if (validarFormulario()) {
-      onGuardar({ ...formData, id: usuario?.id });
+      // Si es editar y la contraseña está vacía, no enviarla al backend
+      const datosAEnviar = { ...formData };
+      if (usuario && !datosAEnviar.password.trim()) {
+        delete datosAEnviar.password;
+      }
+
+      onGuardar({ ...datosAEnviar, id: usuario?.id });
       handleCerrar();
     }
   };
@@ -217,7 +231,7 @@ const UsuarioModal = ({ isOpen, onClose, onGuardar, usuario, title, submitText }
                 name="password"
                 value={tempPassword}
                 onChange={(e) => handleChange("password", e.target.value)}
-                placeholder="Ingrese contraseña"
+                placeholder={usuario ? "Dejar en blanco para mantener la misma" : "Ingrese contraseña"}
                 className={errors.password ? styles.inputError : styles.lightInput}
               />
               <button type="button" className={styles.togglePassword}>
@@ -234,14 +248,21 @@ const UsuarioModal = ({ isOpen, onClose, onGuardar, usuario, title, submitText }
               name="rol"
               value={formData.rol}
               onChange={(e) => handleChange("rol", e.target.value)}
+              disabled={esUsuarioActual}
               className={errors.rol ? styles.inputError : styles.lightInput}
             >
               <option value="">Seleccionar rol</option>
-              <option value="Bibliotecario">Bibliotecario</option>
-              <option value="Administrativo">Administrativo</option>
-              <option value="Colaborador">Colaborador</option>
-              <option value="Estudiante">Estudiante</option>
+              <option value="estudiante">Estudiante</option>
+              <option value="docente">Docente</option>
+              <option value="consultor">Consultor</option>
+              <option value="admin">Admin</option>
             </select>
+            {esUsuarioActual && (
+              <small>
+                No puedes cambiar tu propio rol
+              </small>
+            )}
+
             {errors.rol && <span className={styles.errorText}>{errors.rol}</span>}
           </div>
 
