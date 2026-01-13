@@ -36,7 +36,13 @@ export const AuthProvider = ({ children }) => {
       try {
         const result = await authService.refreshToken();
         if (result.success && result.user) {
-          console.log('AuthContext - Token refrescado exitosamente');
+
+           if (result.user.activo === false) {
+            console.warn('AuthContext - Usuario desactivado durante refresh');
+            handleLogout();
+            window.location.href = '/login?disabled=true';
+            return;
+          }
           setUser(result.user);
           // Programar el siguiente refresh
           scheduleTokenRefresh();
@@ -221,7 +227,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const isAuthenticated = () => {
-    return !!user;
+    return !!user  && user.activo === true;;
   };
 
   const hasRole = (role) => {

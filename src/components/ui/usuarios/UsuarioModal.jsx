@@ -11,7 +11,7 @@ const IconoMostrar = memo(({ mostrar, onClick }) =>
   mostrar ? <FiEyeOff onClick={onClick} /> : <FiEye onClick={onClick} />
 );
 
-const UsuarioModal = ({ isOpen, onClose, onGuardar, usuario, title, submitText }) => {
+const UsuarioModal = ({ isOpen, onClose, onGuardar, usuario, title, submitText, currentUser }) => {
   const [formData, setFormData] = useState({
     nombre: "",
     rol: "",
@@ -31,6 +31,9 @@ const UsuarioModal = ({ isOpen, onClose, onGuardar, usuario, title, submitText }
   const debouncedEmail = useDebounce(tempEmail, 300);
   const debouncedTelefono = useDebounce(tempTelefono, 300);
   const debouncedPassword = useDebounce(tempPassword, 300);
+
+  const esUsuarioActual =
+  currentUser?.id && usuario?.id && currentUser.id === usuario.id;
 
   // Sincroniza valores debounced con formData
   useEffect(() => setFormData(prev => ({ ...prev, nombre: debouncedNombre })), [debouncedNombre]);
@@ -245,6 +248,7 @@ const UsuarioModal = ({ isOpen, onClose, onGuardar, usuario, title, submitText }
               name="rol"
               value={formData.rol}
               onChange={(e) => handleChange("rol", e.target.value)}
+              disabled={esUsuarioActual}
               className={errors.rol ? styles.inputError : styles.lightInput}
             >
               <option value="">Seleccionar rol</option>
@@ -253,6 +257,12 @@ const UsuarioModal = ({ isOpen, onClose, onGuardar, usuario, title, submitText }
               <option value="consultor">Consultor</option>
               <option value="admin">Admin</option>
             </select>
+            {esUsuarioActual && (
+              <small>
+                No puedes cambiar tu propio rol
+              </small>
+            )}
+
             {errors.rol && <span className={styles.errorText}>{errors.rol}</span>}
           </div>
 

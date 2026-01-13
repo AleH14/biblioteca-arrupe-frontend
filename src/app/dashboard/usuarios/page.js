@@ -1,6 +1,7 @@
 "use client";
 
 import { UsuarioService } from "@/services";
+import { useAuth } from "@/contexts/AuthContext";
 import React, { useState, useEffect, memo } from "react";
 import styles from "@/styles/Usuarios.module.css";
 import global from "@/styles/Global.module.css";
@@ -39,34 +40,44 @@ const roles = [
 
 // Acciones del usuario (editar / deshabilitar / habilitar)
 const AccionesUsuario = memo(
-  ({ activo, usuario, onEditar, onDeshabilitar, onHabilitar }) => (
-    <div className="d-flex gap-3 mt-3 justify-content-end">
-      {activo && (
-        <>
-          <FiEdit
+  ({ activo, usuario, currentUser, onEditar, onDeshabilitar, onHabilitar }) => {
+    
+    const esUsuarioActual = currentUser?.id === usuario.id;
+
+    return (
+      <div className="d-flex gap-3 mt-3 justify-content-end">
+        {activo && (
+          <>
+            <FiEdit
+              className={styles.iconAction}
+              title="Editar usuario"
+              onClick={() => onEditar(usuario)}
+            />
+
+            {!esUsuarioActual && (
+              <FiUserX
+                className={styles.iconAction}
+                title="Deshabilitar usuario"
+                onClick={() => onDeshabilitar(usuario)}
+              />
+            )}
+          </>
+        )}
+
+        {!activo && !esUsuarioActual && (
+          <FiUserCheck
             className={styles.iconAction}
-            title="Editar usuario"
-            onClick={() => onEditar(usuario)}
+            title="Habilitar usuario"
+            onClick={() => onHabilitar(usuario)}
           />
-          <FiUserX
-            className={styles.iconAction}
-            title="Deshabilitar usuario"
-            onClick={() => onDeshabilitar(usuario)}
-          />
-        </>
-      )}
-      {!activo && (
-        <FiUserCheck
-          className={styles.iconAction}
-          title="Habilitar usuario"
-          onClick={() => onHabilitar(usuario)}
-        />
-      )}
-    </div>
-  )
+        )}
+      </div>
+    );
+  }
 );
 
-function TarjetaUsuario({ usuario, onEditar, onDeshabilitar, onHabilitar }) {
+
+function TarjetaUsuario({ usuario, currentUser, onEditar, onDeshabilitar, onHabilitar }) {
   const color = rolColor[usuario?.rol] || { border: "#ccc" };
   const activo = usuario?.activo !== false;
 
@@ -105,6 +116,7 @@ function TarjetaUsuario({ usuario, onEditar, onDeshabilitar, onHabilitar }) {
       <AccionesUsuario
         activo={activo}
         usuario={usuario}
+        currentUser={currentUser}
         onEditar={onEditar}
         onDeshabilitar={onDeshabilitar}
         onHabilitar={onHabilitar}
@@ -120,6 +132,7 @@ export default function UsuariosPage() {
   const [terminoBusqueda, setTerminoBusqueda] = useState("");
   const [modalAbierto, setModalAbierto] = useState(null);
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
+  const { user: currentUser } = useAuth();
 
   const fetchUsers = async () => {
     try {
@@ -279,6 +292,7 @@ export default function UsuariosPage() {
                 <TarjetaUsuario
                   key={usuario.id}
                   usuario={usuario}
+                  currentUser={currentUser}
                   onEditar={(u) => abrirModal("editar", u)}
                   onDeshabilitar={(u) => abrirModal("deshabilitar", u)}
                   onHabilitar={(u) => abrirModal("habilitar", u)}
@@ -294,6 +308,7 @@ export default function UsuariosPage() {
         onClose={cerrarModales}
         onGuardar={modalAbierto === "editar" ? guardarUsuarioEditado : agregarUsuario}
         usuario={usuarioSeleccionado}
+        currentUser={currentUser}
         title={modalAbierto === "editar" ? "Editar Usuario" : "Agregar Usuario"}
         submitText={modalAbierto === "editar" ? "Guardar Cambios" : "Agregar Usuario"}
       />
