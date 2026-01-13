@@ -20,6 +20,17 @@ const FilterPanel = ({ roles, filtroActivo, setFiltroActivo }) => {
               {rol.label}
             </button>
           ))}
+
+          {/* Nuevo botón para deshabilitados */}
+          <button
+            key="deshabilitados"
+            className={`${styles.filterBtn} ${
+              filtroActivo === "deshabilitados" ? styles.filterBtnActive : ""
+            }`}
+            onClick={() => setFiltroActivo("deshabilitados")}
+          >
+            Deshabilitados
+          </button>
         </div>
       </div>
     </div>

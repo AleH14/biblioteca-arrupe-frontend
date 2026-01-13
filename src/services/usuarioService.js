@@ -56,14 +56,27 @@ export const updateUser = async (id, data) => {
 };
 
 /**
- * Eliminar usuario
+ * Deshabilitar usuario
  */
-export const deleteUser = async (id) => {
+export const disableUser = async (id) => {
   try {
     const response = await apiClient.delete(`${USERS_API_URL}/${id}`);
     return response.data;
   } catch (error) {
-    console.error("Error al eliminar usuario:", error);
+    console.error("Error al deshabilitar usuario:", error);
+    throw error;
+  }
+};
+
+/**
+ * Habilitar usuario
+ */
+export const enableUser = async (id) => {
+  try {
+    const response = await apiClient.put(`${USERS_API_URL}/${id}/habilitar`);
+    return response.data;
+  } catch (error) {
+    console.error("Error al habilitar usuario:", error);
     throw error;
   }
 };
