@@ -1,3 +1,4 @@
+// src/components/ui/estadisticas/ModalCategoria.jsx
 import React from "react";
 import styles from "../../../styles/estadisticas.module.css";
 import { FiX } from "react-icons/fi";
@@ -9,7 +10,9 @@ export default function ModalCategoria({
 }) {
   if (!categoriaSeleccionada) return null;
 
-  const libros = getLibrosPorCategoria(categoriaSeleccionada.categoriaId);
+  const libros = getLibrosPorCategoria(
+    categoriaSeleccionada.categoriaId
+  ) || [];
 
   return (
     <div className={styles.modalBackdrop}>
@@ -32,7 +35,7 @@ export default function ModalCategoria({
             </p>
           )}
 
-          {libros.map((libro) => {
+          {libros.map((libro, index) => {
             const ejemplares = libro.ejemplares ?? [];
 
             const disponibles = ejemplares.filter(
@@ -40,18 +43,18 @@ export default function ModalCategoria({
             ).length;
 
             const estaDisponible = disponibles > 0;
-console.log(libros);
 
             return (
-              <div key={libro._id} className={styles.modalListItem}>
+              <div
+                key={libro._id || libro.libroId || index}
+                className={styles.modalListItem}
+              >
                 <div className={styles.modalBookInfo}>
                   <h5>{libro.titulo}</h5>
                   <p>{libro.autor}</p>
 
                   <small>
-                    Ejemplares: {ejemplares.length}
-                    {" | "}
-                    Disponibles: {disponibles}
+                    Ejemplares: {ejemplares.length} | Disponibles: {disponibles}
                   </small>
                 </div>
 
