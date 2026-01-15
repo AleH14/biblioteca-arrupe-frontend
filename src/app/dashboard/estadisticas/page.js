@@ -154,6 +154,7 @@ export default function EstadisticasPage() {
       <AppHeader />
 
       <PageTitle title="Estadísticas" imageSrc="/images/complemento-1.png" />
+console.log(librosPorCategoria[0])
 
       <GlobalFilter
         filtroGlobal={filtroGlobal}

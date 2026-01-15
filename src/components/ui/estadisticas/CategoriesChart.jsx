@@ -33,11 +33,12 @@ export default function CategoriesChart({
               key={cat.categoriaId}
               className={styles.categoryItem}
               onClick={() =>
-                setCategoriaSeleccionada({
-                  _id: cat.categoriaId,
-                  nombre: cat.categoria,
-                })
-              }
+  setCategoriaSeleccionada({
+    categoriaId: cat.categoriaId,
+    categoria: cat.categoria,
+  })
+}
+
             >
               <span className={styles.categoryName}>
                 {cat.categoria}
