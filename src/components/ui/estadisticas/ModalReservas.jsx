@@ -23,7 +23,7 @@ export default function ModalReservas({ datos, setMostrarLibrosReservados }) {
                   <h5>{r.estudiante}</h5>
                   <p>{r.libro}</p>
                   <small>
-                    Grado: {r.grado} | Fecha: {r.fechaReserva}
+                   Fecha: {r.fechaReserva}
                   </small>
                 </div>
                 <div className={styles.modalBookStats}>
