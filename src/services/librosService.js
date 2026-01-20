@@ -146,6 +146,21 @@ export const removeEjemplar = async (libroId, ejemplarId) =>  {
 
 };  
 
+// PUT /api/libros/ejemplares/:ejemplarId — updateEjemplar
+export const updateEjemplar = async (ejemplarId, ejemplarData) => {
+    try {
+        const response = await apiClient.put(
+            `/api/libros/ejemplares/${ejemplarId}`,
+            ejemplarData
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error al actualizar el ejemplar:", error);
+        throw error;
+    }
+};
+
+
 /*
 GET /api/libros/categorias — getAllCategorias
 Descripción: Devuelve todas las categorías del sistema. Roles: admin, consultor, docente, estudiante. */
