@@ -62,55 +62,57 @@ export default function PrestamosPage() {
   const [toastMessage, setToastMessage] = useState("");
 
   // Cargar préstamos desde la API
-  const cargarPrestamos = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await PrestamoService.obtenerTodosLosPrestamos();
-      
-      if (response.success) {
-        // Normalizar datos para que coincidan con lo que esperan los componentes
-        const prestamosNormalizados = (response.data || []).map(prestamo => ({
-          // Mantener ID del préstamo
+ const cargarPrestamos = useCallback(async () => {
+  try {
+    setLoading(true);
+    setError(null);
+    const response = await PrestamoService.obtenerTodosLosPrestamos();
+    
+    if (response.success) {
+      const prestamosNormalizados = (response.data || []).map(prestamo => {
+        
+        //Extraer nombre de usuario y título de libro
+        const nombreUsuario = prestamo.usuario?.nombre || "Usuario desconocido";
+        const tituloLibro = prestamo.libro?.titulo || "Libro desconocido";
+        
+        return {
           _id: prestamo.id || prestamo._id,
           
-          // Normalizar usuario - el backend devuelve 'alumno'
-          usuario: prestamo.alumno?.nombre || prestamo.usuario || "Usuario desconocido",
-          usuarioId: prestamo.alumno, // Mantener referencia al objeto completo
+          usuario: nombreUsuario,
           
-          // Normalizar libro - el backend devuelve 'libro' como objeto
-          libro: prestamo.libro?.titulo || "Libro desconocido",
-          libroId: prestamo.libro, // Mantener referencia al objeto completo
+          // Guardar el objeto completo 
+          usuarioId: prestamo.usuario,
           
-          // Normalizar ejemplar - el backend devuelve 'ejemplar'
-          ejemplarId: prestamo.ejemplar?.id || prestamo.ejemplar,
-          ejemplar: prestamo.ejemplar, // Mantener referencia al objeto completo
+          // GUardar libro
+          libro: tituloLibro,
+          libroId: prestamo.libro,
           
-          // Normalizar fechas - el backend usa nombres diferentes
+          ejemplarId: prestamo.ejemplar?.id,
+          ejemplar: prestamo.ejemplar,
+          
           fechaPrestamo: prestamo.fechaPrestamo,
-          fechaDevolucionEstimada: prestamo.fechaVencimiento || prestamo.fechaDevolucionEstimada,
+          fechaDevolucionEstimada: prestamo.fechaDevolucionEstimada,
           fechaDevolucionReal: prestamo.fechaDevolucionReal,
           
-          // Estado y otros campos
           estado: prestamo.estado,
           reserva: prestamo.reserva,
           diasRetraso: prestamo.diasRetraso,
           
-          // Notificaciones (si existen)
           notificaciones: prestamo.notificaciones || [],
-        }));
-        
-        setPrestamos(prestamosNormalizados);
-      } else {
-        setError(response.message || "Error al cargar préstamos");
-      }
-    } catch (err) {
-      console.error("Error al cargar préstamos:", err);
-      setError("Error al cargar los préstamos. Por favor, intente nuevamente.");
-    } finally {
-      setLoading(false);
+        };
+      });
+      
+      setPrestamos(prestamosNormalizados);
+    } else {
+      setError(response.message || "Error al cargar préstamos");
     }
-  }, []);
+  } catch (err) {
+    console.error("Error al cargar préstamos:", err);
+    setError("Error al cargar los préstamos. Por favor, intente nuevamente.");
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
   useEffect(() => {
     cargarPrestamos();
