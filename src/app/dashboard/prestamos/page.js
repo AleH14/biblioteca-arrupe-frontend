@@ -365,7 +365,7 @@ export default function PrestamosPage() {
   const confirmarPrestamo = useCallback(
     async (fechaDevolucionEstimada) => {
       try {
-        const response = await PrestamoService.activarReserva(prestamoSeleccionado._id);
+        const response = await PrestamoService.activarReserva(prestamoSeleccionado._id, fechaDevolucionEstimada);
         
         if (response.success) {
           handleClose();
@@ -414,13 +414,14 @@ export default function PrestamosPage() {
     switch (prestamo.estado) {
       case "activo":
         return "Activo";
-      case "vencido":
+      case "atrasado":
       case "retrasado":
         return "Entrega Retrasada";
       case "devuelto":
       case "cerrado":
         return "Devuelto";
       case "reservado":
+      case "reserva":
         return "Reservado";
       default:
         return prestamo.estado;
@@ -432,13 +433,14 @@ export default function PrestamosPage() {
       switch (prestamo.estado) {
         case "activo":
           return styles.estadoActivo;
-        case "vencido":
+        case "atrasado":
         case "retrasado":
           return styles.estadoRetrasado;
         case "devuelto":
         case "cerrado":
           return styles.estadoCerrado;
         case "reservado":
+        case "reserva":
           return styles.estadoReservado;
         default:
           return styles.estadoActivo;
@@ -462,9 +464,9 @@ export default function PrestamosPage() {
       const cumpleFiltroEstado =
         filtro === "Todos" ||
         (filtro === "Activos" && p.estado === "activo") ||
-        (filtro === "Atrasados" && (p.estado === "retrasado" || p.estado === "vencido")) ||
+        (filtro === "Atrasados" && (p.estado === "retrasado" || p.estado === "atrasado")) ||
         (filtro === "Devueltos" && (p.estado === "cerrado" || p.estado === "devuelto")) ||
-        (filtro === "Reservados" && p.estado === "reservado");
+        (filtro === "Reservados" && (p.estado === "reserva" || p.estado === "reservado"));
       return cumpleFiltroTexto && cumpleFiltroEstado;
     });
   }, [prestamos, filtro, searchValue]);

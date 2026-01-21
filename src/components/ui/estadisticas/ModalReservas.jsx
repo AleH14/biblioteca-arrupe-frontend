@@ -16,22 +16,24 @@ export default function ModalReservas({ datos, setMostrarLibrosReservados }) {
           </button>
         </div>
         <div className={styles.modalBody}>
-          <div className={styles.modalList}>
-            {datos.map((r) => (
-              <div key={r._id} className={styles.modalListItem}>
-                <div className={styles.modalBookInfo}>
-                  <h5>{r.estudiante}</h5>
-                  <p>{r.libro}</p>
-                  <small>
-                   Fecha: {r.fechaReserva}
-                  </small>
+          {datos && datos.length > 0 ? (
+            <div className={styles.modalList}>
+              {datos.map((r) => (
+                <div key={r._id} className={styles.modalListItem}>
+                  <div className={styles.modalBookInfo}>
+                    <h5>{r.estudiante}</h5>
+                    <p>{r.libro}</p>
+                    <small>Fecha: {r.fechaReserva}</small>
+                  </div>
+                  <div className={styles.modalBookStats}>
+                    <span className={styles.reservado}>Reservado</span>
+                  </div>
                 </div>
-                <div className={styles.modalBookStats}>
-                  <span className={styles.reservado}>Reservado</span>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : ( 
+              <small>No hay reservas activas</small>
+          )}
         </div>
       </div>
     </div>

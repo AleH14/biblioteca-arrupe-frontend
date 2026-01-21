@@ -23,8 +23,8 @@ const PrestamoCard = React.memo(({
           <small>{prestamo.libro}</small>
           <br />
           <small className={styles.fecha}>
-            {prestamo.estado === "reservado" 
-              ? "Reservado - Pendiente de préstamo"
+            {prestamo.estado === "reserva" 
+              ? "reserva - Pendiente de préstamo"
               : `Préstamo: ${formatearFecha(prestamo.fechaPrestamo)}`
             }
           </small>
@@ -34,18 +34,19 @@ const PrestamoCard = React.memo(({
             {obtenerEstadoVisual(prestamo)}
           </span>
           <br />
-          <small className={styles.fecha}>
-            {prestamo.fechaDevolucionReal
+           <small className={styles.fecha}>
+            {prestamo.fechaDevolucionReal && prestamo.estado === "cerrado"
               ? `Devuelto: ${formatearFecha(prestamo.fechaDevolucionReal)}`
-              : prestamo.estado === "reservado"
+              : prestamo.estado === "reserva"
               ? "Fecha por definir"
-              : `Vence: ${formatearFecha(prestamo.fechaDevolucionEstimada)}`
-            }
+              : prestamo.estado === "activo" || prestamo.estado === "atrasado"
+              ? `Vence: ${formatearFecha(prestamo.fechaDevolucionEstimada)}`
+              : "Fecha no disponible"}
           </small>
         </div>
         <div className="d-flex gap-2">
-          {/* BOTÓN PRESTAR PARA RESERVADOS */}
-          {prestamo.estado === "reservado" && (
+          {/* BOTÓN PRESTAR PARA reservaS */}
+          {prestamo.estado === "reserva" && (
             <button
               className={global.btnWarning}
               onClick={() => onPrestarReserva(prestamo)}
@@ -55,7 +56,7 @@ const PrestamoCard = React.memo(({
           )}
           
           {/* BOTÓN RENOVAR PARA ACTIVOS Y ATRASADOS */}
-          {(prestamo.estado === "activo" || prestamo.estado === "retrasado") && (
+          {(prestamo.estado === "activo" || prestamo.estado === "atrasado") && (
             <button
               className={global.btnWarning}
               onClick={() => onRenovar(prestamo)}
@@ -64,8 +65,8 @@ const PrestamoCard = React.memo(({
             </button>
           )}
           
-          {/* BOTÓN DEVOLVER/VER DETALLES - OCULTAR PARA RESERVADOS */}
-          {prestamo.estado !== "reservado" && (
+          {/* BOTÓN DEVOLVER/VER DETALLES - OCULTAR PARA reservaS */}
+          {prestamo.estado !== "reserva" && (
             <button
               className={global.btnSecondary}
               onClick={() =>
@@ -78,8 +79,8 @@ const PrestamoCard = React.memo(({
             </button>
           )}
           
-          {/* Botón de Notificaciones - OCULTAR PARA RESERVADOS */}
-          {prestamo.estado !== "reservado" && (
+          {/* Botón de Notificaciones - OCULTAR PARA reservaS */}
+          {prestamo.estado !== "reserva" && (
             <button
               className={styles.notificationBtn}
               onClick={() => onNotificaciones(prestamo)}

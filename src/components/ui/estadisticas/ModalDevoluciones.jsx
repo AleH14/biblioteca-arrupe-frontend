@@ -16,6 +16,7 @@ export default function ModalDevoluciones({ datos, setMostrarDevolucionesAtrasad
           </button>
         </div>
         <div className={styles.modalBody}>
+           {datos && datos.length > 0 ? (
           <div className={styles.modalList}>
             {datos.map((d) => (
               <div key={d._id} className={styles.modalListItem}>
@@ -29,6 +30,9 @@ export default function ModalDevoluciones({ datos, setMostrarDevolucionesAtrasad
               </div>
             ))}
           </div>
+         ) : ( 
+           <small>No hay reservas activas</small>
+          )}
         </div>
       </div>
     </div>
