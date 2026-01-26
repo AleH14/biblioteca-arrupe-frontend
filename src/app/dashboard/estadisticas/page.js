@@ -158,14 +158,12 @@ export default function EstadisticasPage() {
     if (!Array.isArray(libros)) return [];
     return [...libros]
       .sort((a, b) => (b.totalPrestamos ?? 0) - (a.totalPrestamos ?? 0))
-      .slice(0, 10);
   }, [libros]);
 
   const librosMenosPrestados = useMemo(() => {
     if (!Array.isArray(libros)) return [];
     return [...libros]
       .sort((a, b) => (a.totalPrestamos ?? 0) - (b.totalPrestamos ?? 0))
-      .slice(0, 10);
   }, [libros]);
 
   // =========================

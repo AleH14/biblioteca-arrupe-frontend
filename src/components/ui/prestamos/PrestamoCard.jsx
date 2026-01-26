@@ -45,7 +45,7 @@ const PrestamoCard = React.memo(({
           </small>
         </div>
         <div className="d-flex gap-2">
-          {/* BOTÓN PRESTAR PARA reservaS */}
+          {/* BOTÓN PRESTAR PARA reservas */}
           {prestamo.estado === "reserva" && (
             <button
               className={global.btnWarning}
@@ -65,7 +65,7 @@ const PrestamoCard = React.memo(({
             </button>
           )}
           
-          {/* BOTÓN DEVOLVER/VER DETALLES - OCULTAR PARA reservaS */}
+          {/* BOTÓN DEVOLVER/VER DETALLES - OCULTAR PARA reservas */}
           {prestamo.estado !== "reserva" && (
             <button
               className={global.btnSecondary}
@@ -79,7 +79,7 @@ const PrestamoCard = React.memo(({
             </button>
           )}
           
-          {/* Botón de Notificaciones - OCULTAR PARA reservaS */}
+          {/* Botón de Notificaciones - OCULTAR PARA reservas */}
           {prestamo.estado !== "reserva" && (
             <button
               className={styles.notificationBtn}

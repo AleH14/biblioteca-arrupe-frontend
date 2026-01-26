@@ -43,11 +43,7 @@ export default function TopLibrosList({
       <div className={styles.listContent}>
         {librosActuales.map((libro, index) => (
           <div
-              key={
-                libro._id ||
-                libro.id ||
-                `${libro.titulo || "libro"}-${index}`
-              }
+               key={libro._id ?? libro.id ?? index}
               className={styles.listItem}
             >
 
