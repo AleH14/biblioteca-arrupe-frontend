@@ -62,55 +62,57 @@ export default function PrestamosPage() {
   const [toastMessage, setToastMessage] = useState("");
 
   // Cargar préstamos desde la API
-  const cargarPrestamos = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await PrestamoService.obtenerTodosLosPrestamos();
-      
-      if (response.success) {
-        // Normalizar datos para que coincidan con lo que esperan los componentes
-        const prestamosNormalizados = (response.data || []).map(prestamo => ({
-          // Mantener ID del préstamo
+ const cargarPrestamos = useCallback(async () => {
+  try {
+    setLoading(true);
+    setError(null);
+    const response = await PrestamoService.obtenerTodosLosPrestamos();
+    
+    if (response.success) {
+      const prestamosNormalizados = (response.data || []).map(prestamo => {
+        
+        //Extraer nombre de usuario y título de libro
+        const nombreUsuario = prestamo.usuario?.nombre || "Usuario desconocido";
+        const tituloLibro = prestamo.libro?.titulo || "Libro desconocido";
+        
+        return {
           _id: prestamo.id || prestamo._id,
           
-          // Normalizar usuario - el backend devuelve 'alumno'
-          usuario: prestamo.alumno?.nombre || prestamo.usuario || "Usuario desconocido",
-          usuarioId: prestamo.alumno, // Mantener referencia al objeto completo
+          usuario: nombreUsuario,
           
-          // Normalizar libro - el backend devuelve 'libro' como objeto
-          libro: prestamo.libro?.titulo || "Libro desconocido",
-          libroId: prestamo.libro, // Mantener referencia al objeto completo
+          // Guardar el objeto completo 
+          usuarioId: prestamo.usuario,
           
-          // Normalizar ejemplar - el backend devuelve 'ejemplar'
-          ejemplarId: prestamo.ejemplar?.id || prestamo.ejemplar,
-          ejemplar: prestamo.ejemplar, // Mantener referencia al objeto completo
+          // GUardar libro
+          libro: tituloLibro,
+          libroId: prestamo.libro,
           
-          // Normalizar fechas - el backend usa nombres diferentes
+          ejemplarId: prestamo.ejemplar?.id,
+          ejemplar: prestamo.ejemplar,
+          
           fechaPrestamo: prestamo.fechaPrestamo,
-          fechaDevolucionEstimada: prestamo.fechaVencimiento || prestamo.fechaDevolucionEstimada,
+          fechaDevolucionEstimada: prestamo.fechaDevolucionEstimada,
           fechaDevolucionReal: prestamo.fechaDevolucionReal,
           
-          // Estado y otros campos
           estado: prestamo.estado,
           reserva: prestamo.reserva,
           diasRetraso: prestamo.diasRetraso,
           
-          // Notificaciones (si existen)
           notificaciones: prestamo.notificaciones || [],
-        }));
-        
-        setPrestamos(prestamosNormalizados);
-      } else {
-        setError(response.message || "Error al cargar préstamos");
-      }
-    } catch (err) {
-      console.error("Error al cargar préstamos:", err);
-      setError("Error al cargar los préstamos. Por favor, intente nuevamente.");
-    } finally {
-      setLoading(false);
+        };
+      });
+      
+      setPrestamos(prestamosNormalizados);
+    } else {
+      setError(response.message || "Error al cargar préstamos");
     }
-  }, []);
+  } catch (err) {
+    console.error("Error al cargar préstamos:", err);
+    setError("Error al cargar los préstamos. Por favor, intente nuevamente.");
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
   useEffect(() => {
     cargarPrestamos();
@@ -365,7 +367,7 @@ export default function PrestamosPage() {
   const confirmarPrestamo = useCallback(
     async (fechaDevolucionEstimada) => {
       try {
-        const response = await PrestamoService.activarReserva(prestamoSeleccionado._id);
+        const response = await PrestamoService.activarReserva(prestamoSeleccionado._id, fechaDevolucionEstimada);
         
         if (response.success) {
           handleClose();
@@ -414,13 +416,14 @@ export default function PrestamosPage() {
     switch (prestamo.estado) {
       case "activo":
         return "Activo";
-      case "vencido":
+      case "atrasado":
       case "retrasado":
         return "Entrega Retrasada";
       case "devuelto":
       case "cerrado":
         return "Devuelto";
       case "reservado":
+      case "reserva":
         return "Reservado";
       default:
         return prestamo.estado;
@@ -432,13 +435,14 @@ export default function PrestamosPage() {
       switch (prestamo.estado) {
         case "activo":
           return styles.estadoActivo;
-        case "vencido":
+        case "atrasado":
         case "retrasado":
           return styles.estadoRetrasado;
         case "devuelto":
         case "cerrado":
           return styles.estadoCerrado;
         case "reservado":
+        case "reserva":
           return styles.estadoReservado;
         default:
           return styles.estadoActivo;
@@ -462,9 +466,9 @@ export default function PrestamosPage() {
       const cumpleFiltroEstado =
         filtro === "Todos" ||
         (filtro === "Activos" && p.estado === "activo") ||
-        (filtro === "Atrasados" && (p.estado === "retrasado" || p.estado === "vencido")) ||
+        (filtro === "Atrasados" && (p.estado === "retrasado" || p.estado === "atrasado")) ||
         (filtro === "Devueltos" && (p.estado === "cerrado" || p.estado === "devuelto")) ||
-        (filtro === "Reservados" && p.estado === "reservado");
+        (filtro === "Reservados" && (p.estado === "reserva" || p.estado === "reservado"));
       return cumpleFiltroTexto && cumpleFiltroEstado;
     });
   }, [prestamos, filtro, searchValue]);

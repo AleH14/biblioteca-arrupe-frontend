@@ -139,9 +139,12 @@ export const renovarPrestamo = async (id, nuevaFechaDevolucionEstimada) => {
 };
 
 //POST /api/prestamos/:id/activar-reserva — activarReserva
-export const activarReserva = async (id) => {
-    try {
-        const response = await apiClient.post(`${PRESTAMO_API_URL}/${id}/activar-reserva`);
+export const activarReserva = async (id, fechaDevolucionEstimada) => {
+  try {
+        const response = await apiClient.post(
+            `${PRESTAMO_API_URL}/${id}/activar-reserva`,
+            { fechaDevolucionEstimada }
+        );
         return response.data;
     } catch (error) {
         console.error("Error al activar la reserva:", error);

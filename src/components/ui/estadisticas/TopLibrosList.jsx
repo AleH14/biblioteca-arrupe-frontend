@@ -42,7 +42,11 @@ export default function TopLibrosList({
 
       <div className={styles.listContent}>
         {librosActuales.map((libro, index) => (
-          <div key={libro._id} className={styles.listItem}>
+          <div
+               key={libro._id ?? libro.id ?? index}
+              className={styles.listItem}
+            >
+
             <div className={styles.itemRank}>
               <span className={styles.rankNumber}>{index + 1}</span>
             </div>
@@ -51,7 +55,8 @@ export default function TopLibrosList({
               <p className={styles.categoryItem}>{libro.autor}</p>
             </div>
             <div className={styles.itemValue}>
-              <span>{libro.prestamos}</span>
+              <span>{libro.totalPrestamos}</span>
+
             </div>
           </div>
         ))}

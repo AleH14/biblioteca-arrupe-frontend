@@ -312,6 +312,30 @@ export default function EditarLibro() {
         }
       }
 
+      // 🔄 ejemplares existentes
+      const ejemplaresEditados = ejemplares.filter(ej => {
+        const original = ejemplaresOriginales.find(o => o.id === ej.id);
+        return (
+          original &&
+          !ej.esNuevo &&
+          JSON.stringify(original) !== JSON.stringify(ej)
+        );
+      });
+
+      for (const ej of ejemplaresEditados) {
+        const ejemplarData = {
+          cdu: ej.codigo,
+          estado: ej.estado.toLowerCase(),
+          ubicacionFisica: ej.ubicacion,
+          edificio: ej.edificio,
+          origen: ej.donado ? "Donado" : "Comprado",
+          precio: ej.donado ? null : Number(ej.precio),
+          donado_por: ej.donado ? ej.origen : null
+        };
+
+        await LibrosService.updateEjemplar(ej.id, ejemplarData);
+      }
+
       // Agregar nuevos ejemplares
       const ejemplaresNuevos = ejemplares.filter(
         ej => !ejemplaresOriginalesIds.includes(ej.id) || ej.esNuevo
