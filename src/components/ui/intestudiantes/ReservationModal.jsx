@@ -33,21 +33,10 @@ const ReservationModal = React.memo(({
   if (!show || !libro) return null;
 
   const reservationDate = new Date().toLocaleDateString('es-ES');
-  //3 días en milisegundos
   const dueDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES');
 
-  // Obtener la descripción de la categoría
-  const getCategoriaDescripcion = () => {
-    const categorias = [
-      { _id: "1", descripcion: "Literatura" },
-      { _id: "2", descripcion: "Ciencia" },
-      { _id: "3", descripcion: "Tecnología" },
-      { _id: "4", descripcion: "Historia" },
-      { _id: "5", descripcion: "Filosofía" },
-    ];
-    const categoria = categorias.find(cat => cat._id === libro.categoriaId);
-    return categoria ? categoria.descripcion : "Sin categoría";
-  };
+  // Obtener la descripción de la categoría directamente desde el libro
+  const categoriaDescripcion = libro.categoria?.descripcion || "Sin categoría";
 
   // Obtener el origen de la imagen actual
   const imageSource = getImageSource(libro.portada);
@@ -72,14 +61,12 @@ const ReservationModal = React.memo(({
               <h4>{libro.titulo}</h4>
               <p>{libro.autor}</p>
               <span className={styles.modalCategory}>
-                {getCategoriaDescripcion()}
+                {categoriaDescripcion}
               </span>
               {/* Créditos de imagen */}
               {imageSource === "google" && (
                 <div className={styles.imageCredit}>
-                   <span className={styles.creditText}>
-                    Imagen: 
-                  </span>
+                  <span className={styles.creditText}>Imagen: </span>
                   <img
                     src="https://books.google.com/googlebooks/images/poweredby.png?hl=es-419"
                     alt="Google Books"
@@ -103,10 +90,13 @@ const ReservationModal = React.memo(({
               <span>{libro.editorial}</span>
             </div>
             <div className={styles.detailRow}>
+              <span>Categoría:</span>
+              <span>{categoriaDescripcion}</span>
+            </div>
+            <div className={styles.detailRow}>
               <span>ISBN:</span>
               <span>{libro.isbn}</span>
             </div>
-            {/* Eliminada la sección de disponibilidad */}
             <div className={styles.detailRow}>
               <span>Fecha de Reserva:</span>
               <span>{reservationDate}</span>
