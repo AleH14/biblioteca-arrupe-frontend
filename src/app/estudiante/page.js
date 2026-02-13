@@ -285,7 +285,7 @@ export default function InterfazEstudiantes() {
 
       setToast({
         show: true,
-        message: `✅ Reserva realizada de "${libroAReservar.titulo}"`,
+        message: `Reserva realizada de "${libroAReservar.titulo}"`,
         type: "success",
       });
 
