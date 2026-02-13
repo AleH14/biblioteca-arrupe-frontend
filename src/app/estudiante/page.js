@@ -3,8 +3,11 @@ import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import styles from "@/styles/IntEstudiantes.module.css";
-import { reservarLibro } from "@/services/prestamoService";
-
+import { 
+  reservarLibro,
+  obtenerMisReservas,
+  obtenerMisPrestamos 
+} from "@/services/prestamoService";
 
 // Componentes UI específicos de esta página
 import Menu from "@/components/ui/intestudiantes/MenuEstudiante";
@@ -28,12 +31,15 @@ export default function InterfazEstudiantes() {
   // Estados principales
   const [vistaActual, setVistaActual] = useState("catalogo");
   const [listaLibros, setListaLibros] = useState([]);
-  const [listaPrestamos, setListaPrestamos] = useState([]);
   const [categorias, setCategorias] = useState([]);
-
   const [showReservaModal, setShowReservaModal] = useState(false);
   const [libroAReservar, setLibroAReservar] = useState(null);
   const [showFiltros, setShowFiltros] = useState(false);
+  
+  // Estados para préstamos y reservas
+  const [listaPrestamos, setListaPrestamos] = useState([]);
+  const [listaReservas, setListaReservas] = useState([]);
+  const [cargandoActividad, setCargandoActividad] = useState(false);
 
   const [toast, setToast] = useState({
     show: false,
@@ -52,7 +58,7 @@ export default function InterfazEstudiantes() {
   const busquedaDebounced = useDebounce(busquedaInmediata, 300);
 
   // =============================
-  // 👤 Nombre usuario
+  // Nombre usuario
   // =============================
   const userName = useMemo(() => {
     if (user?.nombre) return user.nombre;
@@ -60,13 +66,106 @@ export default function InterfazEstudiantes() {
     if (user?.email) return user.email.split("@")[0];
     return "Usuario";
   }, [user]);
-  useEffect(() => {
-  console.log("USUARIO LOGUEADO COMPLETO:", user);
-}, [user]);
-
 
   // =============================
-  // 📡 Cargar libros y categorías
+  // Obtener ID del usuario
+  // =============================
+  const getUserId = useCallback(() => {
+    return user?._id || user?.id || user?.sub;
+  }, [user]);
+
+  // =============================
+  // Cargar MIS RESERVAS
+  // =============================
+  const cargarMisReservas = useCallback(async () => {
+    if (!user) return [];
+    
+    try {
+      const response = await obtenerMisReservas();
+      console.log("Reservas cargadas:", response);
+      
+      if (response?.success && response.data) {
+        return response.data.map(reserva => ({
+          _id: reserva.id || reserva._id,
+          libro: reserva.libro?.titulo || "Libro sin título",
+          portada: reserva.libro?.imagenURL || "/images/librodefault.png",
+          usuario: reserva.usuario?.nombre || userName,
+          fechaReserva: reserva.reserva?.fechaReserva,
+          fechaExpiracion: reserva.reserva?.fechaExpiracion,
+          estado: "reservado"
+        }));
+      }
+      return [];
+    } catch (error) {
+      console.error("Error al cargar reservas:", error);
+      return [];
+    }
+  }, [user, userName]);
+
+  // =============================
+  // Cargar MIS PRÉSTAMOS (SIN LÓGICA DE RETRASO)
+  // =============================
+  const cargarMisPrestamos = useCallback(async () => {
+    if (!user) return [];
+    
+    try {
+      const response = await obtenerMisPrestamos();
+      console.log("Préstamos cargados:", response);
+      
+      if (response?.success && response.data) {
+        return response.data.map(prestamo => ({
+          _id: prestamo.id || prestamo._id,
+          libro: prestamo.libro?.titulo || "Libro sin título",
+          portada: prestamo.libro?.imagenURL || "/images/librodefault.png",
+          usuario: prestamo.usuario?.nombre || userName,
+          fechaPrestamo: prestamo.fechaPrestamo,
+          fechaDevolucionEstimada: prestamo.fechaDevolucionEstimada,
+          fechaDevolucionReal: prestamo.fechaDevolucionReal,
+          estado: prestamo.estado // Pasamos el estado original sin modificar
+        }));
+      }
+      return [];
+    } catch (error) {
+      console.error("Error al cargar préstamos:", error);
+      return [];
+    }
+  }, [user, userName]);
+
+  // =============================
+  // Cargar toda la actividad
+  // =============================
+  const cargarActividad = useCallback(async () => {
+    if (!user) return;
+    
+    setCargandoActividad(true);
+    try {
+      // Cargar en paralelo para mejor rendimiento
+      const [reservas, prestamos] = await Promise.all([
+        cargarMisReservas(),
+        cargarMisPrestamos()
+      ]);
+      
+      setListaReservas(reservas);
+      setListaPrestamos(prestamos);
+      
+    } catch (error) {
+      console.error("Error al cargar actividad:", error);
+    } finally {
+      setCargandoActividad(false);
+    }
+  }, [user, cargarMisReservas, cargarMisPrestamos]);
+
+  // =============================
+  // Cargar datos al iniciar
+  // =============================
+  useEffect(() => {
+    if (user) {
+      cargarActividad();
+    }
+  }, [user, cargarActividad]);
+
+  // =============================
+  // Cargar libros y categorías
   // =============================
   useEffect(() => {
     const cargarDatos = async () => {
@@ -76,7 +175,6 @@ export default function InterfazEstudiantes() {
           getAllCategorias(),
         ]);
 
-        // Normalizar libros
         const librosNormalizados = (librosRes.data || librosRes || []).map(
           (libro) => {
             const ejemplaresDisponibles =
@@ -88,7 +186,7 @@ export default function InterfazEstudiantes() {
               ...libro,
               portada:
                 libro.imagenURL ||
-                "https://via.placeholder.com/150x200?text=Sin+Portada",
+                "/images/librodefault.png",
               disponibles: ejemplaresDisponibles,
               disponible: ejemplaresDisponibles > 0,
               categoria: {
@@ -115,7 +213,7 @@ export default function InterfazEstudiantes() {
   }, []);
 
   // =============================
-  // 📚 Filtros dinámicos
+  // Filtros dinámicos
   // =============================
   const autoresUnicos = useMemo(
     () => [...new Set(listaLibros.map((l) => l.autor).filter(Boolean))],
@@ -153,7 +251,7 @@ export default function InterfazEstudiantes() {
   }, [listaLibros, busquedaDebounced, filtros]);
 
   // =============================
-  // 📌 Reservas (UI)
+  // Reservas - Confirmar reserva
   // =============================
   const handleReservar = useCallback((libro) => {
     setLibroAReservar(libro);
@@ -161,66 +259,48 @@ export default function InterfazEstudiantes() {
   }, []);
 
   const confirmarReserva = useCallback(async () => {
-  if (!libroAReservar || libroAReservar.disponibles <= 0) return;
+    if (!libroAReservar || libroAReservar.disponibles <= 0) return;
 
-  try {
+    try {
+      if (!user) throw new Error("Usuario no autenticado");
 
-    if (!user) {
-      throw new Error("Usuario no autenticado");
+      const usuarioId = getUserId();
+      console.log("USUARIO ID ENVIADO:", usuarioId);
+
+      const fechaExpiracion = new Date();
+      fechaExpiracion.setDate(fechaExpiracion.getDate() + 3);
+
+      await reservarLibro(
+        libroAReservar._id,
+        fechaExpiracion.toISOString(),
+        "estudiante",
+        usuarioId
+      );
+
+      // Recargar toda la actividad después de reservar
+      await cargarActividad();
+
+      setShowReservaModal(false);
+      setLibroAReservar(null);
+
+      setToast({
+        show: true,
+        message: `✅ Reserva realizada de "${libroAReservar.titulo}"`,
+        type: "success",
+      });
+
+    } catch (error) {
+      console.error("Error en reserva:", error);
+      setToast({
+        show: true,
+        message: error.response?.data?.message || "❌ Error al crear la reserva",
+        type: "error",
+      });
     }
+  }, [libroAReservar, user, getUserId, cargarActividad]);
 
-    // 🔥 IMPORTANTE: Detectar el id real
-    const usuarioId =
-      user._id || user.id || user.sub;
-
-    console.log("USUARIO ID ENVIADO:", usuarioId);
-
-    const fechaExpiracion = new Date();
-    fechaExpiracion.setDate(fechaExpiracion.getDate() + 3);
-
-    await reservarLibro(
-      libroAReservar._id,
-      fechaExpiracion.toISOString(),
-      "estudiante",
-      usuarioId // 🔥 ahora sí lo enviamos
-    );
-
-    const nuevaReserva = {
-      _id: Date.now().toString(),
-      estado: "reservado",
-      fechaReserva: new Date().toISOString().split("T")[0],
-      libro: libroAReservar.titulo,
-      portada: libroAReservar.portada,
-      usuario: userName,
-    };
-
-    setListaPrestamos((prev) => [...prev, nuevaReserva]);
-
-    setShowReservaModal(false);
-    setLibroAReservar(null);
-
-    setToast({
-      show: true,
-      message: `Reserva realizada de "${libroAReservar.titulo}"`,
-      type: "success",
-    });
-
-  } catch (error) {
-    console.error(error);
-
-    setToast({
-      show: true,
-      message: "Error al crear la reserva",
-      type: "error",
-    });
-  }
-}, [libroAReservar, user, userName]);
-
-
-
-    
   // =============================
-  // 🧹 Toast auto close
+  // Toast auto close
   // =============================
   useEffect(() => {
     if (!toast.show) return;
@@ -237,9 +317,6 @@ export default function InterfazEstudiantes() {
     setFiltros({ categoria: "", autor: "", editorial: "" });
 
   const filtrosActivos = Object.values(filtros).filter(Boolean).length;
-
-  const reservasActivas = listaPrestamos.filter((p) => p.estado === "reservado");
-  const prestamosActivos = listaPrestamos.filter((p) => p.estado !== "reservado");
 
   return (
     <>
@@ -291,10 +368,21 @@ export default function InterfazEstudiantes() {
               </div>
             </>
           ) : (
-            <ActivityItems
-              prestamos={prestamosActivos}
-              reservas={reservasActivas}
-            />
+            <>
+              {cargandoActividad ? (
+                <div className="text-center my-5">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Cargando tu actividad...</span>
+                  </div>
+                  <p className="mt-2">Cargando tu actividad...</p>
+                </div>
+              ) : (
+                <ActivityItems
+                  prestamos={listaPrestamos}
+                  reservas={listaReservas}
+                />
+              )}
+            </>
           )}
         </div>
       </main>

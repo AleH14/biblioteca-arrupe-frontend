@@ -209,15 +209,20 @@ export const obtenerMisReservas = async () => {
       `${PRESTAMO_API_URL}/reservas/mis-reservas`
     );
 
-    return response.data.data; // 👈 OJO: porque tu backend responde { success, data }
+    return response.data; 
   } catch (error) {
     console.error("Error obteniendo mis reservas:", error);
     throw error;
   }
 };
 
-
-
-
-
-
+// GET /api/prestamos/mis-prestamos - Obtener préstamos del usuario autenticado
+export const obtenerMisPrestamos = async () => {
+  try {
+    const response = await apiClient.get(`${PRESTAMO_API_URL}/mis-prestamos`);
+    return response.data; // { success, data }
+  } catch (error) {
+    console.error("Error obteniendo mis préstamos:", error);
+    throw error;
+  }
+};
