@@ -3,6 +3,8 @@ import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import styles from "@/styles/IntEstudiantes.module.css";
+import { reservarLibro } from "@/services/prestamoService";
+
 
 // Componentes UI específicos de esta página
 import Menu from "@/components/ui/intestudiantes/MenuEstudiante";
@@ -58,6 +60,10 @@ export default function InterfazEstudiantes() {
     if (user?.email) return user.email.split("@")[0];
     return "Usuario";
   }, [user]);
+  useEffect(() => {
+  console.log("USUARIO LOGUEADO COMPLETO:", user);
+}, [user]);
+
 
   // =============================
   // 📡 Cargar libros y categorías
@@ -154,8 +160,30 @@ export default function InterfazEstudiantes() {
     setShowReservaModal(true);
   }, []);
 
-  const confirmarReserva = useCallback(() => {
-    if (!libroAReservar || libroAReservar.disponibles <= 0) return;
+  const confirmarReserva = useCallback(async () => {
+  if (!libroAReservar || libroAReservar.disponibles <= 0) return;
+
+  try {
+
+    if (!user) {
+      throw new Error("Usuario no autenticado");
+    }
+
+    // 🔥 IMPORTANTE: Detectar el id real
+    const usuarioId =
+      user._id || user.id || user.sub;
+
+    console.log("USUARIO ID ENVIADO:", usuarioId);
+
+    const fechaExpiracion = new Date();
+    fechaExpiracion.setDate(fechaExpiracion.getDate() + 3);
+
+    await reservarLibro(
+      libroAReservar._id,
+      fechaExpiracion.toISOString(),
+      "estudiante",
+      usuarioId // 🔥 ahora sí lo enviamos
+    );
 
     const nuevaReserva = {
       _id: Date.now().toString(),
@@ -167,6 +195,7 @@ export default function InterfazEstudiantes() {
     };
 
     setListaPrestamos((prev) => [...prev, nuevaReserva]);
+
     setShowReservaModal(false);
     setLibroAReservar(null);
 
@@ -175,8 +204,21 @@ export default function InterfazEstudiantes() {
       message: `Reserva realizada de "${libroAReservar.titulo}"`,
       type: "success",
     });
-  }, [libroAReservar, userName]);
 
+  } catch (error) {
+    console.error(error);
+
+    setToast({
+      show: true,
+      message: "Error al crear la reserva",
+      type: "error",
+    });
+  }
+}, [libroAReservar, user, userName]);
+
+
+
+    
   // =============================
   // 🧹 Toast auto close
   // =============================

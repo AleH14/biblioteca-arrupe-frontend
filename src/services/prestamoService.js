@@ -4,10 +4,10 @@ import apiClient from "./api";
 const PRESTAMO_API_URL = "/api/prestamos";
 
 //Obtener pretamos por nombre de usuario 
-export const getPrestamosByUsername = async (username) => {
+export const getPrestamosByUsername = async (nombre) => {
   try {
     const response = await apiClient.get(`${PRESTAMO_API_URL}/buscar`, {
-      params: { username },
+      params: { nombre},
     });
     return response.data;
   } catch (error) {
@@ -164,6 +164,60 @@ export const obtenerReservasVigentes = async () => {
         throw error;
     }
 };
+
+
+// POST /api/prestamos/reservar-libro
+
+// POST /api/prestamos/reservar-libro
+export const reservarLibro = async (
+  libroId,
+  fechaExpiracion,
+  tipoPrestamo,
+  usuarioId
+) => {
+  try {
+    const fechaFormateada = new Date(fechaExpiracion)
+      .toISOString()
+      .split("T")[0];
+
+    const datos = {
+      libroId,
+      usuarioId,
+      fechaExpiracion: fechaFormateada,
+      tipoPrestamo
+    };
+
+    console.log("DATOS ENVIADOS AL BACKEND:", datos);
+
+    const response = await apiClient.post(
+      `${PRESTAMO_API_URL}/reservar-libro`,
+      datos
+    );
+
+    return response.data;
+
+  } catch (error) {
+    console.log("STATUS:", error.response?.status);
+    console.log("BACKEND MESSAGE:", error.response?.data);
+    console.log("ERRORES DETALLADOS:", error.response?.data?.errores);
+    throw error;
+  }
+};
+export const obtenerMisReservas = async () => {
+  try {
+    const response = await apiClient.get(
+      `${PRESTAMO_API_URL}/reservas/mis-reservas`
+    );
+
+    return response.data.data; // 👈 OJO: porque tu backend responde { success, data }
+  } catch (error) {
+    console.error("Error obteniendo mis reservas:", error);
+    throw error;
+  }
+};
+
+
+
 
 
 
