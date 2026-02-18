@@ -31,6 +31,19 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
     return prestamo.estado;
   };
 
+    // Función helper para formatear fechas de manera consistente
+    const formatearFecha = (fecha) => {
+      if (!fecha) return "N/A";
+
+      const date = new Date(fecha);
+
+      return date.toLocaleDateString("es-SV", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    };
+
   // 🟢 PROCESAR PRÉSTAMOS CON EL ESTADO REAL (EXCLUYENDO RESERVAS)
   const soloPrestamos = prestamos.filter(p => p.estado !== "reserva" && p.estado !== "reservado");
   
@@ -71,12 +84,10 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
                 />
                 <div className={styles.historyContent}>
                   <h4>{item.libro}</h4>
-                  <p className={styles.historyAuthor}>
-                    Usuario: {item.usuario || "No especificado"}
-                  </p>
+                  
                   <div className={styles.historyDates}>
-                    <span>Reserva: {item.fechaReserva || "N/A"}</span>
-                    <span>Vence: {item.fechaExpiracion || "N/A"}</span>
+                    <span>Reserva: {formatearFecha(item.fechaReserva)}</span>
+                    <span>Vence: {formatearFecha(item.fechaExpiracion)}</span>
                   </div>
                 </div>
                 <div className={styles.historyStatus}>
@@ -117,15 +128,16 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
                   />
                   <div className={styles.historyContent}>
                     <h4>{item.libro}</h4>
-                    <p className={styles.historyAuthor}>
-                      Usuario: {item.usuario || "No especificado"}
-                    </p>
                     <div className={styles.historyDates}>
-                      <span>Prestado: {item.fechaPrestamo || "N/A"}</span>
+                      <span>Prestado: {formatearFecha(item.fechaPrestamo)}</span>
+
                       {item.fechaDevolucionReal ? (
-                        <span>Devuelto: {item.fechaDevolucionReal}</span>
+                        <span>Devuelto: {formatearFecha(item.fechaDevolucionReal)}</span>
+
+
                       ) : (
-                        <span>Estimada: {item.fechaDevolucionEstimada || "N/A"}</span>
+                        <span>Estimada: {formatearFecha(item.fechaDevolucionEstimada)}</span>
+
                       )}
                     </div>
                   </div>

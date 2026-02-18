@@ -49,6 +49,18 @@ export default function InterfazEstudiantes() {
 
   // Búsqueda y filtros
   const [busquedaInmediata, setBusquedaInmediata] = useState("");
+  const esReservaVigente = (reserva) => {
+      if (!reserva?.fechaExpiracion) return false;
+
+      const hoy = new Date();
+      const fechaExp = new Date(reserva.fechaExpiracion);
+
+      hoy.setHours(0,0,0,0);
+      fechaExp.setHours(0,0,0,0);
+
+      return hoy <= fechaExp; // true si todavía está vigente
+    };
+
   const [filtros, setFiltros] = useState({
     categoria: "",
     autor: "",
@@ -87,6 +99,7 @@ export default function InterfazEstudiantes() {
       if (response?.success && response.data) {
         return response.data.map(reserva => ({
           _id: reserva.id || reserva._id,
+          libroId: reserva.libro?._id,
           libro: reserva.libro?.titulo || "Libro sin título",
           portada: reserva.libro?.imagenURL || "/images/librodefault.png",
           usuario: reserva.usuario?.nombre || userName,
@@ -224,9 +237,33 @@ export default function InterfazEstudiantes() {
     () => [...new Set(listaLibros.map((l) => l.editorial).filter(Boolean))],
     [listaLibros]
   );
+  // =============================
+// Recalcular disponibilidad real (restando reservas vigentes)
+// =============================
+const librosConDisponibilidadReal = useMemo(() => {
+  return listaLibros.map((libro) => {
+    const reservasActivasLibro = listaReservas.filter(
+      (r) =>
+        r.libroId === libro._id &&
+        esReservaVigente(r)
+    ).length;
+
+    const disponiblesReales = Math.max(
+      libro.disponibles - reservasActivasLibro,
+      0
+    );
+
+    return {
+      ...libro,
+      disponibles: disponiblesReales,
+      disponible: disponiblesReales > 0,
+    };
+  });
+}, [listaLibros, listaReservas]);
+
 
   const librosFiltrados = useMemo(() => {
-    return listaLibros.filter((libro) => {
+    return librosConDisponibilidadReal.filter((libro) => {
       const coincideBusqueda =
         !busquedaDebounced ||
         libro.titulo?.toLowerCase().includes(busquedaDebounced.toLowerCase()) ||
@@ -248,7 +285,8 @@ export default function InterfazEstudiantes() {
         coincideEditorial
       );
     });
-  }, [listaLibros, busquedaDebounced, filtros]);
+ }, [librosConDisponibilidadReal, busquedaDebounced, filtros]);
+
 
   // =============================
   // Reservas - Confirmar reserva
@@ -317,7 +355,7 @@ export default function InterfazEstudiantes() {
     setFiltros({ categoria: "", autor: "", editorial: "" });
 
   const filtrosActivos = Object.values(filtros).filter(Boolean).length;
-
+  
   return (
     <>
       <Menu activeView={vistaActual} onViewChange={setVistaActual} />
