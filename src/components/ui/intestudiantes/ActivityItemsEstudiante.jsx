@@ -3,7 +3,7 @@ import styles from "../../../styles/IntEstudiantes.module.css";
 
 const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
   
-  // 🟢 FUNCIÓN PARA DETERMINAR SI UN PRÉSTAMO ESTÁ RETRASADO
+  // FUNCIÓN PARA DETERMINAR SI UN PRÉSTAMO ESTÁ RETRASADO
   const determinarEstadoConRetraso = (prestamo) => {
     // Si ya está cerrado, mantener cerrado
     if (prestamo.estado === "cerrado") return "cerrado";
@@ -31,7 +31,27 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
     return prestamo.estado;
   };
 
-  // 🟢 PROCESAR PRÉSTAMOS CON EL ESTADO REAL (EXCLUYENDO RESERVAS)
+  //FUNCIÓN PARA FORMATEAR FECHA A D/M/AAAA
+  const formatearFecha = (fechaISO) => {
+    if (!fechaISO) return "N/A";
+    
+    try {
+      const fecha = new Date(fechaISO);
+      // Verificar si la fecha es válida
+      if (isNaN(fecha.getTime())) return "N/A";
+      
+      const dia = fecha.getDate();
+      const mes = fecha.getMonth() + 1; // Los meses van de 0-11
+      const año = fecha.getFullYear();
+      
+      return `${dia}/${mes}/${año}`;
+    } catch (error) {
+      console.error("Error al formatear fecha:", error);
+      return "N/A";
+    }
+  };
+
+  // PROCESAR PRÉSTAMOS CON EL ESTADO REAL (EXCLUYENDO RESERVAS)
   const soloPrestamos = prestamos.filter(p => p.estado !== "reserva" && p.estado !== "reservado");
   
   const prestamosConEstadoReal = soloPrestamos.map(p => ({
@@ -55,7 +75,7 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
 
   return (
     <div className={styles.activityContainer}>
-      {/* 🟦 Reservas Activas */}
+      {/* Reservas Activas */}
       <section className={styles.historySection}>
         <h3 className={styles.sectionTitle}>Reservas Activas</h3>
         {reservasActivas.length > 0 ? (
@@ -75,8 +95,8 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
                     Usuario: {item.usuario || "No especificado"}
                   </p>
                   <div className={styles.historyDates}>
-                    <span>Reserva: {item.fechaReserva || "N/A"}</span>
-                    <span>Vence: {item.fechaExpiracion || "N/A"}</span>
+                    <span>Reserva: {formatearFecha(item.fechaReserva)}</span>
+                    <span>Vence: {formatearFecha(item.fechaExpiracion)}</span>
                   </div>
                 </div>
                 <div className={styles.historyStatus}>
@@ -92,7 +112,7 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
         )}
       </section>
 
-      {/* 🟩 Historial de Préstamos */}
+      {/* Historial de Préstamos */}
       <section className={styles.historySection}>
         <h3 className={styles.sectionTitle}>Historial de Préstamos</h3>
         {todosPrestamos.length > 0 ? (
@@ -121,11 +141,11 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
                       Usuario: {item.usuario || "No especificado"}
                     </p>
                     <div className={styles.historyDates}>
-                      <span>Prestado: {item.fechaPrestamo || "N/A"}</span>
+                      <span>Prestado: {formatearFecha(item.fechaPrestamo)}</span>
                       {item.fechaDevolucionReal ? (
-                        <span>Devuelto: {item.fechaDevolucionReal}</span>
+                        <span>Devuelto: {formatearFecha(item.fechaDevolucionReal)}</span>
                       ) : (
-                        <span>Estimada: {item.fechaDevolucionEstimada || "N/A"}</span>
+                        <span>Estimada: {formatearFecha(item.fechaDevolucionEstimada)}</span>
                       )}
                     </div>
                   </div>

@@ -102,49 +102,94 @@ export default function AgregarLibroPage() {
   }, [debouncedISBN]);
 
   // Búsqueda por ISBN optimizada - SOLO si el ISBN es válido
-  useEffect(() => {
+useEffect(() => {
+  if (searchAbortControllerRef.current) {
+    searchAbortControllerRef.current.abort();
+  }
+
+  const isbn = debouncedISBN.trim();
+
+  // Validar antes de hacer la búsqueda
+  if (!isbn || isbn.length < 10 || isbn.length > 13) {
+    return;
+  }
+
+  const buscarPorISBN = async () => {
+    const controller = new AbortController();
+    searchAbortControllerRef.current = controller;
+
+    try {
+      const resultado = await buscarLibroPorISBN(isbn, controller.signal);
+
+      if (!controller.signal.aborted) {
+        if (resultado.success && resultado.data) {
+          // Libro encontrado
+          setLibro((prev) => ({
+            ...prev,
+            titulo: resultado.data.titulo || "",
+            autor: resultado.data.autor || "",
+            editorial: resultado.data.editorial || "",
+            portada: resultado.data.portada || "/images/libro-placeholder.jpg",
+          }));
+          // Limpiar cualquier mensaje de error previo
+          setValidationMessage("");
+          setShowValidationError(false);
+        } else if (resultado.success && !resultado.data) {
+          // ISBN válido pero no se encontró libro
+          setValidationMessage(`No se encontró ningún libro con el ISBN: ${isbn}`);
+          setShowValidationError(true);
+          // Limpiar campos
+          setLibro((prev) => ({
+            ...prev,
+            titulo: "",
+            autor: "",
+            editorial: "",
+            portada: "/images/libro-placeholder.jpg",
+          }));
+        }
+      }
+    } catch (error) {
+      if (!controller.signal.aborted) {
+        // Manejar diferentes tipos de errores
+        if (error.type === "QUOTA_EXCEEDED") {
+          setValidationMessage(error.message);
+          setShowValidationError(true);
+          // Limpiar campos para ingreso manual
+          setLibro((prev) => ({
+            ...prev,
+            titulo: "",
+            autor: "",
+            editorial: "",
+            portada: "/images/libro-placeholder.jpg",
+          }));
+        } else if (error.type === "API_ERROR") {
+          setValidationMessage(error.message);
+          setShowValidationError(true);
+          // Limpiar campos para ingreso manual
+          setLibro((prev) => ({
+            ...prev,
+            titulo: "",
+            autor: "",
+            editorial: "",
+            portada: "/images/libro-placeholder.jpg",
+          }));
+        } else if (error.name !== "AbortError" && error.code !== "ERR_CANCELED") {
+          // Error desconocido
+          setValidationMessage("Error al buscar el ISBN. Por favor, ingresa los datos manualmente.");
+          setShowValidationError(true);
+        }
+      }
+    }
+  };
+
+  buscarPorISBN();
+
+  return () => {
     if (searchAbortControllerRef.current) {
       searchAbortControllerRef.current.abort();
     }
-
-    const isbn = debouncedISBN.trim();
-
-    // Validar antes de hacer la búsqueda
-    if (!isbn || isbn.length < 10 || isbn.length > 13) {
-      return;
-    }
-
-    const buscarPorISBN = async () => {
-      const controller = new AbortController();
-      searchAbortControllerRef.current = controller;
-
-      try {
-        const datosLibro = await buscarLibroPorISBN(isbn, controller.signal);
-
-        if (!controller.signal.aborted && datosLibro) {
-          setLibro((prev) => ({
-            ...prev,
-            titulo: datosLibro.titulo || "",
-            autor: datosLibro.autor || "",
-            editorial: datosLibro.editorial || "",
-            portada: datosLibro.portada || "/images/libro-placeholder.jpg",
-          }));
-        }
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          console.error("Error en búsqueda por ISBN:", error);
-        }
-      }
-    };
-
-    buscarPorISBN();
-
-    return () => {
-      if (searchAbortControllerRef.current) {
-        searchAbortControllerRef.current.abort();
-      }
-    };
-  }, [debouncedISBN]);
+  };
+}, [debouncedISBN]); 
 
   // Cargar categorías desde el backend
   useEffect(() => {
