@@ -3,7 +3,7 @@ import styles from "../../../styles/IntEstudiantes.module.css";
 
 const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
   
-  // 🟢 FUNCIÓN PARA DETERMINAR SI UN PRÉSTAMO ESTÁ RETRASADO
+  // FUNCIÓN PARA DETERMINAR SI UN PRÉSTAMO ESTÁ RETRASADO
   const determinarEstadoConRetraso = (prestamo) => {
     // Si ya está cerrado, mantener cerrado
     if (prestamo.estado === "cerrado") return "cerrado";
@@ -31,6 +31,7 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
     return prestamo.estado;
   };
 
+<<<<<<< HEAD
     // Función helper para formatear fechas de manera consistente
     const formatearFecha = (fecha) => {
       if (!fecha) return "N/A";
@@ -45,6 +46,29 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
     };
 
   // 🟢 PROCESAR PRÉSTAMOS CON EL ESTADO REAL (EXCLUYENDO RESERVAS)
+=======
+  //FUNCIÓN PARA FORMATEAR FECHA A D/M/AAAA
+  const formatearFecha = (fechaISO) => {
+    if (!fechaISO) return "N/A";
+    
+    try {
+      const fecha = new Date(fechaISO);
+      // Verificar si la fecha es válida
+      if (isNaN(fecha.getTime())) return "N/A";
+      
+      const dia = fecha.getDate();
+      const mes = fecha.getMonth() + 1; // Los meses van de 0-11
+      const año = fecha.getFullYear();
+      
+      return `${dia}/${mes}/${año}`;
+    } catch (error) {
+      console.error("Error al formatear fecha:", error);
+      return "N/A";
+    }
+  };
+
+  // PROCESAR PRÉSTAMOS CON EL ESTADO REAL (EXCLUYENDO RESERVAS)
+>>>>>>> 4d25f725bd1bd7acb628528d379ca739b2eb441a
   const soloPrestamos = prestamos.filter(p => p.estado !== "reserva" && p.estado !== "reservado");
   
   const prestamosConEstadoReal = soloPrestamos.map(p => ({
@@ -68,7 +92,7 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
 
   return (
     <div className={styles.activityContainer}>
-      {/* 🟦 Reservas Activas */}
+      {/* Reservas Activas */}
       <section className={styles.historySection}>
         <h3 className={styles.sectionTitle}>Reservas Activas</h3>
         {reservasActivas.length > 0 ? (
@@ -103,7 +127,7 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
         )}
       </section>
 
-      {/* 🟩 Historial de Préstamos */}
+      {/* Historial de Préstamos */}
       <section className={styles.historySection}>
         <h3 className={styles.sectionTitle}>Historial de Préstamos</h3>
         {todosPrestamos.length > 0 ? (
@@ -130,6 +154,7 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
                     <h4>{item.libro}</h4>
                     <div className={styles.historyDates}>
                       <span>Prestado: {formatearFecha(item.fechaPrestamo)}</span>
+<<<<<<< HEAD
 
                       {item.fechaDevolucionReal ? (
                         <span>Devuelto: {formatearFecha(item.fechaDevolucionReal)}</span>
@@ -138,6 +163,12 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
                       ) : (
                         <span>Estimada: {formatearFecha(item.fechaDevolucionEstimada)}</span>
 
+=======
+                      {item.fechaDevolucionReal ? (
+                        <span>Devuelto: {formatearFecha(item.fechaDevolucionReal)}</span>
+                      ) : (
+                        <span>Estimada: {formatearFecha(item.fechaDevolucionEstimada)}</span>
+>>>>>>> 4d25f725bd1bd7acb628528d379ca739b2eb441a
                       )}
                     </div>
                   </div>
