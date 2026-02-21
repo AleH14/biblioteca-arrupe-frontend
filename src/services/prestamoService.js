@@ -168,7 +168,6 @@ export const obtenerReservasVigentes = async () => {
 
 // POST /api/prestamos/reservar-libro
 
-// POST /api/prestamos/reservar-libro
 export const reservarLibro = async (
   libroId,
   fechaExpiracion,
@@ -176,18 +175,15 @@ export const reservarLibro = async (
   usuarioId
 ) => {
   try {
-    const fechaFormateada = new Date(fechaExpiracion)
-      .toISOString()
-      .split("T")[0];
 
     const datos = {
       libroId,
-      usuarioId,
-      fechaExpiracion: fechaFormateada,
-      tipoPrestamo
+      usuarioId,              // 👈 obligatorio
+      tipoPrestamo,
+      fechaExpiracion         // 👈 plano, no dentro de reserva
     };
 
-    console.log("DATOS ENVIADOS AL BACKEND:", datos);
+    console.log("DATOS ENVIADOS:", datos);
 
     const response = await apiClient.post(
       `${PRESTAMO_API_URL}/reservar-libro`,
@@ -197,9 +193,7 @@ export const reservarLibro = async (
     return response.data;
 
   } catch (error) {
-    console.log("STATUS:", error.response?.status);
-    console.log("BACKEND MESSAGE:", error.response?.data);
-    console.log("ERRORES DETALLADOS:", error.response?.data?.errores);
+    console.log("ERROR BACKEND:", error.response?.data);
     throw error;
   }
 };

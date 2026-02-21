@@ -30,23 +30,6 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
     // Si no aplica ninguna condición, devolver el estado original
     return prestamo.estado;
   };
-
-<<<<<<< HEAD
-    // Función helper para formatear fechas de manera consistente
-    const formatearFecha = (fecha) => {
-      if (!fecha) return "N/A";
-
-      const date = new Date(fecha);
-
-      return date.toLocaleDateString("es-SV", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-    };
-
-  // 🟢 PROCESAR PRÉSTAMOS CON EL ESTADO REAL (EXCLUYENDO RESERVAS)
-=======
   //FUNCIÓN PARA FORMATEAR FECHA A D/M/AAAA
   const formatearFecha = (fechaISO) => {
     if (!fechaISO) return "N/A";
@@ -68,7 +51,6 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
   };
 
   // PROCESAR PRÉSTAMOS CON EL ESTADO REAL (EXCLUYENDO RESERVAS)
->>>>>>> 4d25f725bd1bd7acb628528d379ca739b2eb441a
   const soloPrestamos = prestamos.filter(p => p.estado !== "reserva" && p.estado !== "reservado");
   
   const prestamosConEstadoReal = soloPrestamos.map(p => ({
@@ -154,21 +136,10 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
                     <h4>{item.libro}</h4>
                     <div className={styles.historyDates}>
                       <span>Prestado: {formatearFecha(item.fechaPrestamo)}</span>
-<<<<<<< HEAD
-
-                      {item.fechaDevolucionReal ? (
-                        <span>Devuelto: {formatearFecha(item.fechaDevolucionReal)}</span>
-
-
-                      ) : (
-                        <span>Estimada: {formatearFecha(item.fechaDevolucionEstimada)}</span>
-
-=======
                       {item.fechaDevolucionReal ? (
                         <span>Devuelto: {formatearFecha(item.fechaDevolucionReal)}</span>
                       ) : (
                         <span>Estimada: {formatearFecha(item.fechaDevolucionEstimada)}</span>
->>>>>>> 4d25f725bd1bd7acb628528d379ca739b2eb441a
                       )}
                     </div>
                   </div>
