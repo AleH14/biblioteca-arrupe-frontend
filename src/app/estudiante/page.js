@@ -55,8 +55,8 @@ export default function InterfazEstudiantes() {
       const hoy = new Date();
       const fechaExp = new Date(reserva.fechaExpiracion);
 
-      hoy.setHours(0,0,0,0);
-      fechaExp.setHours(0,0,0,0);
+      hoy.setHours(0, 0, 0, 0);
+      fechaExp.setHours(0, 0, 0, 0);
 
       return hoy <= fechaExp; // true si todavía está vigente
     };
