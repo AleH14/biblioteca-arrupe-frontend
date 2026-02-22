@@ -30,7 +30,7 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
     // Si no aplica ninguna condición, devolver el estado original
     return prestamo.estado;
   };
-  //FUNCIÓN PARA FORMATEAR FECHA A D/M/AAAA
+  // FUNCIÓN PARA FORMATEAR FECHA A D/M/AAAA
   const formatearFecha = (fechaISO) => {
     if (!fechaISO) return "N/A";
     
