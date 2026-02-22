@@ -4,10 +4,10 @@ import apiClient from "./api";
 const PRESTAMO_API_URL = "/api/prestamos";
 
 //Obtener pretamos por nombre de usuario 
-export const getPrestamosByUsername = async (username) => {
+export const getPrestamosByUsername = async (nombre) => {
   try {
     const response = await apiClient.get(`${PRESTAMO_API_URL}/buscar`, {
-      params: { username },
+      params: { nombre },
     });
     return response.data;
   } catch (error) {
@@ -166,4 +166,55 @@ export const obtenerReservasVigentes = async () => {
 };
 
 
+// POST /api/prestamos/reservar-libro
 
+export const reservarLibro = async (
+  libroId,
+  fechaExpiracion,
+  tipoPrestamo,
+  usuarioId
+) => {
+  try {
+
+    const datos = {
+      libroId,
+      usuarioId,      //obligatorio
+      tipoPrestamo,
+      fechaExpiracion // plano, no dentro de reserva
+    };
+
+    const response = await apiClient.post(
+      `${PRESTAMO_API_URL}/reservar-libro`,
+      datos
+    );
+
+    return response.data;
+
+  } catch (error) {
+    console.error("ERROR BACKEND:", error.response?.data);
+    throw error;
+  }
+};
+export const obtenerMisReservas = async () => {
+  try {
+    const response = await apiClient.get(
+      `${PRESTAMO_API_URL}/reservas/mis-reservas`
+    );
+
+    return response.data; 
+  } catch (error) {
+    console.error("Error obteniendo mis reservas:", error);
+    throw error;
+  }
+};
+
+// GET /api/prestamos/mis-prestamos - Obtener préstamos del usuario autenticado
+export const obtenerMisPrestamos = async () => {
+  try {
+    const response = await apiClient.get(`${PRESTAMO_API_URL}/mis-prestamos`);
+    return response.data; // { success, data }
+  } catch (error) {
+    console.error("Error obteniendo mis préstamos:", error);
+    throw error;
+  }
+};

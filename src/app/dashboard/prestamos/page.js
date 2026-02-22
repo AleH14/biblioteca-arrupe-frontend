@@ -425,6 +425,8 @@ export default function PrestamosPage() {
       case "reservado":
       case "reserva":
         return "Reservado";
+      case "expirada":
+        return "Reserva Expirada";
       default:
         return prestamo.estado;
     }
@@ -443,6 +445,7 @@ export default function PrestamosPage() {
           return styles.estadoCerrado;
         case "reservado":
         case "reserva":
+        case "expirada":
           return styles.estadoReservado;
         default:
           return styles.estadoActivo;
@@ -468,7 +471,7 @@ export default function PrestamosPage() {
         (filtro === "Activos" && p.estado === "activo") ||
         (filtro === "Atrasados" && (p.estado === "retrasado" || p.estado === "atrasado")) ||
         (filtro === "Devueltos" && (p.estado === "cerrado" || p.estado === "devuelto")) ||
-        (filtro === "Reservados" && (p.estado === "reserva" || p.estado === "reservado"));
+        (filtro === "Reservados" && (p.estado === "reserva" || p.estado === "reservado" || p.estado === "expirada"));
       return cumpleFiltroTexto && cumpleFiltroEstado;
     });
   }, [prestamos, filtro, searchValue]);
