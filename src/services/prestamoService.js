@@ -7,7 +7,7 @@ const PRESTAMO_API_URL = "/api/prestamos";
 export const getPrestamosByUsername = async (nombre) => {
   try {
     const response = await apiClient.get(`${PRESTAMO_API_URL}/buscar`, {
-      params: { nombre},
+      params: { nombre },
     });
     return response.data;
   } catch (error) {
@@ -178,12 +178,10 @@ export const reservarLibro = async (
 
     const datos = {
       libroId,
-      usuarioId,              // 👈 obligatorio
+      usuarioId,      //obligatorio
       tipoPrestamo,
-      fechaExpiracion         // 👈 plano, no dentro de reserva
+      fechaExpiracion // plano, no dentro de reserva
     };
-
-    console.log("DATOS ENVIADOS:", datos);
 
     const response = await apiClient.post(
       `${PRESTAMO_API_URL}/reservar-libro`,

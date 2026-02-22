@@ -24,6 +24,19 @@ import { useDebounce } from "../../hooks/useDebounce";
 // Services
 import { getLibros, getAllCategorias } from "@/services/librosService";
 
+//Validacion fecha expiracion reserva
+const esReservaVigente = (reserva) => {
+      if (!reserva?.fechaExpiracion) return false;
+
+      const hoy = new Date();
+      const fechaExp = new Date(reserva.fechaExpiracion);
+
+      hoy.setHours(0, 0, 0, 0);
+      fechaExp.setHours(0, 0, 0, 0);
+
+      return hoy <= fechaExp; // true si todavía está vigente
+    };
+
 export default function InterfazEstudiantes() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -49,18 +62,6 @@ export default function InterfazEstudiantes() {
 
   // Búsqueda y filtros
   const [busquedaInmediata, setBusquedaInmediata] = useState("");
-  const esReservaVigente = (reserva) => {
-      if (!reserva?.fechaExpiracion) return false;
-
-      const hoy = new Date();
-      const fechaExp = new Date(reserva.fechaExpiracion);
-
-      hoy.setHours(0, 0, 0, 0);
-      fechaExp.setHours(0, 0, 0, 0);
-
-      return hoy <= fechaExp; // true si todavía está vigente
-    };
-
   const [filtros, setFiltros] = useState({
     categoria: "",
     autor: "",
@@ -123,7 +124,6 @@ export default function InterfazEstudiantes() {
     
     try {
       const response = await obtenerMisPrestamos();
-      console.log("Préstamos cargados:", response);
       
       if (response?.success && response.data) {
         return response.data.map(prestamo => ({
@@ -259,7 +259,7 @@ const librosConDisponibilidadReal = useMemo(() => {
       disponible: disponiblesReales > 0,
     };
   });
-}, [listaLibros, listaReservas]);
+}, [listaLibros, listaReservas, esReservaVigente]);
 
 
   const librosFiltrados = useMemo(() => {
@@ -273,7 +273,7 @@ const librosConDisponibilidadReal = useMemo(() => {
           .includes(busquedaDebounced.toLowerCase());
 
       const coincideCategoria =
-        !filtros.categoria || libro.categoria._id === filtros.categoria;
+        !filtros.categoria || libro.categoria?._id === filtros.categoria;
       const coincideAutor = !filtros.autor || libro.autor === filtros.autor;
       const coincideEditorial =
         !filtros.editorial || libro.editorial === filtros.editorial;
@@ -303,6 +303,15 @@ const librosConDisponibilidadReal = useMemo(() => {
       if (!user) throw new Error("Usuario no autenticado");
 
       const usuarioId = getUserId();
+      //Validar ANTES de llamar al servicio
+      if (!usuarioId) {
+        setToast({
+          show: true,
+          message: "Error de autenticación: Usuario no identificado",
+          type: "error",
+        });
+        return; // Salir de la función
+      }
 
       const fechaExpiracion = new Date();
       fechaExpiracion.setDate(fechaExpiracion.getDate() + 3);
@@ -427,7 +436,10 @@ const librosConDisponibilidadReal = useMemo(() => {
       <ReservationModal
         show={showReservaModal}
         libro={libroAReservar}
-        onClose={() => setShowReservaModal(false)}
+        onClose={() => {
+            setShowReservaModal(false);
+            setLibroAReservar(null); //Limpiar también el libro seleccionado
+        }}
         onConfirm={confirmarReserva}
       />
 

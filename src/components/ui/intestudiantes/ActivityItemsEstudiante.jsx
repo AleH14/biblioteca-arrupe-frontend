@@ -42,8 +42,11 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
       const dia = fecha.getDate();
       const mes = fecha.getMonth() + 1; // Los meses van de 0-11
       const año = fecha.getFullYear();
+
+      const diaFormateado = String(dia).padStart(2, "0");     // "05"
+      const mesFormateado = String(mes).padStart(2, "0");    // "03"
       
-      return `${dia}/${mes}/${año}`;
+      return `${diaFormateado}/${mesFormateado}/${año}`;
     } catch (error) {
       console.error("Error al formatear fecha:", error);
       return "N/A";
