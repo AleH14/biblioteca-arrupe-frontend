@@ -303,7 +303,6 @@ const librosConDisponibilidadReal = useMemo(() => {
       if (!user) throw new Error("Usuario no autenticado");
 
       const usuarioId = getUserId();
-      console.log("USUARIO ID ENVIADO:", usuarioId);
 
       const fechaExpiracion = new Date();
       fechaExpiracion.setDate(fechaExpiracion.getDate() + 3);
