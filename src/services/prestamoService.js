@@ -193,7 +193,7 @@ export const reservarLibro = async (
     return response.data;
 
   } catch (error) {
-    console.log("ERROR BACKEND:", error.response?.data);
+    console.error("ERROR BACKEND:", error.response?.data);
     throw error;
   }
 };
