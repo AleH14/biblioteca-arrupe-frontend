@@ -23,8 +23,8 @@ const PrestamoCard = React.memo(({
           <small>{prestamo.libro}</small>
           <br />
           <small className={styles.fecha}>
-            {prestamo.estado === "reserva" 
-              ? "reserva - Pendiente de préstamo"
+            {prestamo.estado === "reserva" || prestamo.estado === "expirada"
+              ? `${prestamo.estado === "reserva" ? "reserva" : "expirada"} - Pendiente de préstamo`
               : `Préstamo: ${formatearFecha(prestamo.fechaPrestamo)}`
             }
           </small>
@@ -37,7 +37,7 @@ const PrestamoCard = React.memo(({
            <small className={styles.fecha}>
             {prestamo.fechaDevolucionReal && prestamo.estado === "cerrado"
               ? `Devuelto: ${formatearFecha(prestamo.fechaDevolucionReal)}`
-              : prestamo.estado === "reserva"
+              : prestamo.estado === "reserva" || prestamo.estado === "expirada"
               ? "Fecha por definir"
               : prestamo.estado === "activo" || prestamo.estado === "atrasado"
               ? `Vence: ${formatearFecha(prestamo.fechaDevolucionEstimada)}`
@@ -45,7 +45,7 @@ const PrestamoCard = React.memo(({
           </small>
         </div>
         <div className="d-flex gap-2">
-          {/* BOTÓN PRESTAR PARA reservas */}
+          {/* BOTÓN PRESTAR PARA reservas (solo para reservas activas) */}
           {prestamo.estado === "reserva" && (
             <button
               className={global.btnWarning}
@@ -65,8 +65,8 @@ const PrestamoCard = React.memo(({
             </button>
           )}
           
-          {/* BOTÓN DEVOLVER/VER DETALLES - OCULTAR PARA reservas */}
-          {prestamo.estado !== "reserva" && (
+          {/* BOTÓN DEVOLVER/VER DETALLES - OCULTAR PARA reservas y expiradas */}
+          {prestamo.estado !== "reserva" && prestamo.estado !== "expirada" && (
             <button
               className={global.btnSecondary}
               onClick={() =>
@@ -79,8 +79,8 @@ const PrestamoCard = React.memo(({
             </button>
           )}
           
-          {/* Botón de Notificaciones - OCULTAR PARA reservas */}
-          {prestamo.estado !== "reserva" && (
+          {/* Botón de Notificaciones - OCULTAR PARA reservas y expiradas */}
+          {prestamo.estado !== "reserva" && prestamo.estado !== "expirada" && (
             <button
               className={styles.notificationBtn}
               onClick={() => onNotificaciones(prestamo)}

@@ -3,7 +3,7 @@ import styles from "../../../styles/IntEstudiantes.module.css";
 
 const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
   
-  // FUNCIÓN PARA DETERMINAR SI UN PRÉSTAMO ESTÁ RETRASADO
+  // FUNCIÓN PARA DETERMINAR SI UN PRÉSTAMO ESTÁ ATRASADO
   const determinarEstadoConRetraso = (prestamo) => {
     // Si ya está cerrado, mantener cerrado
     if (prestamo.estado === "cerrado") return "cerrado";
@@ -13,7 +13,7 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
       return "retrasado";
     }
     
-    // Si está activo, verificar si está retrasado comparando fechas
+    // Si está activo, verificar si está ATRASADO comparando fechas
     if (prestamo.estado === "activo") {
       const fechaActual = new Date();
       const fechaEstimada = new Date(prestamo.fechaDevolucionEstimada);
@@ -51,7 +51,7 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
   };
 
   // PROCESAR PRÉSTAMOS CON EL ESTADO REAL (EXCLUYENDO RESERVAS)
-  const soloPrestamos = prestamos.filter(p => p.estado !== "reserva" && p.estado !== "reservado");
+  const soloPrestamos = prestamos.filter(p => p.estado !== "reserva" && p.estado !== "reservado" && p.estado !== "expirada");
   
   const prestamosConEstadoReal = soloPrestamos.map(p => ({
     ...p,
