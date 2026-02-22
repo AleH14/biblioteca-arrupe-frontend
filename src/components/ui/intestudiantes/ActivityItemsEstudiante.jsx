@@ -81,7 +81,7 @@ const ActivityItemsEstudiante = React.memo(({ prestamos, reservas }) => {
           <div className={styles.historyList}>
             {reservasActivas.map((item) => (
               <div key={`reserva-${item._id}`} className={styles.historyItem}>
-                <img
+                <img 
                   src={item.portada || "/images/librodefault.png"}
                   alt={item.libro}
                   width={80}
