@@ -34,7 +34,7 @@ export async function buscarLibroPorISBN(isbn, signal) {
       };
     }
   } catch (error) {
-    //console.error("Error al consultar Google Books API:", error);
+    
     
     // Verificar si es error 429 (límite de cuota)
     if (error.response && error.response.status === 429) {
