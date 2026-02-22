@@ -94,7 +94,7 @@ export default function InterfazEstudiantes() {
     
     try {
       const response = await obtenerMisReservas();
-      console.log("Reservas cargadas:", response);
+      
       
       if (response?.success && response.data) {
         return response.data.map(reserva => ({
